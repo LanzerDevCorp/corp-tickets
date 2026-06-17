@@ -184,8 +184,6 @@ minimum_password_length = 6
 # Passwords that do not meet the following requirements will be rejected as weak. Supported values
 # are: `letters_digits`, `lower_upper_letters_digits`, `lower_upper_letters_digits_symbols`
 password_requirements = ""
-# Corp Tickets: require email confirmation for magic-link flows
-enable_confirmations = true
 
 # Configure passkey sign-ins.
 # [auth.passkey]
