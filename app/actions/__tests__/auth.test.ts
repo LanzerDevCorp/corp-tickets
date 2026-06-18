@@ -104,7 +104,7 @@ describe("inviteUser", () => {
     });
     mockCreateClient.mockResolvedValue(mock as never);
 
-    await expect(inviteUser("it@corp.com")).rejects.toThrow(/not authorized/i);
+    await expect(inviteUser("it@corp.com", "it")).rejects.toThrow(/not authorized/i);
   });
 
   it("calls inviteUserByEmail when caller is admin", async () => {
@@ -117,11 +117,31 @@ describe("inviteUser", () => {
       error: null,
     });
 
-    const result = await inviteUser("it@corp.com");
+    const result = await inviteUser("it@corp.com", "it");
     expect(result.error).toBeNull();
     expect(supabaseAdmin.auth.admin.inviteUserByEmail).toHaveBeenCalledWith(
       "it@corp.com",
-      { redirectTo: expect.stringContaining("/auth/update-password") }
+      {
+        redirectTo: expect.stringContaining("/auth/update-password"),
+        data: { role: "it" },
+      }
+    );
+  });
+
+  it("passes role=admin in data payload when inviting admin", async () => {
+    const mock = makeSupabaseMock({
+      getClaims: vi.fn().mockResolvedValue({ data: { claims: { role: "admin" } } }),
+    });
+    mockCreateClient.mockResolvedValue(mock as never);
+    vi.mocked(supabaseAdmin.auth.admin.inviteUserByEmail).mockResolvedValue({
+      data: { user: { id: "invited-admin-id" } as any },
+      error: null,
+    });
+
+    await inviteUser("admin2@corp.com", "admin");
+    expect(supabaseAdmin.auth.admin.inviteUserByEmail).toHaveBeenCalledWith(
+      "admin2@corp.com",
+      expect.objectContaining({ data: { role: "admin" } })
     );
   });
 });

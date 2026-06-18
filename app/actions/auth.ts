@@ -36,17 +36,21 @@ export async function logoutUser(): Promise<void> {
   redirect("/");
 }
 
-export async function inviteUser(email: string): Promise<InviteResult> {
+export async function inviteUser(
+  email: string,
+  role: "it" | "admin"
+): Promise<InviteResult> {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
-  const role = data?.claims?.role as Role | undefined;
+  const callerRole = data?.claims?.role as Role | undefined;
 
-  if (role !== "admin") {
+  if (callerRole !== "admin") {
     throw new Error("Not authorized: only admins can invite users");
   }
 
   const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/update-password`,
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/auth/update-password`,
+    data: { role },
   });
 
   return { error: error?.message ?? null };
