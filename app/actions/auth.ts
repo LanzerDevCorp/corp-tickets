@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getPostLoginRedirect } from "@/lib/auth/redirect";
 import type { Role } from "@/lib/auth/roles";
 import { redirect } from "next/navigation";
+import { adminInviteSchema } from "@/lib/schemas/admin-invite";
 
 type AuthResult = { error: string | null; role?: Role };
 type InviteResult = { error: string | null };
@@ -40,12 +41,17 @@ export async function inviteUser(
   email: string,
   role: "it" | "admin"
 ): Promise<InviteResult> {
+  const parsed = adminInviteSchema.safeParse({ email, role });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const callerRole = data?.claims?.role as Role | undefined;
 
   if (callerRole !== "admin") {
-    throw new Error("Not authorized: only admins can invite users");
+    return { error: "Unauthorized" };
   }
 
   const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {

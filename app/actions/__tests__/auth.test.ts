@@ -98,13 +98,21 @@ describe("logoutUser", () => {
 describe("inviteUser", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("throws when caller is not admin", async () => {
+  it("returns error when caller is not admin", async () => {
     const mock = makeSupabaseMock({
       getClaims: vi.fn().mockResolvedValue({ data: { claims: { role: "client" } } }),
     });
     mockCreateClient.mockResolvedValue(mock as never);
 
-    await expect(inviteUser("it@corp.com", "it")).rejects.toThrow(/not authorized/i);
+    const result = await inviteUser("it@corp.com", "it");
+    expect(result.error).toBeTruthy();
+    expect(supabaseAdmin.auth.admin.inviteUserByEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns error when role is not it or admin", async () => {
+    const result = await inviteUser("test@corp.com", "client" as any);
+    expect(result.error).toBeTruthy();
+    expect(supabaseAdmin.auth.admin.inviteUserByEmail).not.toHaveBeenCalled();
   });
 
   it("calls inviteUserByEmail when caller is admin", async () => {

@@ -25,19 +25,22 @@ export type CategoryRow = {
   created_at: string;
 };
 
-async function requireAdmin(): Promise<{ role: Role; sub: string }> {
+async function requireAdmin(): Promise<
+  AdminActionResult<{ role: Role; sub: string }>
+> {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const role = claimsData?.claims?.role as Role | undefined;
   const sub = claimsData?.claims?.sub as string | undefined;
   if (role !== "admin") {
-    throw new Error("Not authorized: admin role required");
+    return { error: "Unauthorized", code: "auth" };
   }
-  return { role, sub: sub ?? "" };
+  return { error: null, data: { role, sub: sub ?? "" } };
 }
 
 export async function getUsers(): Promise<AdminActionResult<UserRow[]>> {
-  const { sub: _sub } = await requireAdmin();
+  const authResult = await requireAdmin();
+  if (authResult.error !== null) return authResult;
 
   const { data, error } = await supabaseAdmin
     .from("users")
@@ -54,7 +57,9 @@ export async function getUsers(): Promise<AdminActionResult<UserRow[]>> {
 export async function deactivateUser(
   userId: string
 ): Promise<AdminActionResult> {
-  const { sub } = await requireAdmin();
+  const authResult = await requireAdmin();
+  if (authResult.error !== null) return authResult;
+  const { sub } = authResult.data;
 
   if (userId === sub) {
     return { error: "Cannot deactivate your own account", code: "auth" };
@@ -77,7 +82,8 @@ export async function deactivateUser(
 export async function reactivateUser(
   userId: string
 ): Promise<AdminActionResult> {
-  await requireAdmin();
+  const authResult = await requireAdmin();
+  if (authResult.error !== null) return authResult;
 
   const { data: _data, error } = await supabaseAdmin
     .from("users")
@@ -96,12 +102,13 @@ export async function reactivateUser(
 export async function getCategories(): Promise<
   AdminActionResult<CategoryRow[]>
 > {
-  await requireAdmin();
+  const authResult = await requireAdmin();
+  if (authResult.error !== null) return authResult;
 
   const { data, error } = await supabaseAdmin
     .from("categories")
     .select("id, name, is_enabled, created_at")
-    .order("name", { ascending: true });
+    .order("created_at", { ascending: false });
 
   if (error) {
     return { error: error.message, code: "db" };
@@ -113,7 +120,8 @@ export async function getCategories(): Promise<
 export async function createCategory(input: {
   name: string;
 }): Promise<AdminActionResult<CategoryRow>> {
-  await requireAdmin();
+  const authResult = await requireAdmin();
+  if (authResult.error !== null) return authResult;
 
   const parsed = categoryUpsertSchema.pick({ name: true }).safeParse(input);
   if (!parsed.success) {
@@ -146,7 +154,8 @@ export async function updateCategory(
   categoryId: string,
   input: { name?: string; is_enabled?: boolean }
 ): Promise<AdminActionResult<CategoryRow>> {
-  await requireAdmin();
+  const authResult = await requireAdmin();
+  if (authResult.error !== null) return authResult;
 
   if (input.name !== undefined) {
     const parsed = categoryUpsertSchema

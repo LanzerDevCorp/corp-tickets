@@ -4,7 +4,7 @@ import { CategoriesTable, NewCategoryDialog } from "./_components";
 export default async function CategoriesPage() {
   const result = await getCategories();
 
-  if (result.error) {
+  if (result.error !== null) {
     return (
       <main className="flex min-h-svh flex-col p-8">
         <p className="text-destructive">{result.error}</p>

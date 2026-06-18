@@ -54,7 +54,7 @@ import {
 // UsersTable
 // ---------------------------------------------------------------------------
 
-export function UsersTable({ users }: { users: UserRow[] }) {
+export function UsersTable({ users, currentUserId }: { users: UserRow[]; currentUserId?: string }) {
   if (users.length === 0) {
     return (
       <p className="text-muted-foreground py-8 text-center">No users found.</p>
@@ -93,7 +93,7 @@ export function UsersTable({ users }: { users: UserRow[] }) {
             </TableCell>
             <TableCell>
               {user.is_active ? (
-                <DeactivateButton userId={user.id} />
+                <DeactivateButton userId={user.id} isSelf={user.id === currentUserId} />
               ) : (
                 <ReactivateButton userId={user.id} />
               )}
@@ -251,7 +251,7 @@ export function InviteUserDialog() {
 // DeactivateButton
 // ---------------------------------------------------------------------------
 
-export function DeactivateButton({ userId }: { userId: string }) {
+export function DeactivateButton({ userId, isSelf }: { userId: string; isSelf?: boolean }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -272,7 +272,7 @@ export function DeactivateButton({ userId }: { userId: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive" size="sm">
+        <Button variant="destructive" size="sm" disabled={isSelf}>
           Deactivate
         </Button>
       </DialogTrigger>

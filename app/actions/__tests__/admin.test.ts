@@ -61,7 +61,7 @@ describe("getUsers", () => {
 
     const result = await getUsers();
     expect(result.error).toBeNull();
-    if (!result.error) {
+    if (result.error === null) {
       expect(result.data).toHaveLength(1);
       expect(result.data[0].id).toBe("u1");
     }
@@ -75,15 +75,17 @@ describe("getUsers", () => {
 
     const result = await getUsers();
     expect(result.error).toBeNull();
-    if (!result.error) {
+    if (result.error === null) {
       expect(result.data).toEqual([]);
     }
   });
 
-  it("throws when caller is not admin", async () => {
+  it("returns auth error when caller is not admin", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("it") as never);
 
-    await expect(getUsers()).rejects.toThrow(/not authorized/i);
+    const result = await getUsers();
+    expect(result.error).toBeTruthy();
+    expect((result as { code?: string }).code).toBe("auth");
   });
 
   it("returns db error when supabase returns error", async () => {
@@ -94,7 +96,7 @@ describe("getUsers", () => {
 
     const result = await getUsers();
     expect(result.error).toBe("DB error");
-    if (result.error) {
+    if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("db");
     }
   });
@@ -120,7 +122,7 @@ describe("deactivateUser", () => {
 
     const result = await deactivateUser("self-uuid");
     expect(result.error).toBeTruthy();
-    if (result.error) {
+    if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("auth");
     }
   });
@@ -128,7 +130,9 @@ describe("deactivateUser", () => {
   it("returns auth error when caller is not admin", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("it", "caller-uuid") as never);
 
-    await expect(deactivateUser("target-uuid")).rejects.toThrow(/not authorized/i);
+    const result = await deactivateUser("target-uuid");
+    expect(result.error).toBeTruthy();
+    expect((result as { code?: string }).code).toBe("auth");
   });
 
   it("returns db error when supabase update fails", async () => {
@@ -139,7 +143,7 @@ describe("deactivateUser", () => {
 
     const result = await deactivateUser("target-uuid");
     expect(result.error).toBe("Update failed");
-    if (result.error) {
+    if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("db");
     }
   });
@@ -163,7 +167,9 @@ describe("reactivateUser", () => {
   it("returns auth error when caller is not admin", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("client") as never);
 
-    await expect(reactivateUser("target-uuid")).rejects.toThrow(/not authorized/i);
+    const result = await reactivateUser("target-uuid");
+    expect(result.error).toBeTruthy();
+    expect((result as { code?: string }).code).toBe("auth");
   });
 
   it("returns db error when supabase update fails", async () => {
@@ -174,7 +180,7 @@ describe("reactivateUser", () => {
 
     const result = await reactivateUser("target-uuid");
     expect(result.error).toBe("Update error");
-    if (result.error) {
+    if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("db");
     }
   });
@@ -193,7 +199,7 @@ describe("getCategories (admin)", () => {
 
     const result = await getCategories();
     expect(result.error).toBeNull();
-    if (!result.error) {
+    if (result.error === null) {
       expect(result.data).toHaveLength(1);
       expect(result.data[0].is_enabled).toBe(false);
     }
@@ -207,15 +213,17 @@ describe("getCategories (admin)", () => {
 
     const result = await getCategories();
     expect(result.error).toBeNull();
-    if (!result.error) {
+    if (result.error === null) {
       expect(result.data).toEqual([]);
     }
   });
 
-  it("throws when caller is not admin", async () => {
+  it("returns auth error when caller is not admin", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("it") as never);
 
-    await expect(getCategories()).rejects.toThrow(/not authorized/i);
+    const result = await getCategories();
+    expect(result.error).toBeTruthy();
+    expect((result as { code?: string }).code).toBe("auth");
   });
 
   it("returns db error when supabase returns error", async () => {
@@ -226,7 +234,7 @@ describe("getCategories (admin)", () => {
 
     const result = await getCategories();
     expect(result.error).toBe("DB error");
-    if (result.error) {
+    if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("db");
     }
   });
@@ -244,7 +252,7 @@ describe("createCategory", () => {
 
     const result = await createCategory({ name: "Hardware" });
     expect(result.error).toBeNull();
-    if (!result.error) {
+    if (result.error === null) {
       expect(result.data.name).toBe("Hardware");
       expect(result.data.is_enabled).toBe(true);
     }
@@ -255,7 +263,7 @@ describe("createCategory", () => {
 
     const result = await createCategory({ name: "" });
     expect(result.error).toBeTruthy();
-    if (result.error) {
+    if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("validation");
     }
   });
@@ -265,7 +273,7 @@ describe("createCategory", () => {
 
     const result = await createCategory({ name: "A".repeat(101) });
     expect(result.error).toBeTruthy();
-    if (result.error) {
+    if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("validation");
     }
   });
@@ -277,7 +285,7 @@ describe("createCategory", () => {
 
     const result = await createCategory({ name: "Hardware" });
     expect(result.error).toBe("A category with this name already exists.");
-    if (result.error) {
+    if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("db");
     }
   });
@@ -285,7 +293,9 @@ describe("createCategory", () => {
   it("returns auth error when caller is not admin", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("client") as never);
 
-    await expect(createCategory({ name: "Hardware" })).rejects.toThrow(/not authorized/i);
+    const result = await createCategory({ name: "Hardware" });
+    expect(result.error).toBeTruthy();
+    expect((result as { code?: string }).code).toBe("auth");
   });
 });
 
@@ -301,7 +311,7 @@ describe("updateCategory", () => {
 
     const result = await updateCategory("c1", { name: "New Name" });
     expect(result.error).toBeNull();
-    if (!result.error) {
+    if (result.error === null) {
       expect(result.data.name).toBe("New Name");
     }
   });
@@ -313,7 +323,7 @@ describe("updateCategory", () => {
 
     const result = await updateCategory("c1", { is_enabled: false });
     expect(result.error).toBeNull();
-    if (!result.error) {
+    if (result.error === null) {
       expect(result.data.is_enabled).toBe(false);
     }
   });
@@ -325,7 +335,7 @@ describe("updateCategory", () => {
 
     const result = await updateCategory("c1", { name: "Renamed", is_enabled: false });
     expect(result.error).toBeNull();
-    if (!result.error) {
+    if (result.error === null) {
       expect(result.data.name).toBe("Renamed");
     }
   });
@@ -335,7 +345,7 @@ describe("updateCategory", () => {
 
     const result = await updateCategory("c1", { name: "" });
     expect(result.error).toBeTruthy();
-    if (result.error) {
+    if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("validation");
     }
   });
@@ -347,7 +357,7 @@ describe("updateCategory", () => {
 
     const result = await updateCategory("c1", { name: "Existing" });
     expect(result.error).toBe("A category with this name already exists.");
-    if (result.error) {
+    if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("db");
     }
   });
@@ -359,7 +369,7 @@ describe("updateCategory", () => {
 
     const result = await updateCategory("c1", { is_enabled: true });
     expect(result.error).toBe("Not found");
-    if (result.error) {
+    if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("db");
     }
   });
@@ -367,6 +377,8 @@ describe("updateCategory", () => {
   it("returns auth error when caller is not admin", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("it") as never);
 
-    await expect(updateCategory("c1", { name: "Test" })).rejects.toThrow(/not authorized/i);
+    const result = await updateCategory("c1", { name: "Test" });
+    expect(result.error).toBeTruthy();
+    expect((result as { code?: string }).code).toBe("auth");
   });
 });
