@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { provisionClient } from "@/app/actions/client-provision";
 import { ticketSubmitSchema } from "@/lib/schemas/ticket-submit";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify";
+import { notifyNewTicket } from "@/lib/notifications/tickets";
 
 export type TicketSubmitResult =
   | { error: null; ticketId: string }
@@ -58,6 +59,8 @@ export async function submitTicket(
   if (provisionError) {
     console.error("[provisionClient]", provisionError);
   }
+
+  void notifyNewTicket(ticket.id);
 
   return { error: null, ticketId: ticket.id };
 }

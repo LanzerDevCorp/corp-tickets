@@ -8,6 +8,10 @@ vi.mock("@/app/actions/client-provision", () => ({
   }),
 }));
 
+vi.mock("@/lib/notifications/tickets", () => ({
+  notifyNewTicket: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
 }));
@@ -28,6 +32,7 @@ import {
 import { provisionClient } from "@/app/actions/client-provision";
 import { createClient } from "@/lib/supabase/server";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify";
+import { notifyNewTicket } from "@/lib/notifications/tickets";
 
 const mockProvisionClient = vi.mocked(provisionClient);
 const mockCreateClient = vi.mocked(createClient);
@@ -148,6 +153,30 @@ describe("tickets actions", () => {
         expect((result as any).code).toBe("db");
       }
       expect(mockProvisionClient).not.toHaveBeenCalled();
+    });
+
+    it("calls notifyNewTicket with correct ticketId after successful ticket insert", async () => {
+      mockCreateClient.mockResolvedValue(
+        makeSupabaseMock({
+          queryResult: { data: { id: "ticket-notify-test" }, error: null },
+        }) as any
+      );
+
+      await submitTicket(null as any, validFormData());
+
+      expect(notifyNewTicket).toHaveBeenCalledWith("ticket-notify-test");
+    });
+
+    it("does not call notifyNewTicket when ticket insert fails", async () => {
+      mockCreateClient.mockResolvedValue(
+        makeSupabaseMock({
+          queryResult: { data: null, error: { message: "DB error" } },
+        }) as any
+      );
+
+      await submitTicket(null as any, validFormData());
+
+      expect(notifyNewTicket).not.toHaveBeenCalled();
     });
 
     it("sigue retornando ticketId aunque provisionClient falle", async () => {
