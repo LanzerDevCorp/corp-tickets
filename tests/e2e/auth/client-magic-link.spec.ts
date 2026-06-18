@@ -10,7 +10,7 @@ test.describe("Client magic link flow", () => {
   }) => {
     await page.goto("/auth/error?error_code=otp_expired");
 
-    await expect(page.getByLabelText(/email/i)).toBeVisible();
+    await expect(page.getByLabel(/email/i)).toBeVisible();
     await expect(
       page.getByRole("button", { name: /request new link/i })
     ).toBeVisible();

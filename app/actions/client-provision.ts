@@ -20,13 +20,18 @@ export async function provisionClient(
     return { userId: null, alreadyExisted: false, error: "Invalid email address" };
   }
 
-  const { data: existing } = await supabaseAdmin.auth.admin.getUserByEmail(email);
+  // Query public.users to check if client already exists (sync'd by auth trigger)
+  const { data: existingUser } = await supabaseAdmin
+    .from("users")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
 
   let userId: string | null = null;
   let alreadyExisted = false;
 
-  if (existing?.user) {
-    userId = existing.user.id;
+  if (existingUser) {
+    userId = existingUser.id;
     alreadyExisted = true;
   } else {
     const { data: created, error: createError } =

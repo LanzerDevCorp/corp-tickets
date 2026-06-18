@@ -1,6 +1,18 @@
 {
   "version": 1,
   "skills": {
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "93f53fd1c0352d3d7ec17b8f73d7351bf76f4821e55d123c9d2abc2c53ba48e4"
+    },
+    "react-hook-form-zod-shadcn": {
+      "source": "sortweste/frontend-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-hook-form-zod-shadcn/SKILL.md",
+      "computedHash": "60c47ae4c31a8754bf8e135b608823b58bc622e01488a9273234be551e2565e7"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
@@ -12,6 +24,12 @@
       "sourceType": "github",
       "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
       "computedHash": "3639bed1f40b3fbadae79fee631c42c89b2d1f5c30b05d5aa3cca06422a6bbbc"
+    },
+    "turnstile-spin": {
+      "source": "cloudflare/skills",
+      "sourceType": "github",
+      "skillPath": "skills/turnstile-spin/SKILL.md",
+      "computedHash": "6eccfb03c157f92c07e53bca28549cd283b62ce0b59a537ccee07935bb3fa60e"
     }
   }
 }

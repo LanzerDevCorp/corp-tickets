@@ -1,7 +1,30 @@
-export default function DashboardPage() {
+import TicketQueue from "@/components/dashboard/ticket-queue";
+import { getTickets, getCategories, getStaffUsers } from "@/app/actions/tickets";
+
+export default async function DashboardPage() {
+  const [initialTickets, categories, staffUsers] = await Promise.all([
+    getTickets({ sortOrder: "desc" }),
+    getCategories(),
+    getStaffUsers(),
+  ]);
+
   return (
-    <main className="flex min-h-svh flex-col p-8">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+    <main className="flex-1 space-y-6 p-8">
+      <div className="flex items-center justify-between space-y-2">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-zinc-900 to-zinc-600 bg-clip-text text-transparent dark:from-zinc-100 dark:to-zinc-400">
+            Dashboard
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            Manage helpdesk support tickets and lifecycle assignments.
+          </p>
+        </div>
+      </div>
+      <TicketQueue
+        initialTickets={initialTickets}
+        categories={categories}
+        staffUsers={staffUsers}
+      />
     </main>
   );
 }

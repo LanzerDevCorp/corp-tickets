@@ -35,6 +35,8 @@ export default defineConfig({
     url: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
-    env: process.env,
+    env: Object.fromEntries(
+      Object.entries(process.env).filter(([, v]) => v !== undefined)
+    ) as Record<string, string>,
   },
 });

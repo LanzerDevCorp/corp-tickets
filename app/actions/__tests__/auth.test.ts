@@ -113,7 +113,7 @@ describe("inviteUser", () => {
     });
     mockCreateClient.mockResolvedValue(mock as never);
     vi.mocked(supabaseAdmin.auth.admin.inviteUserByEmail).mockResolvedValue({
-      data: { user: null },
+      data: { user: { id: "invited-user-id" } as any },
       error: null,
     });
 

@@ -1,30 +1,46 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("@/lib/supabase/admin", () => ({
-  supabaseAdmin: {
-    auth: {
-      admin: {
-        getUserByEmail: vi.fn(),
-        createUser: vi.fn(),
-        generateLink: vi.fn(),
+vi.mock("@/lib/supabase/admin", () => {
+  const mockMaybeSingle = vi.fn();
+  const queryChain = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    maybeSingle: mockMaybeSingle,
+  };
+
+  return {
+    supabaseAdmin: {
+      from: vi.fn().mockReturnValue(queryChain),
+      auth: {
+        admin: {
+          createUser: vi.fn(),
+          generateLink: vi.fn(),
+        },
       },
-      signInWithOtp: vi.fn(),
     },
-  },
-}));
+  };
+});
 
 import { provisionClient, requestMagicLink } from "../client-provision";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
-const mockGetUserByEmail = vi.mocked(supabaseAdmin.auth.admin.getUserByEmail);
+// Retrieve references to mocked functions post-import
+const mockFrom = vi.mocked(supabaseAdmin.from);
 const mockCreateUser = vi.mocked(supabaseAdmin.auth.admin.createUser);
 const mockGenerateLink = vi.mocked(supabaseAdmin.auth.admin.generateLink);
 
+// Helper to get mockMaybeSingle reference using any casting
+function getMockMaybeSingle() {
+  return (supabaseAdmin as any).from("users").maybeSingle;
+}
+
 describe("provisionClient", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it("creates user and sends magic link for new email", async () => {
-    mockGetUserByEmail.mockResolvedValue({ data: { user: null }, error: null } as never);
+    getMockMaybeSingle().mockResolvedValue({ data: null, error: null });
     mockCreateUser.mockResolvedValue({
       data: { user: { id: "new-user-id" } },
       error: null,
@@ -49,10 +65,10 @@ describe("provisionClient", () => {
   });
 
   it("skips createUser for existing client and sends magic link", async () => {
-    mockGetUserByEmail.mockResolvedValue({
-      data: { user: { id: "existing-user-id" } },
+    getMockMaybeSingle().mockResolvedValue({
+      data: { id: "existing-user-id" },
       error: null,
-    } as never);
+    });
     mockGenerateLink.mockResolvedValue({ data: {}, error: null } as never);
 
     const result = await provisionClient("existing@client.com", "ticket-xyz");
@@ -68,11 +84,11 @@ describe("provisionClient", () => {
 
     expect(result.error).toMatch(/invalid email/i);
     expect(result.userId).toBeNull();
-    expect(mockGetUserByEmail).not.toHaveBeenCalled();
+    expect(mockFrom).not.toHaveBeenCalled();
   });
 
   it("propagates Supabase error", async () => {
-    mockGetUserByEmail.mockResolvedValue({ data: { user: null }, error: null } as never);
+    getMockMaybeSingle().mockResolvedValue({ data: null, error: null });
     mockCreateUser.mockResolvedValue({
       data: { user: null },
       error: { message: "Database error" },
