@@ -2,28 +2,34 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./logout-button";
+import { getRedirectPath } from "@/lib/auth/roles";
+import type { Role } from "@/lib/auth/roles";
 
 export async function AuthButton() {
   const supabase = await createClient();
-
-  // You can also use getUser() which will be slower.
   const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
 
-  const user = data?.claims;
+  if (!claims) {
+    return (
+      <div className="flex gap-2">
+        <Button asChild size="sm" variant="outline">
+          <Link href="/auth/login">Sign in</Link>
+        </Button>
+      </div>
+    );
+  }
 
-  return user ? (
+  const role = (claims.role as Role) ?? "client";
+  const homePath = getRedirectPath(role);
+  const homeLabel = role === "client" ? "My tickets" : "Dashboard";
+
+  return (
     <div className="flex items-center gap-4">
-      Hey, {user.email}!
+      <Button asChild size="sm" variant="ghost">
+        <Link href={homePath}>{homeLabel}</Link>
+      </Button>
       <LogoutButton />
-    </div>
-  ) : (
-    <div className="flex gap-2">
-      <Button asChild size="sm" variant={"outline"}>
-        <Link href="/auth/login">Sign in</Link>
-      </Button>
-      <Button asChild size="sm" variant={"default"}>
-        <Link href="/auth/sign-up">Sign up</Link>
-      </Button>
     </div>
   );
 }
