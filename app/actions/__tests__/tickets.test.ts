@@ -12,6 +12,10 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
 }));
 
+vi.mock("@/lib/turnstile/verify", () => ({
+  verifyTurnstileToken: vi.fn().mockResolvedValue({ success: true }),
+}));
+
 import {
   submitTicket,
   getTickets,
@@ -23,9 +27,11 @@ import {
 } from "../tickets";
 import { provisionClient } from "@/app/actions/client-provision";
 import { createClient } from "@/lib/supabase/server";
+import { verifyTurnstileToken } from "@/lib/turnstile/verify";
 
 const mockProvisionClient = vi.mocked(provisionClient);
 const mockCreateClient = vi.mocked(createClient);
+const mockVerifyTurnstile = vi.mocked(verifyTurnstileToken);
 
 function makeSupabaseMock(options: {
   claims?: any;
@@ -65,42 +71,103 @@ describe("tickets actions", () => {
   });
 
   describe("submitTicket", () => {
-    it("calls provisionClient with correct email and ticketId after successful insert", async () => {
+    const VALID_UUID = "550e8400-e29b-41d4-a716-446655440000";
+
+    function validFormData() {
+      const fd = new FormData();
+      fd.set("name", "Juan Perez");
+      fd.set("email", "client@test.com");
+      fd.set("subject", "No puedo acceder");
+      fd.set("body", "Desde esta mañana no puedo entrar al sistema.");
+      fd.set("priority", "medium");
+      fd.set("category_id", VALID_UUID);
+      fd.set("turnstile_token", "cf-test-token");
+      return fd;
+    }
+
+    it("inserta ticket y llama provisionClient con email y ticketId", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
           queryResult: { data: { id: "ticket-abc" }, error: null },
         }) as any
       );
 
-      const formData = new FormData();
-      formData.set("name", "Juan Perez");
-      formData.set("email", "client@test.com");
-      formData.set("subject", "Help me");
-      formData.set("description", "Details here");
-
-      const result = await submitTicket({ error: null }, formData);
+      const result = await submitTicket(null as any, validFormData());
 
       expect(result.error).toBeNull();
-      expect(result.ticketId).toBe("ticket-abc");
+      if (result.error === null) {
+        expect(result.ticketId).toBe("ticket-abc");
+      }
       expect(mockProvisionClient).toHaveBeenCalledWith("client@test.com", "ticket-abc");
     });
 
-    it("returns error when DB insert fails", async () => {
+    it("retorna error de validación cuando faltan campos requeridos", async () => {
+      const fd = new FormData();
+      fd.set("name", "A"); // muy corto
+      fd.set("email", "not-an-email");
+      fd.set("subject", "ok");
+      fd.set("body", "corto");
+      fd.set("category_id", "not-uuid");
+      fd.set("turnstile_token", "token");
+
+      const result = await submitTicket(null as any, fd);
+
+      expect(result.error).toBeTruthy();
+      if (result.error) {
+        expect((result as any).code).toBe("validation");
+      }
+      expect(mockProvisionClient).not.toHaveBeenCalled();
+    });
+
+    it("retorna error con code 'turnstile' cuando la verificación falla", async () => {
+      mockVerifyTurnstile.mockResolvedValueOnce({
+        success: false,
+        error: "La verificación de seguridad falló. Intenta de nuevo.",
+      });
+
+      const result = await submitTicket(null as any, validFormData());
+
+      expect(result.error).toBeTruthy();
+      if (result.error) {
+        expect((result as any).code).toBe("turnstile");
+      }
+      expect(mockProvisionClient).not.toHaveBeenCalled();
+    });
+
+    it("retorna error genérico cuando el insert de DB falla", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
           queryResult: { data: null, error: { message: "DB error" } },
         }) as any
       );
 
-      const formData = new FormData();
-      formData.set("email", "fail@test.com");
-      formData.set("subject", "Failing ticket");
-      formData.set("description", "Fail");
+      const result = await submitTicket(null as any, validFormData());
 
-      const result = await submitTicket({ error: null }, formData);
-
-      expect(result.error).toBe("DB error");
+      expect(result.error).toBeTruthy();
+      if (result.error) {
+        expect((result as any).code).toBe("db");
+      }
       expect(mockProvisionClient).not.toHaveBeenCalled();
+    });
+
+    it("sigue retornando ticketId aunque provisionClient falle", async () => {
+      mockCreateClient.mockResolvedValue(
+        makeSupabaseMock({
+          queryResult: { data: { id: "ticket-xyz" }, error: null },
+        }) as any
+      );
+      mockProvisionClient.mockResolvedValueOnce({
+        userId: null,
+        alreadyExisted: false,
+        error: "provision failed",
+      } as any);
+
+      const result = await submitTicket(null as any, validFormData());
+
+      expect(result.error).toBeNull();
+      if (result.error === null) {
+        expect(result.ticketId).toBe("ticket-xyz");
+      }
     });
   });
 

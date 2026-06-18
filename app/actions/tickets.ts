@@ -2,58 +2,58 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { provisionClient } from "@/app/actions/client-provision";
+import { ticketSubmitSchema } from "@/lib/schemas/ticket-submit";
+import { verifyTurnstileToken } from "@/lib/turnstile/verify";
 
-type TicketResult = { error: string | null; ticketId?: string };
+export type TicketSubmitResult =
+  | { error: null; ticketId: string }
+  | { error: string; code?: "turnstile" | "validation" | "db" };
 
 export async function submitTicket(
-  _prevState: TicketResult,
+  _prevState: TicketSubmitResult,
   formData: FormData
-): Promise<TicketResult> {
-  const name = (formData.get("name") as string) || "Anonymous";
-  const email = formData.get("email") as string;
-  const subject = formData.get("subject") as string;
-  const body = (formData.get("body") || formData.get("description")) as string;
-  const category_id = formData.get("category_id") as string;
-  const priority = (formData.get("priority") as string) || "medium";
+): Promise<TicketSubmitResult> {
+  const raw = {
+    name: formData.get("name"),
+    email: formData.get("email"),
+    subject: formData.get("subject"),
+    body: formData.get("body"),
+    priority: formData.get("priority"),
+    category_id: formData.get("category_id"),
+    turnstile_token: formData.get("turnstile_token"),
+  };
+
+  const parsed = ticketSubmitSchema.safeParse(raw);
+  if (!parsed.success) {
+    const firstError =
+      parsed.error.issues[0]?.message ?? "Datos del formulario inválidos";
+    return { error: firstError, code: "validation" };
+  }
+
+  const { name, email, subject, body, priority, category_id, turnstile_token } =
+    parsed.data;
+
+  const turnstileResult = await verifyTurnstileToken(turnstile_token);
+  if (!turnstileResult.success) {
+    return { error: turnstileResult.error, code: "turnstile" };
+  }
 
   const supabase = await createClient();
 
-  // Basic check: if category_id isn't provided, see if we can find one in the DB (for backwards compatibility in simple tests)
-  let targetCategoryId = category_id;
-  if (!targetCategoryId) {
-    const { data: cat } = await supabase.from("categories").select("id").limit(1).maybeSingle();
-    if (cat) {
-      targetCategoryId = cat.id;
-    } else {
-      // Create a default category if none exists to avoid foreign key failures
-      const { data: newCat } = await supabase
-        .from("categories")
-        .insert({ name: "Default Category", is_enabled: true })
-        .select()
-        .single();
-      if (newCat) targetCategoryId = newCat.id;
-    }
-  }
-
   const { data: ticket, error } = await supabase
     .from("tickets")
-    .insert({
-      name,
-      email,
-      subject,
-      body,
-      category_id: targetCategoryId,
-      priority,
-    })
-    .select()
+    .insert({ name, email, subject, body, category_id, priority })
+    .select("id")
     .single();
 
   if (error || !ticket) {
-    return { error: error?.message ?? "Failed to create ticket" };
+    console.error("[submitTicket] DB error", error);
+    return {
+      error: "No pudimos enviar tu ticket. Intenta de nuevo.",
+      code: "db",
+    };
   }
 
-  // Best-effort: provision client account + send magic link
-  // Does not block ticket creation on failure
   const { error: provisionError } = await provisionClient(email, ticket.id);
   if (provisionError) {
     console.error("[provisionClient]", provisionError);
