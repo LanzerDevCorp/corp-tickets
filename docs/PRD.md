@@ -89,6 +89,14 @@ Inspired by Freshdesk but deliberately minimal — no multitenancy, no SLAs, no 
 - Clients can post comments from their tracking view (always public).
 - Clients can add CC email addresses when commenting. CC recipients receive the email notification only — no ticket access.
 
+### Implementation notes (phasing)
+
+- `comments` table includes `cc_emails TEXT[]` from Phase 5 onwards (defaults to `{}`).
+- **Phase 5** (`comments`): staff dashboard comment form does **not** expose the CC field — CC is always `{}` for staff comments in MVP.
+- **Phase 8** (`client-tracking`): client comment form exposes the CC field. The `addComment` server action already accepts `cc_emails` — Phase 8 only adds the UI input.
+- Comments are append-only (no UPDATE or DELETE for any role) — they serve as audit trail.
+- `author_id` is always `NOT NULL` — both staff and clients have a Supabase Auth user record.
+
 ---
 
 ## 7. Ticket Queue (Admin/IT View)

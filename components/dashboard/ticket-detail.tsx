@@ -22,12 +22,16 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Calendar, MessageSquare, AlertCircle } from "lucide-react";
+import { ArrowLeft, User, Calendar, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import CommentThread from "@/components/dashboard/comment-thread";
+import CommentForm from "@/components/dashboard/comment-form";
+import { type CommentWithAuthor } from "@/app/actions/comments";
 
 type TicketDetailProps = {
   initialTicket: any;
   staffUsers: any[];
+  initialComments: CommentWithAuthor[];
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -47,8 +51,10 @@ const STATUS_COLORS: Record<string, string> = {
 export default function TicketDetail({
   initialTicket,
   staffUsers,
+  initialComments,
 }: TicketDetailProps) {
   const [ticket, setTicket] = useState(initialTicket);
+  const [comments, setComments] = useState<CommentWithAuthor[]>(initialComments);
   const [isUpdating, setIsUpdating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -172,10 +178,16 @@ export default function TicketDetail({
             </CardContent>
           </Card>
 
-          {/* Placeholder comment section for visual completeness */}
-          <div className="border border-dashed border-zinc-200 p-8 rounded-xl text-center text-zinc-400 dark:border-zinc-800">
-            <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">Comments & activity history will appear here in Phase 5.</p>
+          {/* Comment thread + form */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
+              Comments
+            </h3>
+            <CommentThread comments={comments} />
+            <CommentForm
+              ticketId={ticket.id}
+              onPosted={(c) => setComments((prev) => [...prev, c])}
+            />
           </div>
         </div>
 
