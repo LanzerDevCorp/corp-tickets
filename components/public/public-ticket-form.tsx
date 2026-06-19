@@ -33,6 +33,7 @@ import {
   submitTicket,
   type TicketSubmitResult,
 } from "@/app/actions/tickets";
+import { isTurnstileEnabled } from "@/lib/turnstile/config";
 import { SubmitSuccess } from "./submit-success";
 
 const INITIAL_STATE: TicketSubmitResult = { error: "no-submit" as unknown as string } as unknown as TicketSubmitResult;
@@ -66,6 +67,7 @@ interface PublicTicketFormProps {
 }
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+const turnstileOn = isTurnstileEnabled();
 
 export function PublicTicketForm({ categories }: PublicTicketFormProps) {
   const turnstileRef = useRef<TurnstileInstance>(null);
@@ -96,11 +98,12 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
     return <SubmitSuccess ticketId={actionState.ticketId} />;
   }
 
-  const isTurnstileReady = turnstileToken.length > 0 && !turnstileError;
+  const isTurnstileReady =
+    turnstileOn ? turnstileToken.length > 0 && !turnstileError : true;
   const isFormValid = form.formState.isValid && isTurnstileReady;
 
   async function handleSubmit(data: TicketSubmitData) {
-    if (!turnstileToken) {
+    if (turnstileOn && !turnstileToken) {
       setTurnstileError(true);
       return;
     }
@@ -112,7 +115,9 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
     fd.set("body", data.body);
     fd.set("priority", data.priority);
     fd.set("category_id", data.category_id);
-    fd.set("turnstile_token", turnstileToken);
+    if (turnstileOn) {
+      fd.set("turnstile_token", turnstileToken);
+    }
 
     formAction(fd);
   }
@@ -126,7 +131,10 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
       : null;
 
   const isTurnstileServerError =
-    actionState && "code" in actionState && actionState.code === "turnstile";
+    turnstileOn &&
+    actionState &&
+    "code" in actionState &&
+    actionState.code === "turnstile";
 
   if (isTurnstileServerError && turnstileRef.current) {
     turnstileRef.current.reset();
@@ -302,33 +310,35 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
                 )}
               />
 
-              {/* Turnstile invisible + error display */}
-              <div>
-                <Turnstile
-                  ref={turnstileRef}
-                  siteKey={TURNSTILE_SITE_KEY}
-                  options={{
-                    size: "invisible",
-                    action: "submit-ticket",
-                  }}
-                  onSuccess={(token) => {
-                    setTurnstileToken(token);
-                    setTurnstileError(false);
-                  }}
-                  onError={() => {
-                    setTurnstileToken("");
-                    setTurnstileError(true);
-                  }}
-                  onExpire={() => {
-                    setTurnstileToken("");
-                  }}
-                />
-                {(turnstileError || isTurnstileServerError) && (
-                  <p className="text-sm text-destructive mt-1">
-                    La verificación de seguridad falló. Intenta de nuevo.
-                  </p>
-                )}
-              </div>
+              {/* Turnstile invisible + error display (disabled — see docs/technical-debt.md) */}
+              {turnstileOn && (
+                <div>
+                  <Turnstile
+                    ref={turnstileRef}
+                    siteKey={TURNSTILE_SITE_KEY}
+                    options={{
+                      size: "invisible",
+                      action: "submit-ticket",
+                    }}
+                    onSuccess={(token) => {
+                      setTurnstileToken(token);
+                      setTurnstileError(false);
+                    }}
+                    onError={() => {
+                      setTurnstileToken("");
+                      setTurnstileError(true);
+                    }}
+                    onExpire={() => {
+                      setTurnstileToken("");
+                    }}
+                  />
+                  {(turnstileError || isTurnstileServerError) && (
+                    <p className="text-sm text-destructive mt-1">
+                      La verificación de seguridad falló. Intenta de nuevo.
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Server error (non-turnstile) */}
               {serverError && !isTurnstileServerError && (

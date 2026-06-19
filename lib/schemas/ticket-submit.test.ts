@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ticketSubmitSchema } from "./ticket-submit";
+import { isTurnstileEnabled } from "@/lib/turnstile/config";
 
 const VALID = {
   name: "Ana López",
@@ -100,9 +101,19 @@ describe("ticketSubmitSchema", () => {
   });
 
   describe("turnstile_token", () => {
-    it("rechaza token vacío", () => {
+    it("rechaza token vacío cuando Turnstile está activo", () => {
+      if (!isTurnstileEnabled()) return;
+
       const res = ticketSubmitSchema.safeParse({ ...VALID, turnstile_token: "" });
       expect(res.success).toBe(false);
+    });
+
+    it("acepta envío sin token cuando Turnstile está deshabilitado", () => {
+      if (isTurnstileEnabled()) return;
+
+      const { turnstile_token: _, ...noToken } = VALID;
+      const res = ticketSubmitSchema.safeParse(noToken);
+      expect(res.success).toBe(true);
     });
   });
 

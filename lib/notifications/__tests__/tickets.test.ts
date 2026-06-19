@@ -17,7 +17,7 @@ vi.mock("@react-email/components", async (importActual) => {
   return { ...actual, render: vi.fn().mockResolvedValue("<html>email</html>") };
 });
 
-import { notifyNewTicket } from "../tickets";
+import { notifyNewTicket, notifyTicketCreated, notifyTicketClosed } from "../tickets";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { resend } from "@/lib/resend";
 import { render } from "@react-email/components";
@@ -300,5 +300,119 @@ describe("notifyNewTicket", () => {
     const call = mockSend.mock.calls[0][0];
     expect(Array.isArray(call.to)).toBe(true);
     expect((call.to as string[]).length).toBe(3);
+  });
+});
+
+describe("notifyTicketCreated", () => {
+  it("sends confirmation email to client with magic link", async () => {
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "tickets") {
+        return makeTicketChain({ data: TICKET_ROW, error: null }) as never;
+      }
+      return makeStaffChain({ data: [], error: null }) as never;
+    });
+
+    await notifyTicketCreated("ticket-123", "https://auth.test/magic-link");
+
+    expect(mockSend).toHaveBeenCalledTimes(1);
+    const call = mockSend.mock.calls[0][0];
+    expect(call.to).toBe("alice@example.com");
+    expect(call.subject).toContain("Printer jammed");
+  });
+
+  it("returns without sending when magicLinkUrl is empty", async () => {
+    await notifyTicketCreated("ticket-123", "");
+
+    expect(mockSend).not.toHaveBeenCalled();
+  });
+
+  it("returns without sending when ticket is not found", async () => {
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "tickets") {
+        return makeTicketChain({ data: null, error: { message: "not found" } }) as never;
+      }
+      return makeStaffChain({ data: [], error: null }) as never;
+    });
+
+    await notifyTicketCreated("ticket-123", "https://auth.test/magic-link");
+
+    expect(mockSend).not.toHaveBeenCalled();
+  });
+
+  it("renders TicketCreatedEmail with magicLinkUrl", async () => {
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "tickets") {
+        return makeTicketChain({ data: TICKET_ROW, error: null }) as never;
+      }
+      return makeStaffChain({ data: [], error: null }) as never;
+    });
+
+    await notifyTicketCreated("ticket-123", "https://auth.test/magic-link");
+
+    const rendered = mockRender.mock.calls[0][0] as React.ReactElement<{
+      magicLinkUrl: string;
+      clientName: string;
+    }>;
+    expect(rendered.props.magicLinkUrl).toBe("https://auth.test/magic-link");
+    expect(rendered.props.clientName).toBe("Alice");
+  });
+});
+
+describe("notifyTicketClosed", () => {
+  const CLOSED_TICKET = {
+    name: "Alice",
+    email: "alice@example.com",
+    subject: "Printer jammed",
+    closure_reason: "Replaced toner cartridge",
+  };
+
+  it("sends closed notification to client with closure reason", async () => {
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "tickets") {
+        return makeTicketChain({ data: CLOSED_TICKET, error: null }) as never;
+      }
+      return makeStaffChain({ data: [], error: null }) as never;
+    });
+
+    await notifyTicketClosed("ticket-123");
+
+    expect(mockSend).toHaveBeenCalledTimes(1);
+    const call = mockSend.mock.calls[0][0];
+    expect(call.to).toBe("alice@example.com");
+    expect(call.subject).toContain("Printer jammed");
+  });
+
+  it("returns without sending when closure_reason is missing", async () => {
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "tickets") {
+        return makeTicketChain({
+          data: { ...CLOSED_TICKET, closure_reason: null },
+          error: null,
+        }) as never;
+      }
+      return makeStaffChain({ data: [], error: null }) as never;
+    });
+
+    await notifyTicketClosed("ticket-123");
+
+    expect(mockSend).not.toHaveBeenCalled();
+  });
+
+  it("renders TicketClosedEmail with closureReason and trackingUrl", async () => {
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "tickets") {
+        return makeTicketChain({ data: CLOSED_TICKET, error: null }) as never;
+      }
+      return makeStaffChain({ data: [], error: null }) as never;
+    });
+
+    await notifyTicketClosed("ticket-123");
+
+    const rendered = mockRender.mock.calls[0][0] as React.ReactElement<{
+      closureReason: string;
+      trackingUrl: string;
+    }>;
+    expect(rendered.props.closureReason).toBe("Replaced toner cartridge");
+    expect(rendered.props.trackingUrl).toBe("https://corp.test/track/ticket-123");
   });
 });

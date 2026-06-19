@@ -45,12 +45,16 @@ describe("provisionClient", () => {
       data: { user: { id: "new-user-id" } },
       error: null,
     } as never);
-    mockGenerateLink.mockResolvedValue({ data: {}, error: null } as never);
+    mockGenerateLink.mockResolvedValue({
+      data: { properties: { action_link: "https://auth.test/magic" } },
+      error: null,
+    } as never);
 
     const result = await provisionClient("new@client.com", "ticket-abc");
 
     expect(result.alreadyExisted).toBe(false);
     expect(result.userId).toBe("new-user-id");
+    expect(result.actionLink).toBe("https://auth.test/magic");
     expect(result.error).toBeNull();
     expect(mockCreateUser).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -69,12 +73,16 @@ describe("provisionClient", () => {
       data: { id: "existing-user-id" },
       error: null,
     });
-    mockGenerateLink.mockResolvedValue({ data: {}, error: null } as never);
+    mockGenerateLink.mockResolvedValue({
+      data: { properties: { action_link: "https://auth.test/magic" } },
+      error: null,
+    } as never);
 
     const result = await provisionClient("existing@client.com", "ticket-xyz");
 
     expect(result.alreadyExisted).toBe(true);
     expect(result.userId).toBe("existing-user-id");
+    expect(result.actionLink).toBe("https://auth.test/magic");
     expect(result.error).toBeNull();
     expect(mockCreateUser).not.toHaveBeenCalled();
   });
@@ -84,6 +92,7 @@ describe("provisionClient", () => {
 
     expect(result.error).toMatch(/invalid email/i);
     expect(result.userId).toBeNull();
+    expect(result.actionLink).toBeNull();
     expect(mockFrom).not.toHaveBeenCalled();
   });
 

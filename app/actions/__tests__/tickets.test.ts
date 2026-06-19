@@ -4,12 +4,15 @@ vi.mock("@/app/actions/client-provision", () => ({
   provisionClient: vi.fn().mockResolvedValue({
     userId: "user-123",
     alreadyExisted: false,
+    actionLink: "https://auth.test/magic",
     error: null,
   }),
 }));
 
 vi.mock("@/lib/notifications/tickets", () => ({
   notifyNewTicket: vi.fn().mockResolvedValue(undefined),
+  notifyTicketCreated: vi.fn().mockResolvedValue(undefined),
+  notifyTicketClosed: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -32,7 +35,7 @@ import {
 import { provisionClient } from "@/app/actions/client-provision";
 import { createClient } from "@/lib/supabase/server";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify";
-import { notifyNewTicket } from "@/lib/notifications/tickets";
+import { notifyNewTicket, notifyTicketCreated, notifyTicketClosed } from "@/lib/notifications/tickets";
 
 const mockProvisionClient = vi.mocked(provisionClient);
 const mockCreateClient = vi.mocked(createClient);
@@ -155,6 +158,39 @@ describe("tickets actions", () => {
       expect(mockProvisionClient).not.toHaveBeenCalled();
     });
 
+    it("calls notifyTicketCreated with ticketId and actionLink after successful insert", async () => {
+      mockCreateClient.mockResolvedValue(
+        makeSupabaseMock({
+          queryResult: { data: { id: "ticket-created-email" }, error: null },
+        }) as any
+      );
+
+      await submitTicket(null as any, validFormData());
+
+      expect(notifyTicketCreated).toHaveBeenCalledWith(
+        "ticket-created-email",
+        "https://auth.test/magic"
+      );
+    });
+
+    it("does not call notifyTicketCreated when provisionClient returns no actionLink", async () => {
+      mockCreateClient.mockResolvedValue(
+        makeSupabaseMock({
+          queryResult: { data: { id: "ticket-no-link" }, error: null },
+        }) as any
+      );
+      mockProvisionClient.mockResolvedValueOnce({
+        userId: "user-123",
+        alreadyExisted: false,
+        actionLink: null,
+        error: "link failed",
+      } as any);
+
+      await submitTicket(null as any, validFormData());
+
+      expect(notifyTicketCreated).not.toHaveBeenCalled();
+    });
+
     it("calls notifyNewTicket with correct ticketId after successful ticket insert", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
@@ -188,6 +224,7 @@ describe("tickets actions", () => {
       mockProvisionClient.mockResolvedValueOnce({
         userId: null,
         alreadyExisted: false,
+        actionLink: null,
         error: "provision failed",
       } as any);
 
@@ -291,6 +328,7 @@ describe("tickets actions", () => {
       const ticket = await updateTicketStatus("ticket-1", "closed", "Fixed");
       expect(ticket.status).toBe("closed");
       expect(ticket.closure_reason).toBe("Fixed");
+      expect(notifyTicketClosed).toHaveBeenCalledWith("ticket-1");
     });
 
     it("throws error when updating status to closed without a closure reason", async () => {

@@ -1,3 +1,5 @@
+import { isTurnstileEnabled } from "./config";
+
 const SITEVERIFY_URL =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
@@ -8,6 +10,10 @@ export type TurnstileVerifyResult =
 export async function verifyTurnstileToken(
   token: string
 ): Promise<TurnstileVerifyResult> {
+  if (!isTurnstileEnabled()) {
+    return { success: true };
+  }
+
   const secret = process.env.TURNSTILE_SECRET_KEY;
 
   if (!secret) {

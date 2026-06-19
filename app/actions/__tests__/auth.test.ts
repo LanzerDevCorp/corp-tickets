@@ -13,12 +13,14 @@ vi.mock("@/lib/supabase/admin", () => ({
     auth: {
       admin: {
         inviteUserByEmail: vi.fn(),
+        updateUserById: vi.fn(),
       },
     },
+    from: vi.fn(),
   },
 }));
 
-import { loginUser, logoutUser, inviteUser, resetPassword } from "../auth";
+import { loginUser, logoutUser, inviteUser, resetPassword, completeInviteSetup } from "../auth";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
@@ -124,19 +126,26 @@ describe("inviteUser", () => {
       data: { user: { id: "invited-user-id" } as any },
       error: null,
     });
+    vi.mocked(supabaseAdmin.auth.admin.updateUserById).mockResolvedValue({
+      data: { user: { id: "invited-user-id" } as any },
+      error: null,
+    });
 
     const result = await inviteUser("it@corp.com", "it");
     expect(result.error).toBeNull();
     expect(supabaseAdmin.auth.admin.inviteUserByEmail).toHaveBeenCalledWith(
       "it@corp.com",
       {
-        redirectTo: expect.stringContaining("/auth/update-password"),
-        data: { role: "it" },
+        redirectTo: expect.stringContaining("/auth/accept-invite"),
       }
+    );
+    expect(supabaseAdmin.auth.admin.updateUserById).toHaveBeenCalledWith(
+      "invited-user-id",
+      { app_metadata: { role: "it" } }
     );
   });
 
-  it("passes role=admin in data payload when inviting admin", async () => {
+  it("sets app_metadata.role=admin when inviting admin", async () => {
     const mock = makeSupabaseMock({
       getClaims: vi.fn().mockResolvedValue({ data: { claims: { role: "admin" } } }),
     });
@@ -145,12 +154,69 @@ describe("inviteUser", () => {
       data: { user: { id: "invited-admin-id" } as any },
       error: null,
     });
+    vi.mocked(supabaseAdmin.auth.admin.updateUserById).mockResolvedValue({
+      data: { user: { id: "invited-admin-id" } as any },
+      error: null,
+    });
 
     await inviteUser("admin2@corp.com", "admin");
-    expect(supabaseAdmin.auth.admin.inviteUserByEmail).toHaveBeenCalledWith(
-      "admin2@corp.com",
-      expect.objectContaining({ data: { role: "admin" } })
+    expect(supabaseAdmin.auth.admin.updateUserById).toHaveBeenCalledWith(
+      "invited-admin-id",
+      { app_metadata: { role: "admin" } }
     );
+  });
+});
+
+describe("completeInviteSetup", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returns error when session is missing", async () => {
+    const mock = makeSupabaseMock({
+      getClaims: vi.fn().mockResolvedValue({ data: { claims: null } }),
+    });
+    mockCreateClient.mockResolvedValue(mock as never);
+
+    const formData = new FormData();
+    formData.set("name", "Jane Doe");
+    formData.set("password", "SecurePass1!");
+    formData.set("confirmPassword", "SecurePass1!");
+
+    const result = await completeInviteSetup({ error: null }, formData);
+    expect(result.error).toContain("expired");
+  });
+
+  it("updates auth user and profile then redirects", async () => {
+    const updateUser = vi.fn().mockResolvedValue({ error: null });
+    const mock = makeSupabaseMock({
+      getClaims: vi.fn().mockResolvedValue({
+        data: { claims: { role: "admin", sub: "user-123" } },
+      }),
+      updateUser,
+    });
+    mockCreateClient.mockResolvedValue(mock as never);
+
+    const eq = vi.fn().mockResolvedValue({ error: null });
+    const update = vi.fn().mockReturnValue({ eq });
+    vi.mocked(supabaseAdmin.from).mockReturnValue({ update } as never);
+
+    const formData = new FormData();
+    formData.set("name", "Jane Doe");
+    formData.set("password", "SecurePass1!");
+    formData.set("confirmPassword", "SecurePass1!");
+
+    try {
+      await completeInviteSetup({ error: null }, formData);
+    } catch {
+      // redirect throws
+    }
+
+    expect(updateUser).toHaveBeenCalledWith({
+      password: "SecurePass1!",
+      data: { name: "Jane Doe", full_name: "Jane Doe" },
+    });
+    expect(supabaseAdmin.from).toHaveBeenCalledWith("users");
+    expect(update).toHaveBeenCalledWith({ display_name: "Jane Doe" });
+    expect(eq).toHaveBeenCalledWith("id", "user-123");
   });
 });
 

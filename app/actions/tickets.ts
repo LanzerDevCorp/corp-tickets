@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { provisionClient } from "@/app/actions/client-provision";
 import { ticketSubmitSchema } from "@/lib/schemas/ticket-submit";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify";
-import { notifyNewTicket } from "@/lib/notifications/tickets";
+import { notifyNewTicket, notifyTicketCreated, notifyTicketClosed } from "@/lib/notifications/tickets";
 
 export type TicketSubmitResult =
   | { error: null; ticketId: string }
@@ -34,7 +34,7 @@ export async function submitTicket(
   const { name, email, subject, body, priority, category_id, turnstile_token } =
     parsed.data;
 
-  const turnstileResult = await verifyTurnstileToken(turnstile_token);
+  const turnstileResult = await verifyTurnstileToken(turnstile_token ?? "");
   if (!turnstileResult.success) {
     return { error: turnstileResult.error, code: "turnstile" };
   }
@@ -55,12 +55,16 @@ export async function submitTicket(
     };
   }
 
-  const { error: provisionError } = await provisionClient(email, ticket.id);
-  if (provisionError) {
-    console.error("[provisionClient]", provisionError);
+  const provisionResult = await provisionClient(email, ticket.id);
+  if (provisionResult.error) {
+    console.error("[provisionClient]", provisionResult.error);
   }
 
   void notifyNewTicket(ticket.id);
+
+  if (provisionResult.actionLink) {
+    void notifyTicketCreated(ticket.id, provisionResult.actionLink);
+  }
 
   return { error: null, ticketId: ticket.id };
 }
@@ -213,6 +217,11 @@ export async function updateTicketStatus(
   if (error) {
     throw new Error(error.message);
   }
+
+  if (status === "closed") {
+    void notifyTicketClosed(id);
+  }
+
   return data;
 }
 
