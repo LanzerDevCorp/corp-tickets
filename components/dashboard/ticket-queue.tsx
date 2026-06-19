@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { RefreshCw, Filter, ArrowUpDown } from "lucide-react";
+import { formatDate } from "@/lib/format-date";
 
 type TicketQueueProps = {
   initialTickets: any[];
@@ -215,7 +216,7 @@ export default function TicketQueue({
                       }
                     </TableCell>
                     <TableCell className="text-zinc-600 dark:text-zinc-400 text-right">
-                      {new Date(ticket.created_at).toLocaleDateString()}
+                      {formatDate(ticket.created_at)}
                     </TableCell>
                   </TableRow>
                 ))

@@ -13,7 +13,7 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div lang="es-MX" className="min-h-svh bg-[#F6F7FB] flex flex-col">
+    <div lang="es-MX" className="force-light min-h-svh bg-[#F6F7FB] flex flex-col text-foreground">
       <header className="border-b border-border bg-white">
         <div className="mx-auto max-w-2xl px-6 h-14 flex items-center justify-between">
           <span className="text-sm font-semibold text-[#1C2438] tracking-tight">

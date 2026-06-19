@@ -13,6 +13,7 @@ import {
 import CommentThread from "@/components/dashboard/comment-thread";
 import ClientCommentForm from "@/components/tracking/client-comment-form";
 import { type CommentWithAuthor } from "@/app/actions/comments";
+import { formatDateTime } from "@/lib/format-date";
 
 type ClientTicketViewProps = {
   initialTicket: {
@@ -91,7 +92,7 @@ export default function ClientTicketView({
             </span>
             <span className="flex items-center gap-1.5 text-zinc-500">
               <Calendar className="h-3.5 w-3.5" />
-              {new Date(initialTicket.created_at).toLocaleString()}
+              {formatDateTime(initialTicket.created_at)}
             </span>
           </CardDescription>
         </CardHeader>

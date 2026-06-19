@@ -22,7 +22,7 @@ export async function submitTicket(
     body: formData.get("body"),
     priority: formData.get("priority"),
     category_id: formData.get("category_id"),
-    turnstile_token: formData.get("turnstile_token"),
+    turnstile_token: formData.get("turnstile_token") ?? undefined,
   };
 
   const parsed = ticketSubmitSchema.safeParse(raw);

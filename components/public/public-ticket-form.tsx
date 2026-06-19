@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useActionState } from "react";
+import { useRef, useState, useActionState, startTransition } from "react";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { Turnstile } from "@marsidev/react-turnstile";
@@ -119,7 +119,9 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
       fd.set("turnstile_token", turnstileToken);
     }
 
-    formAction(fd);
+    startTransition(() => {
+      formAction(fd);
+    });
   }
 
   const serverError =

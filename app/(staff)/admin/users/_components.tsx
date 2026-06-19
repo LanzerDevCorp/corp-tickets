@@ -49,6 +49,7 @@ import {
   adminInviteSchema,
   type AdminInviteData,
 } from "@/lib/schemas/admin-invite";
+import { formatDate } from "@/lib/format-date";
 
 // ---------------------------------------------------------------------------
 // UsersTable
@@ -88,9 +89,7 @@ export function UsersTable({ users, currentUserId }: { users: UserRow[]; current
                 {user.is_active ? "Active" : "Inactive"}
               </span>
             </TableCell>
-            <TableCell>
-              {new Date(user.created_at).toLocaleDateString()}
-            </TableCell>
+            <TableCell>{formatDate(user.created_at)}</TableCell>
             <TableCell>
               {user.is_active ? (
                 <DeactivateButton userId={user.id} isSelf={user.id === currentUserId} />

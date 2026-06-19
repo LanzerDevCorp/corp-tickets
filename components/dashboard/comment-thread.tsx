@@ -1,6 +1,7 @@
 import { Lock, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { type CommentWithAuthor } from "@/app/actions/comments";
+import { formatDateTime } from "@/lib/format-date";
 
 type CommentThreadProps = {
   comments: CommentWithAuthor[];
@@ -27,7 +28,7 @@ export default function CommentThread({ comments }: CommentThreadProps) {
 
 function CommentCard({ comment }: { comment: CommentWithAuthor }) {
   const authorName = comment.author?.display_name ?? comment.author?.email ?? "Unknown";
-  const timestamp = new Date(comment.created_at).toLocaleString();
+  const timestamp = formatDateTime(comment.created_at);
 
   if (comment.is_internal) {
     return (

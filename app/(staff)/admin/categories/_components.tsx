@@ -42,6 +42,7 @@ import {
 import {
   categoryUpsertSchema,
 } from "@/lib/schemas/category-upsert";
+import { formatDate } from "@/lib/format-date";
 
 // ---------------------------------------------------------------------------
 // CategoriesTable
@@ -82,7 +83,7 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
               )}
             </TableCell>
             <TableCell>
-              {new Date(cat.created_at).toLocaleDateString()}
+              {formatDate(cat.created_at)}
             </TableCell>
             <TableCell>
               <div className="flex items-center gap-2">

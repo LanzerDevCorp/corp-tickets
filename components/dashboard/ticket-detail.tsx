@@ -27,6 +27,7 @@ import Link from "next/link";
 import CommentThread from "@/components/dashboard/comment-thread";
 import CommentForm from "@/components/dashboard/comment-form";
 import { type CommentWithAuthor } from "@/app/actions/comments";
+import { formatDateTime } from "@/lib/format-date";
 
 type TicketDetailProps = {
   initialTicket: any;
@@ -244,7 +245,7 @@ export default function TicketDetail({
               <div className="pt-4 border-t border-zinc-100 space-y-3 text-xs text-zinc-500 dark:border-zinc-900">
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> Created:</span>
-                  <span className="font-medium">{new Date(ticket.created_at).toLocaleString()}</span>
+                  <span className="font-medium">{formatDateTime(ticket.created_at)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> Assignee:</span>
