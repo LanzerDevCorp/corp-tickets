@@ -2,6 +2,7 @@
 
 import { getAppRoleFromClaims } from "@/lib/auth/claims";
 import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { provisionClient } from "@/app/actions/client-provision";
 import { ticketSubmitSchema } from "@/lib/schemas/ticket-submit";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify";
@@ -40,9 +41,7 @@ export async function submitTicket(
     return { error: turnstileResult.error, code: "turnstile" };
   }
 
-  const supabase = await createClient();
-
-  const { data: ticket, error } = await supabase
+  const { data: ticket, error } = await supabaseAdmin
     .from("tickets")
     .insert({ name, email, subject, body, category_id, priority })
     .select("id")
@@ -145,6 +144,9 @@ export async function getTicketDetail(id: string) {
   }
 
   // Staff view: check for auto-assignment on first open
+  if (!claimsData) {
+    throw new Error("Not authorized");
+  }
   const currentUserId = claimsData.claims.sub;
 
   let { data: ticket } = await supabase
