@@ -37,6 +37,7 @@ function getMockMaybeSingle() {
 describe("provisionClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env.NEXT_PUBLIC_SITE_URL = "https://corp-tickets.test";
   });
 
   it("creates user and sends magic link for new email", async () => {
@@ -46,7 +47,12 @@ describe("provisionClient", () => {
       error: null,
     } as never);
     mockGenerateLink.mockResolvedValue({
-      data: { properties: { action_link: "https://auth.test/magic" } },
+      data: {
+        properties: {
+          action_link: "https://auth.test/magic",
+          hashed_token: "abc123hash",
+        },
+      },
       error: null,
     } as never);
 
@@ -54,7 +60,9 @@ describe("provisionClient", () => {
 
     expect(result.alreadyExisted).toBe(false);
     expect(result.userId).toBe("new-user-id");
-    expect(result.actionLink).toBe("https://auth.test/magic");
+    expect(result.actionLink).toBe(
+      "https://corp-tickets.test/auth/confirm?token_hash=abc123hash&type=magiclink&next=%2Ftrack%2Fticket-abc"
+    );
     expect(result.error).toBeNull();
     expect(mockCreateUser).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -74,7 +82,12 @@ describe("provisionClient", () => {
       error: null,
     });
     mockGenerateLink.mockResolvedValue({
-      data: { properties: { action_link: "https://auth.test/magic" } },
+      data: {
+        properties: {
+          action_link: "https://auth.test/magic",
+          hashed_token: "xyz789hash",
+        },
+      },
       error: null,
     } as never);
 
@@ -82,7 +95,9 @@ describe("provisionClient", () => {
 
     expect(result.alreadyExisted).toBe(true);
     expect(result.userId).toBe("existing-user-id");
-    expect(result.actionLink).toBe("https://auth.test/magic");
+    expect(result.actionLink).toBe(
+      "https://corp-tickets.test/auth/confirm?token_hash=xyz789hash&type=magiclink&next=%2Ftrack%2Fticket-xyz"
+    );
     expect(result.error).toBeNull();
     expect(mockCreateUser).not.toHaveBeenCalled();
   });

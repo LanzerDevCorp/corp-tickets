@@ -1,6 +1,6 @@
 # Supabase Auth email templates (production)
 
-Staff invites and password resets must hit **`/auth/confirm`** on the server so the session is stored in cookies before the Next.js app loads. The default Supabase template redirects with `#access_token=…` in the URL hash, which is fragile in SSR apps.
+Staff invites, password resets, and **client ticket magic links** must hit **`/auth/confirm`** on the server so the session is stored in cookies before the Next.js app loads. The default Supabase `action_link` redirects with `#access_token=…` in the URL hash, which SSR cannot read.
 
 Copy the HTML from:
 
@@ -22,6 +22,7 @@ Each link uses:
    - `https://corp-tickets.vercel.app/auth/confirm`
    - `https://corp-tickets.vercel.app/auth/accept-invite`
    - `https://corp-tickets.vercel.app/auth/update-password`
+   - `https://corp-tickets.vercel.app/track/**` (legacy magic links; new links use `/auth/confirm`)
 3. **Invite + Recovery templates**: paste from `supabase/templates/` (see above)
 4. **Resend SMTP**: disable **click tracking / link tracking** on the sending domain. Wrapped links break Supabase tokens ([Supabase SMTP docs](https://supabase.com/docs/guides/deployment/going-into-prod#email-link-validity)).
 5. **Vercel env**: `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` must match the active publishable key in Supabase → Project Settings → API.

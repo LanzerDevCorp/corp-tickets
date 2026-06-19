@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getAppRoleFromClaims } from "@/lib/auth/claims";
 import { isStaff } from "@/lib/auth/roles";
+import { TrackSessionBootstrap } from "@/components/tracking/track-session-bootstrap";
 
 export default async function TrackingLayout({
   children,
@@ -12,13 +13,11 @@ export default async function TrackingLayout({
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
 
-  if (!claims) {
-    redirect("/auth/error?error_code=otp_expired");
-  }
-
-  const role = getAppRoleFromClaims(claims);
-  if (isStaff(role)) {
-    redirect("/dashboard");
+  if (claims) {
+    const role = getAppRoleFromClaims(claims);
+    if (isStaff(role)) {
+      redirect("/dashboard");
+    }
   }
 
   return (
@@ -35,7 +34,11 @@ export default async function TrackingLayout({
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">{children}</main>
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+        <TrackSessionBootstrap hasServerSession={!!claims}>
+          {children}
+        </TrackSessionBootstrap>
+      </main>
     </div>
   );
 }

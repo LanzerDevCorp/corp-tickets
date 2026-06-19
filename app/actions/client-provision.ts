@@ -13,6 +13,16 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+/** SSR-safe magic link via /auth/confirm (not Supabase action_link with #hash). */
+function buildMagicLinkConfirmUrl(
+  ticketId: string,
+  hashedToken: string
+): string {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const next = encodeURIComponent(`/track/${ticketId}`);
+  return `${siteUrl}/auth/confirm?token_hash=${hashedToken}&type=magiclink&next=${next}`;
+}
+
 export async function provisionClient(
   email: string,
   ticketId: string
@@ -71,7 +81,10 @@ export async function provisionClient(
     return { userId, alreadyExisted, actionLink: null, error: linkError.message };
   }
 
-  const actionLink = linkData?.properties?.action_link ?? null;
+  const hashedToken = linkData?.properties?.hashed_token;
+  const actionLink = hashedToken
+    ? buildMagicLinkConfirmUrl(ticketId, hashedToken)
+    : null;
 
   return { userId, alreadyExisted, actionLink, error: null };
 }

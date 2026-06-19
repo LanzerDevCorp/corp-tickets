@@ -10,6 +10,20 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
 }));
 
+vi.mock("@/components/tracking/track-session-bootstrap", () => ({
+  TrackSessionBootstrap: ({
+    children,
+    hasServerSession,
+  }: {
+    children: React.ReactNode;
+    hasServerSession: boolean;
+  }) => (
+    <div data-testid="session-bootstrap" data-has-session={hasServerSession}>
+      {children}
+    </div>
+  ),
+}));
+
 import TrackingLayout from "../layout";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -22,16 +36,17 @@ describe("TrackingLayout", () => {
     vi.clearAllMocks();
   });
 
-  it("redirects unauthenticated users to auth error", async () => {
+  it("renders bootstrap without redirect when unauthenticated (hash fallback)", async () => {
     mockCreateClient.mockResolvedValue({
       auth: {
         getClaims: vi.fn().mockResolvedValue({ data: { claims: null } }),
       },
     } as never);
 
-    await expect(
-      TrackingLayout({ children: <div>child</div> })
-    ).rejects.toThrow("REDIRECT:/auth/error?error_code=otp_expired");
+    const result = await TrackingLayout({ children: <div>child</div> });
+
+    expect(mockRedirect).not.toHaveBeenCalled();
+    expect(result).toBeTruthy();
   });
 
   it("redirects staff users to dashboard", async () => {
