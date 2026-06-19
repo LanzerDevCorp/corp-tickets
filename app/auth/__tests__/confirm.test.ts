@@ -88,3 +88,63 @@ describe("GET /auth/confirm — magiclink type", () => {
     }
   });
 });
+
+describe("GET /auth/confirm — invite type", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("verifies OTP and redirects to /auth/accept-invite", async () => {
+    mockCreateClient.mockResolvedValue(
+      makeSupabaseMock({ error: null }) as never
+    );
+
+    const req = makeRequest({
+      token_hash: "valid-hash",
+      type: "invite",
+    });
+
+    try {
+      await GET(req as never);
+    } catch (e: unknown) {
+      expect((e as Error).message).toContain("REDIRECT:/auth/accept-invite");
+    }
+  });
+
+  it("honours next param for invite when safe", async () => {
+    mockCreateClient.mockResolvedValue(
+      makeSupabaseMock({ error: null }) as never
+    );
+
+    const req = makeRequest({
+      token_hash: "valid-hash",
+      type: "invite",
+      next: "/auth/accept-invite",
+    });
+
+    try {
+      await GET(req as never);
+    } catch (e: unknown) {
+      expect((e as Error).message).toContain("REDIRECT:/auth/accept-invite");
+    }
+  });
+});
+
+describe("GET /auth/confirm — recovery type", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("redirects to /auth/update-password", async () => {
+    mockCreateClient.mockResolvedValue(
+      makeSupabaseMock({ error: null }) as never
+    );
+
+    const req = makeRequest({
+      token_hash: "valid-hash",
+      type: "recovery",
+    });
+
+    try {
+      await GET(req as never);
+    } catch (e: unknown) {
+      expect((e as Error).message).toContain("REDIRECT:/auth/update-password");
+    }
+  });
+});

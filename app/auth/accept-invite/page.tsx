@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { AcceptInviteForm } from "@/components/accept-invite-form";
 import { AcceptInviteShell } from "@/components/accept-invite-shell";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,9 +9,9 @@ export default async function Page({
   searchParams: Promise<{ code?: string }>;
 }) {
   const { code } = await searchParams;
+  const supabase = await createClient();
 
   if (code) {
-    const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       redirect(
@@ -18,6 +19,18 @@ export default async function Page({
       );
     }
     redirect("/auth/accept-invite");
+  }
+
+  const { data } = await supabase.auth.getClaims();
+
+  if (data?.claims) {
+    return (
+      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+        <div className="w-full max-w-sm">
+          <AcceptInviteForm />
+        </div>
+      </div>
+    );
   }
 
   return (

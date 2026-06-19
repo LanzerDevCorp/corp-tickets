@@ -1,7 +1,25 @@
 import { createClient } from "@/lib/supabase/server";
+import { isSafeRedirect } from "@/lib/auth/redirect";
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { type NextRequest } from "next/server";
+
+function postVerifyRedirect(type: EmailOtpType, next: string | null): string {
+  if (next && isSafeRedirect(next)) {
+    return next;
+  }
+
+  switch (type) {
+    case "magiclink":
+      return "/track";
+    case "invite":
+      return "/auth/accept-invite";
+    case "recovery":
+      return "/auth/update-password";
+    default:
+      return "/";
+  }
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -15,18 +33,14 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash });
 
     if (!error) {
-      if (type === "magiclink") {
-        redirect(next ?? "/track");
-      } else {
-        redirect(next ?? "/");
-      }
-    } else {
-      if (type === "magiclink") {
-        redirect(`/auth/error?error_code=otp_expired`);
-      } else {
-        redirect(`/auth/error?error=${encodeURIComponent(error.message)}`);
-      }
+      redirect(postVerifyRedirect(type, next));
     }
+
+    if (type === "magiclink") {
+      redirect(`/auth/error?error_code=otp_expired`);
+    }
+
+    redirect(`/auth/error?error=${encodeURIComponent(error.message)}`);
   }
 
   redirect(`/auth/error?error=No+token+hash+or+type`);

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { establishBrowserSessionFromUrl } from "@/lib/auth/establish-browser-session";
 import { AcceptInviteForm } from "@/components/accept-invite-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,51 +15,27 @@ import {
 
 type Status = "loading" | "ready" | "invalid";
 
-function parseHashParams(): URLSearchParams {
-  if (typeof window === "undefined" || !window.location.hash) {
-    return new URLSearchParams();
-  }
-  return new URLSearchParams(window.location.hash.replace(/^#/, ""));
-}
-
-function clearUrlHash() {
-  window.history.replaceState(null, "", window.location.pathname);
-}
-
-async function establishSessionFromUrl() {
-  const supabase = createClient();
-  const hashParams = parseHashParams();
-  const accessToken = hashParams.get("access_token");
-  const refreshToken = hashParams.get("refresh_token");
-
-  if (accessToken && refreshToken) {
-    const { error } = await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    });
-    if (error) throw error;
-    clearUrlHash();
-    return true;
-  }
-
-  const { data, error } = await supabase.auth.getSession();
-  if (error) throw error;
-  return Boolean(data.session);
-}
-
 export function AcceptInviteShell() {
   const [status, setStatus] = useState<Status>("loading");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    establishSessionFromUrl()
-      .then((hasSession) => {
+    establishBrowserSessionFromUrl()
+      .then(({ ok, error }) => {
         if (cancelled) return;
-        setStatus(hasSession ? "ready" : "invalid");
+        if (ok) {
+          setStatus("ready");
+          return;
+        }
+        setErrorMessage(error ?? null);
+        setStatus("invalid");
       })
-      .catch(() => {
-        if (!cancelled) setStatus("invalid");
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setErrorMessage(err instanceof Error ? err.message : "Unknown error");
+        setStatus("invalid");
       });
 
     return () => {
@@ -86,6 +62,14 @@ export function AcceptInviteShell() {
           <CardDescription>
             Open the link from your invitation email, or ask an admin to send a
             new one.
+            {errorMessage ? (
+              <>
+                {" "}
+                <span className="block mt-2 text-xs text-muted-foreground">
+                  ({errorMessage})
+                </span>
+              </>
+            ) : null}
           </CardDescription>
         </CardHeader>
         <CardContent>
