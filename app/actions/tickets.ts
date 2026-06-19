@@ -56,14 +56,18 @@ export async function submitTicket(
   }
 
   const provisionResult = await provisionClient(email, ticket.id);
-  if (provisionResult.error) {
-    console.error("[provisionClient]", provisionResult.error);
-  }
+  console.log("[submitTicket] provision result", {
+    error: provisionResult.error,
+    hasActionLink: !!provisionResult.actionLink,
+    alreadyExisted: provisionResult.alreadyExisted,
+  });
 
   void notifyNewTicket(ticket.id);
 
   if (provisionResult.actionLink) {
     void notifyTicketCreated(ticket.id, provisionResult.actionLink);
+  } else {
+    console.error("[submitTicket] actionLink missing — email NOT sent. provisionError:", provisionResult.error);
   }
 
   return { error: null, ticketId: ticket.id };
