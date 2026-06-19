@@ -88,12 +88,15 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
     );
 
     // 4. Send
-    await resend.emails.send({
+    const { error: sendError } = await resend.emails.send({
       from,
       to: recipients,
       subject: `New ticket: "${ticket.subject}"`,
       html,
     });
+    if (sendError) {
+      console.error("[notifyNewTicket] Resend send error", sendError);
+    }
   } catch (err) {
     console.error("[notifyNewTicket]", err);
   }
@@ -156,12 +159,15 @@ export async function notifyTicketCreated(
       })
     );
 
-    await resend.emails.send({
+    const { error: sendError } = await resend.emails.send({
       from,
       to: ticket.email,
       subject: `Ticket received: "${ticket.subject}"`,
       html,
     });
+    if (sendError) {
+      console.error("[notifyTicketCreated] Resend send error", sendError);
+    }
   } catch (err) {
     console.error("[notifyTicketCreated]", err);
   }
@@ -220,12 +226,15 @@ export async function notifyTicketClosed(ticketId: string): Promise<void> {
       })
     );
 
-    await resend.emails.send({
+    const { error: sendError } = await resend.emails.send({
       from,
       to: ticket.email,
       subject: `Ticket closed: "${ticket.subject}"`,
       html,
     });
+    if (sendError) {
+      console.error("[notifyTicketClosed] Resend send error", sendError);
+    }
   } catch (err) {
     console.error("[notifyTicketClosed]", err);
   }
