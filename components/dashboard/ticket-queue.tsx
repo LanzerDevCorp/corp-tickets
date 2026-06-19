@@ -21,14 +21,27 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Link from "next/link";
 import { RefreshCw, Filter, ArrowUpDown } from "lucide-react";
 import { formatDate } from "@/lib/format-date";
+import { TicketSubjectPreview } from "@/components/dashboard/ticket-subject-preview";
+
+type QueueTicket = {
+  id: string;
+  subject: string;
+  body: string;
+  name: string;
+  email: string;
+  status: string;
+  priority: string;
+  created_at: string;
+  category?: { name: string } | null;
+  assignee?: { display_name?: string | null; email?: string | null } | null;
+};
 
 type TicketQueueProps = {
-  initialTickets: any[];
-  categories: any[];
-  staffUsers: any[];
+  initialTickets: QueueTicket[];
+  categories: { id: string; name: string }[];
+  staffUsers: { id: string; display_name?: string | null; email?: string | null }[];
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -157,11 +170,13 @@ export default function TicketQueue({
         </div>
 
         {/* Tickets Table */}
-        <div className="rounded-xl border border-zinc-100 overflow-hidden dark:border-zinc-900">
+        <div className="rounded-xl border border-zinc-100 overflow-x-auto dark:border-zinc-900">
           <Table>
             <TableHeader className="bg-zinc-50 dark:bg-zinc-900/40">
               <TableRow>
-                <TableHead className="font-semibold">Subject</TableHead>
+                <TableHead className="font-semibold min-w-[220px]">Subject</TableHead>
+                <TableHead className="font-semibold min-w-[140px]">Requester</TableHead>
+                <TableHead className="font-semibold min-w-[180px]">Email</TableHead>
                 <TableHead className="font-semibold w-[120px]">Category</TableHead>
                 <TableHead className="font-semibold w-[120px]">Status</TableHead>
                 <TableHead className="font-semibold w-[120px]">Priority</TableHead>
@@ -172,28 +187,37 @@ export default function TicketQueue({
             <TableBody>
               {tickets.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-zinc-400">
+                  <TableCell colSpan={8} className="h-32 text-center text-zinc-400">
                     No tickets found matching the filters.
                   </TableCell>
                 </TableRow>
               ) : (
-                tickets.map((ticket: any) => (
+                tickets.map((ticket) => (
                   <TableRow
                     key={ticket.id}
                     className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors"
                   >
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/dashboard/tickets/${ticket.id}`}
-                        className="text-zinc-900 hover:text-indigo-600 dark:text-zinc-100 dark:hover:text-indigo-400 block truncate max-w-[300px]"
-                      >
-                        {ticket.subject}
-                      </Link>
+                    <TableCell className="font-medium align-top py-3">
+                      <TicketSubjectPreview ticket={ticket} />
                     </TableCell>
-                    <TableCell className="text-zinc-600 dark:text-zinc-400">
+                    <TableCell className="text-zinc-800 dark:text-zinc-200 align-top py-3">
+                      <span className="block truncate max-w-[160px]" title={ticket.name}>
+                        {ticket.name}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-zinc-500 dark:text-zinc-400 align-top py-3">
+                      <a
+                        href={`mailto:${ticket.email}`}
+                        className="block truncate max-w-[200px] hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        title={ticket.email}
+                      >
+                        {ticket.email}
+                      </a>
+                    </TableCell>
+                    <TableCell className="text-zinc-600 dark:text-zinc-400 align-top py-3">
                       {ticket.category?.name || "General"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top py-3">
                       <Badge
                         variant="outline"
                         className={`${STATUS_COLORS[ticket.status]} rounded-md font-medium uppercase tracking-wider text-[10px] px-2 py-0.5`}
@@ -201,7 +225,7 @@ export default function TicketQueue({
                         {ticket.status.replace("_", " ")}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top py-3">
                       <Badge
                         variant="outline"
                         className={`${PRIORITY_COLORS[ticket.priority]} rounded-md font-medium uppercase tracking-wider text-[10px] px-2 py-0.5`}
@@ -209,13 +233,13 @@ export default function TicketQueue({
                         {ticket.priority}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-zinc-600 dark:text-zinc-400">
+                    <TableCell className="text-zinc-600 dark:text-zinc-400 align-top py-3">
                       {ticket.assignee
                         ? (ticket.assignee.display_name || ticket.assignee.email)
                         : <span className="text-zinc-400 dark:text-zinc-600 italic">Unassigned</span>
                       }
                     </TableCell>
-                    <TableCell className="text-zinc-600 dark:text-zinc-400 text-right">
+                    <TableCell className="text-zinc-600 dark:text-zinc-400 text-right align-top py-3">
                       {formatDate(ticket.created_at)}
                     </TableCell>
                   </TableRow>
