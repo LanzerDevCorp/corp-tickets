@@ -62,13 +62,17 @@ export async function submitTicket(
     alreadyExisted: provisionResult.alreadyExisted,
   });
 
-  void notifyNewTicket(ticket.id);
-
-  if (provisionResult.actionLink) {
-    void notifyTicketCreated(ticket.id, provisionResult.actionLink);
-  } else {
-    console.error("[submitTicket] actionLink missing — email NOT sent. provisionError:", provisionResult.error);
-  }
+  await Promise.all([
+    notifyNewTicket(ticket.id),
+    provisionResult.actionLink
+      ? notifyTicketCreated(ticket.id, provisionResult.actionLink)
+      : Promise.resolve(
+          console.error(
+            "[submitTicket] actionLink missing — client email NOT sent. provisionError:",
+            provisionResult.error
+          )
+        ),
+  ]);
 
   return { error: null, ticketId: ticket.id };
 }
