@@ -31,7 +31,7 @@ function makeSupabaseMock(overrides: Record<string, unknown> = {}) {
     auth: {
       signInWithPassword: vi.fn().mockResolvedValue({ data: {}, error: null }),
       signOut: vi.fn().mockResolvedValue({ error: null }),
-      getClaims: vi.fn().mockResolvedValue({ data: { claims: { role: "admin" } } }),
+      getClaims: vi.fn().mockResolvedValue({ data: { claims: { app_role: "admin" } } }),
       resetPasswordForEmail: vi.fn().mockResolvedValue({ error: null }),
       ...overrides,
     },
@@ -102,7 +102,7 @@ describe("inviteUser", () => {
 
   it("returns error when caller is not admin", async () => {
     const mock = makeSupabaseMock({
-      getClaims: vi.fn().mockResolvedValue({ data: { claims: { role: "client" } } }),
+      getClaims: vi.fn().mockResolvedValue({ data: { claims: { app_role: "client" } } }),
     });
     mockCreateClient.mockResolvedValue(mock as never);
 
@@ -119,7 +119,7 @@ describe("inviteUser", () => {
 
   it("calls inviteUserByEmail when caller is admin", async () => {
     const mock = makeSupabaseMock({
-      getClaims: vi.fn().mockResolvedValue({ data: { claims: { role: "admin" } } }),
+      getClaims: vi.fn().mockResolvedValue({ data: { claims: { app_role: "admin" } } }),
     });
     mockCreateClient.mockResolvedValue(mock as never);
     vi.mocked(supabaseAdmin.auth.admin.inviteUserByEmail).mockResolvedValue({
@@ -147,7 +147,7 @@ describe("inviteUser", () => {
 
   it("sets app_metadata.role=admin when inviting admin", async () => {
     const mock = makeSupabaseMock({
-      getClaims: vi.fn().mockResolvedValue({ data: { claims: { role: "admin" } } }),
+      getClaims: vi.fn().mockResolvedValue({ data: { claims: { app_role: "admin" } } }),
     });
     mockCreateClient.mockResolvedValue(mock as never);
     vi.mocked(supabaseAdmin.auth.admin.inviteUserByEmail).mockResolvedValue({
@@ -189,7 +189,7 @@ describe("completeInviteSetup", () => {
     const updateUser = vi.fn().mockResolvedValue({ error: null });
     const mock = makeSupabaseMock({
       getClaims: vi.fn().mockResolvedValue({
-        data: { claims: { role: "admin", sub: "user-123" } },
+        data: { claims: { app_role: "admin", sub: "user-123" } },
       }),
       updateUser,
     });

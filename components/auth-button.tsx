@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./logout-button";
+import { getAppRoleFromClaims } from "@/lib/auth/claims";
 import { getRedirectPath } from "@/lib/auth/roles";
-import type { Role } from "@/lib/auth/roles";
 
 export async function AuthButton() {
   const supabase = await createClient();
@@ -20,7 +20,7 @@ export async function AuthButton() {
     );
   }
 
-  const role = (claims.role as Role) ?? "client";
+  const role = getAppRoleFromClaims(claims);
   const homePath = getRedirectPath(role);
   const homeLabel = role === "client" ? "My tickets" : "Dashboard";
 

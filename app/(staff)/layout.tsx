@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getAppRoleFromClaims } from "@/lib/auth/claims";
 import { isStaff } from "@/lib/auth/roles";
-import type { Role } from "@/lib/auth/roles";
 
 export default async function StaffLayout({
   children,
@@ -16,7 +16,7 @@ export default async function StaffLayout({
     redirect("/auth/login");
   }
 
-  const role = (claims.role as Role) ?? "client";
+  const role = getAppRoleFromClaims(claims);
   if (!isStaff(role)) {
     redirect("/403");
   }

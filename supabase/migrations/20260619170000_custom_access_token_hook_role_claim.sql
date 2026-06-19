@@ -1,5 +1,6 @@
--- Custom Access Token Hook: copy app_metadata.role into JWT role claim.
--- Required for staff RBAC — the app and RLS policies read auth.jwt() ->> 'role'.
+-- Custom Access Token Hook: copy app_metadata.role into JWT app_role claim.
+-- Do NOT overwrite JWT "role" — PostgREST uses it as the Postgres session role.
+-- Superseded by 20260619180000_fix_jwt_app_role_claim.sql if that migration is applied.
 -- Enable in Supabase Dashboard: Authentication → Hooks → Custom Access Token Hook
 -- URI: pg-functions://postgres/public/custom_access_token_hook
 

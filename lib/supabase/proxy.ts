@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getAppRoleFromClaims } from "@/lib/auth/claims";
 import { getRedirectPath, isStaff } from "@/lib/auth/roles";
-import type { Role } from "@/lib/auth/roles";
 
 const PUBLIC_ROUTES = ["/", "/submit", "/track", "/auth"];
 const STAFF_ONLY_PREFIXES = ["/dashboard", "/admin"];
@@ -49,7 +49,7 @@ export async function updateSession(request: NextRequest) {
 
   // Authenticated user on /auth/login → redirect away to avoid loop
   if (claims && pathname === "/auth/login") {
-    const role = (claims.role as Role) ?? "client";
+    const role = getAppRoleFromClaims(claims);
     const url = request.nextUrl.clone();
     url.pathname = getRedirectPath(role);
     return NextResponse.redirect(url);
@@ -64,7 +64,7 @@ export async function updateSession(request: NextRequest) {
 
   // Authenticated client trying to access staff-only route → 403
   if (claims && isStaffOnlyRoute(pathname)) {
-    const role = (claims.role as Role) ?? "client";
+    const role = getAppRoleFromClaims(claims);
     if (!isStaff(role)) {
       const url = request.nextUrl.clone();
       url.pathname = "/403";

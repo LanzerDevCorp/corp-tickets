@@ -38,7 +38,7 @@ describe("TrackingLayout", () => {
     mockCreateClient.mockResolvedValue({
       auth: {
         getClaims: vi.fn().mockResolvedValue({
-          data: { claims: { role: "it", sub: "staff-1" } },
+          data: { claims: { app_role: "it", sub: "staff-1" } },
         }),
       },
     } as never);
@@ -52,7 +52,7 @@ describe("TrackingLayout", () => {
     mockCreateClient.mockResolvedValue({
       auth: {
         getClaims: vi.fn().mockResolvedValue({
-          data: { claims: { role: "client", sub: "client-1" } },
+          data: { claims: { app_role: "client", sub: "client-1" } },
         }),
       },
     } as never);

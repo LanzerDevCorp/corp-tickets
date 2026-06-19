@@ -25,7 +25,7 @@ function makeAuthMock(role: string, sub = "caller-uuid") {
   return {
     auth: {
       getClaims: vi.fn().mockResolvedValue({
-        data: { claims: { role, sub } },
+        data: { claims: { app_role: role, sub } },
       }),
     },
   };

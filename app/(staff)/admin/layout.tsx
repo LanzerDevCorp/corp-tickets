@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
+import { getAppRoleFromClaims } from "@/lib/auth/claims";
 import { createClient } from "@/lib/supabase/server";
-import type { Role } from "@/lib/auth/roles";
 
 export default async function AdminLayout({
   children,
@@ -9,7 +9,7 @@ export default async function AdminLayout({
 }) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
-  const role = data?.claims?.role as Role | undefined;
+  const role = getAppRoleFromClaims(data?.claims);
 
   if (role !== "admin") {
     redirect("/403");

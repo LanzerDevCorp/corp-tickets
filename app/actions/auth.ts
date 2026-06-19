@@ -1,5 +1,6 @@
 "use server";
 
+import { getAppRoleFromClaims } from "@/lib/auth/claims";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getPostLoginRedirect } from "@/lib/auth/redirect";
@@ -31,7 +32,7 @@ export async function loginUser(
   }
 
   const { data } = await supabase.auth.getClaims();
-  const role = (data?.claims?.role as Role) ?? "client";
+  const role = getAppRoleFromClaims(data?.claims);
 
   redirect(getPostLoginRedirect(role));
 }
@@ -53,7 +54,7 @@ export async function inviteUser(
 
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
-  const callerRole = data?.claims?.role as Role | undefined;
+  const callerRole = getAppRoleFromClaims(data?.claims);
 
   if (callerRole !== "admin") {
     return { error: "Unauthorized" };
@@ -95,7 +96,7 @@ export async function completeInviteSetup(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const userId = claimsData?.claims?.sub as string | undefined;
-  const role = (claimsData?.claims?.role as Role) ?? "client";
+  const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (!userId) {
     return {

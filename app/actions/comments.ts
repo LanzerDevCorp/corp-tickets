@@ -1,5 +1,6 @@
 "use server";
 
+import { getAppRoleFromClaims } from "@/lib/auth/claims";
 import { createClient } from "@/lib/supabase/server";
 import { CommentSubmitSchema } from "@/lib/schemas/comment-submit";
 import {
@@ -30,7 +31,7 @@ export async function getComments(
 ): Promise<CommentWithAuthor[]> {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
-  const role = claimsData?.claims?.role;
+  const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (!role) {
     throw new Error("Not authorized");
@@ -65,7 +66,7 @@ export async function addComment(input: {
 }): Promise<CommentWithAuthor> {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
-  const role = claimsData?.claims?.role;
+  const role = getAppRoleFromClaims(claimsData?.claims);
   const authorId = claimsData?.claims?.sub;
 
   if (!role || !authorId) {

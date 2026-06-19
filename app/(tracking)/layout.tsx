@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getAppRoleFromClaims } from "@/lib/auth/claims";
 import { isStaff } from "@/lib/auth/roles";
-import type { Role } from "@/lib/auth/roles";
 
 export default async function TrackingLayout({
   children,
@@ -16,7 +16,7 @@ export default async function TrackingLayout({
     redirect("/auth/error?error_code=otp_expired");
   }
 
-  const role = (claims.role as Role) ?? "client";
+  const role = getAppRoleFromClaims(claims);
   if (isStaff(role)) {
     redirect("/dashboard");
   }

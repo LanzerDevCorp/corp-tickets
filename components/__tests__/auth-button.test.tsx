@@ -40,7 +40,7 @@ describe("AuthButton", () => {
 
   it("shows /dashboard link for staff role (admin)", async () => {
     mockCreateClient.mockResolvedValue(
-      makeSupabaseMock({ role: "admin", email: "admin@corp.com" }) as never
+      makeSupabaseMock({ app_role: "admin", email: "admin@corp.com" }) as never
     );
 
     const element = await AuthButton();
@@ -52,7 +52,7 @@ describe("AuthButton", () => {
 
   it("shows /track link for client role", async () => {
     mockCreateClient.mockResolvedValue(
-      makeSupabaseMock({ role: "client", email: "client@corp.com" }) as never
+      makeSupabaseMock({ app_role: "client", email: "client@corp.com" }) as never
     );
 
     const element = await AuthButton();

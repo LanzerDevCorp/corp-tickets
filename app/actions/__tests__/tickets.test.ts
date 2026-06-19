@@ -241,7 +241,7 @@ describe("tickets actions", () => {
     it("allows staff (admin/it) to fetch tickets", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "it" },
+          claims: { app_role: "it" },
           queryResult: { data: [{ id: "ticket-1" }], error: null },
         }) as any
       );
@@ -254,7 +254,7 @@ describe("tickets actions", () => {
     it("throws error if client attempts to fetch all tickets", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "client" },
+          claims: { app_role: "client" },
         }) as any
       );
 
@@ -266,7 +266,7 @@ describe("tickets actions", () => {
     it("allows clients to fetch their own ticket if email matches", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "client", email: "my-email@test.com" },
+          claims: { app_role: "client", email: "my-email@test.com" },
           queryResult: { data: { id: "ticket-1", email: "my-email@test.com" }, error: null },
         }) as any
       );
@@ -278,7 +278,7 @@ describe("tickets actions", () => {
     it("throws error for clients if ticket email does not match client email", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "client", email: "other@test.com" },
+          claims: { app_role: "client", email: "other@test.com" },
           queryResult: { data: null, error: { message: "No rows found" } },
         }) as any
       );
@@ -289,7 +289,7 @@ describe("tickets actions", () => {
     it("triggers auto-assignment to staff if ticket is open and unassigned", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "it", sub: "staff-uuid" },
+          claims: { app_role: "it", sub: "staff-uuid" },
           updateResult: { data: { id: "ticket-1", assigned_to: "staff-uuid", status: "in_progress" }, error: null },
         }) as any
       );
@@ -304,7 +304,7 @@ describe("tickets actions", () => {
       // queryResult returns the existing ticket
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "it", sub: "staff-uuid" },
+          claims: { app_role: "it", sub: "staff-uuid" },
           updateResult: null,
           queryResult: { data: { id: "ticket-1", assigned_to: "other-staff-uuid", status: "in_progress" }, error: null },
         }) as any
@@ -320,7 +320,7 @@ describe("tickets actions", () => {
     it("allows staff to update status to closed with a closure reason", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "admin" },
+          claims: { app_role: "admin" },
           queryResult: { data: { id: "ticket-1", status: "closed", closure_reason: "Fixed" }, error: null },
         }) as any
       );
@@ -334,7 +334,7 @@ describe("tickets actions", () => {
     it("throws error when updating status to closed without a closure reason", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "admin" },
+          claims: { app_role: "admin" },
         }) as any
       );
 
@@ -346,7 +346,7 @@ describe("tickets actions", () => {
     it("allows staff to change ticket assignment", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "it" },
+          claims: { app_role: "it" },
           queryResult: { data: { id: "ticket-1", assigned_to: "new-staff-id" }, error: null },
         }) as any
       );
@@ -359,7 +359,7 @@ describe("tickets actions", () => {
   describe("getCategories", () => {
     it("returns only enabled categories for clients", async () => {
       const mockSupabase = makeSupabaseMock({
-        claims: { role: "client" },
+        claims: { app_role: "client" },
         queryResult: { data: [{ id: "cat-1", is_enabled: true }], error: null },
       });
       mockCreateClient.mockResolvedValue(mockSupabase as any);
@@ -371,7 +371,7 @@ describe("tickets actions", () => {
 
     it("returns all categories for staff", async () => {
       const mockSupabase = makeSupabaseMock({
-        claims: { role: "it" },
+        claims: { app_role: "it" },
         queryResult: { data: [{ id: "cat-1" }, { id: "cat-2" }], error: null },
       });
       mockCreateClient.mockResolvedValue(mockSupabase as any);
@@ -386,7 +386,7 @@ describe("tickets actions", () => {
     it("allows staff to list active staff members", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "it" },
+          claims: { app_role: "it" },
           queryResult: { data: [{ id: "staff-1", display_name: "Juan" }], error: null },
         }) as any
       );

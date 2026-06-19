@@ -88,7 +88,7 @@ describe("comments actions", () => {
 
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "it", sub: "staff-id" },
+          claims: { app_role: "it", sub: "staff-id" },
           queryResult: { data: sortedComments, error: null },
         }) as any
       );
@@ -113,7 +113,7 @@ describe("comments actions", () => {
     it("inserts and returns new comment for valid staff payload", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "it", sub: "staff-id", email: "staff@corp.com" },
+          claims: { app_role: "it", sub: "staff-id", email: "staff@corp.com" },
           queryResult: { data: MOCK_COMMENT, error: null },
         }) as any
       );
@@ -131,7 +131,7 @@ describe("comments actions", () => {
     it("throws on empty body (Zod validation)", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "it", sub: "staff-id", email: "staff@corp.com" },
+          claims: { app_role: "it", sub: "staff-id", email: "staff@corp.com" },
         }) as any
       );
 
@@ -143,7 +143,7 @@ describe("comments actions", () => {
     it("throws on whitespace-only body (Zod validation)", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "it", sub: "staff-id", email: "staff@corp.com" },
+          claims: { app_role: "it", sub: "staff-id", email: "staff@corp.com" },
         }) as any
       );
 
@@ -154,7 +154,7 @@ describe("comments actions", () => {
 
     it("forces is_internal=false for client role regardless of payload", async () => {
       const clientMock = makeSupabaseMock({
-        claims: { role: "client", sub: "client-id", email: "client@example.com" },
+        claims: { app_role: "client", sub: "client-id", email: "client@example.com" },
         queryResult: {
           data: { ...MOCK_COMMENT, is_internal: false },
           error: null,
@@ -179,7 +179,7 @@ describe("comments actions", () => {
     it("calls notifyPublicComment after staff public insert (not notifyClientComment)", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "it", sub: "staff-id", email: "staff@corp.com" },
+          claims: { app_role: "it", sub: "staff-id", email: "staff@corp.com" },
           queryResult: { data: MOCK_COMMENT, error: null },
         }) as any
       );
@@ -201,7 +201,7 @@ describe("comments actions", () => {
       const clientComment = { ...MOCK_COMMENT, id: "client-comment-1" };
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "client", sub: "client-id", email: "client@example.com" },
+          claims: { app_role: "client", sub: "client-id", email: "client@example.com" },
           queryResult: { data: clientComment, error: null },
         }) as any
       );
@@ -223,7 +223,7 @@ describe("comments actions", () => {
     it("calls neither stub for staff internal note", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { role: "it", sub: "staff-id", email: "staff@corp.com" },
+          claims: { app_role: "it", sub: "staff-id", email: "staff@corp.com" },
           queryResult: { data: MOCK_INTERNAL_COMMENT, error: null },
         }) as any
       );

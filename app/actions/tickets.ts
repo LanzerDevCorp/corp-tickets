@@ -1,5 +1,6 @@
 "use server";
 
+import { getAppRoleFromClaims } from "@/lib/auth/claims";
 import { createClient } from "@/lib/supabase/server";
 import { provisionClient } from "@/app/actions/client-provision";
 import { ticketSubmitSchema } from "@/lib/schemas/ticket-submit";
@@ -77,7 +78,7 @@ export async function getTickets(filters: {
 }) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
-  const role = claimsData?.claims?.role;
+  const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
     throw new Error("Not authorized");
@@ -117,7 +118,7 @@ export async function getTickets(filters: {
 export async function getTicketDetail(id: string) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
-  const role = claimsData?.claims?.role;
+  const role = getAppRoleFromClaims(claimsData?.claims);
   const email = claimsData?.claims?.email;
 
   if (!role) {
@@ -186,7 +187,7 @@ export async function updateTicketStatus(
 ) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
-  const role = claimsData?.claims?.role;
+  const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
     throw new Error("Not authorized");
@@ -228,7 +229,7 @@ export async function updateTicketStatus(
 export async function assignTicket(id: string, assignedTo: string | null) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
-  const role = claimsData?.claims?.role;
+  const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
     throw new Error("Not authorized");
@@ -254,7 +255,7 @@ export async function assignTicket(id: string, assignedTo: string | null) {
 export async function getCategories() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
-  const role = claimsData?.claims?.role;
+  const role = getAppRoleFromClaims(claimsData?.claims);
 
   let query = supabase.from("categories").select("*");
 
@@ -272,7 +273,7 @@ export async function getCategories() {
 export async function getStaffUsers() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
-  const role = claimsData?.claims?.role;
+  const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
     throw new Error("Not authorized");

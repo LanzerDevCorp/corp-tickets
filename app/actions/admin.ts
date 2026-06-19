@@ -1,5 +1,6 @@
 "use server";
 
+import { getAppRoleFromClaims } from "@/lib/auth/claims";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import type { Role } from "@/lib/auth/roles";
@@ -30,7 +31,7 @@ async function requireAdmin(): Promise<
 > {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
-  const role = claimsData?.claims?.role as Role | undefined;
+  const role = getAppRoleFromClaims(claimsData?.claims);
   const sub = claimsData?.claims?.sub as string | undefined;
   if (role !== "admin") {
     return { error: "Unauthorized", code: "auth" };

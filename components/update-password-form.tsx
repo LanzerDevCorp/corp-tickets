@@ -2,8 +2,8 @@
 
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { getAppRoleFromClaims } from "@/lib/auth/claims";
 import { getPostLoginRedirect } from "@/lib/auth/redirect";
-import type { Role } from "@/lib/auth/roles";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -37,7 +37,7 @@ export function UpdatePasswordForm({
       if (error) throw error;
 
       const { data } = await supabase.auth.getClaims();
-      const role = (data?.claims?.role as Role) ?? "client";
+      const role = getAppRoleFromClaims(data?.claims);
       router.push(getPostLoginRedirect(role));
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
