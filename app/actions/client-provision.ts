@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 type ProvisionResult = {
   userId: string | null;
   alreadyExisted: boolean;
+  actionLink: string | null;
   error: string | null;
 };
 
@@ -17,7 +18,12 @@ export async function provisionClient(
   ticketId: string
 ): Promise<ProvisionResult> {
   if (!isValidEmail(email)) {
-    return { userId: null, alreadyExisted: false, error: "Invalid email address" };
+    return {
+      userId: null,
+      alreadyExisted: false,
+      actionLink: null,
+      error: "Invalid email address",
+    };
   }
 
   // Query public.users to check if client already exists (sync'd by auth trigger)
@@ -45,6 +51,7 @@ export async function provisionClient(
       return {
         userId: null,
         alreadyExisted: false,
+        actionLink: null,
         error: createError?.message ?? "Failed to create user",
       };
     }
@@ -53,17 +60,20 @@ export async function provisionClient(
   }
 
   const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/track/${ticketId}`;
-  const { error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-    type: "magiclink",
-    email,
-    options: { redirectTo },
-  });
+  const { data: linkData, error: linkError } =
+    await supabaseAdmin.auth.admin.generateLink({
+      type: "magiclink",
+      email,
+      options: { redirectTo },
+    });
 
   if (linkError) {
-    return { userId, alreadyExisted, error: linkError.message };
+    return { userId, alreadyExisted, actionLink: null, error: linkError.message };
   }
 
-  return { userId, alreadyExisted, error: null };
+  const actionLink = linkData?.properties?.action_link ?? null;
+
+  return { userId, alreadyExisted, actionLink, error: null };
 }
 
 export async function requestMagicLink(

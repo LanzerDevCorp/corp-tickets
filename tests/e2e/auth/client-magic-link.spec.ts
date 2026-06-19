@@ -25,23 +25,27 @@ test.describe("Client magic link flow", () => {
     await expect(page.getByText(/check your email/i)).toBeVisible();
   });
 
-  test.skip("valid magic link creates session and redirects to /track", async ({
+  test("valid magic link creates session and redirects to /track", async ({
     page,
   }) => {
-    // Requires Supabase local running + admin API to generate link
-    // Skip in CI unless TEST_SUPABASE_RUNNING=true
-    if (!process.env.TEST_SUPABASE_RUNNING) return;
+    if (!process.env.TEST_SUPABASE_RUNNING) {
+      test.skip();
+      return;
+    }
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
     const testEmail = `e2e-${Date.now()}@client.test`;
+    const ticketId = "550e8400-e29b-41d4-a716-446655440099";
 
     const { data: linkData } = await admin.auth.admin.generateLink({
       type: "magiclink",
       email: testEmail,
-      options: { redirectTo: "http://localhost:3000/track" },
+      options: {
+        redirectTo: `http://localhost:3000/track/${ticketId}`,
+      },
     });
 
     if (!linkData?.properties?.action_link) {
@@ -49,6 +53,6 @@ test.describe("Client magic link flow", () => {
     }
 
     await page.goto(linkData.properties.action_link);
-    await expect(page).toHaveURL(/\/track/);
+    await expect(page).toHaveURL(new RegExp(`/track/${ticketId}`));
   });
 });
