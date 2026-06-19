@@ -130,6 +130,9 @@ describe("inviteUser", () => {
       data: { user: { id: "invited-user-id" } as any },
       error: null,
     });
+    const eq = vi.fn().mockResolvedValue({ error: null });
+    const update = vi.fn().mockReturnValue({ eq });
+    vi.mocked(supabaseAdmin.from).mockReturnValue({ update } as never);
 
     const result = await inviteUser("it@corp.com", "it");
     expect(result.error).toBeNull();
@@ -143,6 +146,8 @@ describe("inviteUser", () => {
       "invited-user-id",
       { app_metadata: { role: "it" } }
     );
+    expect(update).toHaveBeenCalledWith({ role: "it" });
+    expect(eq).toHaveBeenCalledWith("id", "invited-user-id");
   });
 
   it("sets app_metadata.role=admin when inviting admin", async () => {

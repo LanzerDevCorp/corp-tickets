@@ -4,6 +4,15 @@ vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn() }));
 vi.mock("@/lib/supabase/admin", () => ({
   supabaseAdmin: {
     from: vi.fn(),
+    auth: {
+      admin: {
+        listUsers: vi.fn(),
+        getUserById: vi.fn(),
+        inviteUserByEmail: vi.fn(),
+        updateUserById: vi.fn(),
+        deleteUser: vi.fn(),
+      },
+    },
   },
 }));
 
@@ -11,6 +20,8 @@ import {
   getUsers,
   deactivateUser,
   reactivateUser,
+  reinviteStaffUser,
+  cancelStaffInvite,
   getCategories,
   createCategory,
   updateCategory,
@@ -56,14 +67,39 @@ describe("getUsers", () => {
   it("returns all users ordered by created_at desc when caller is admin", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
     mockSupabaseAdmin.from.mockReturnValue(
-      makeAdminChain({ data: [{ id: "u1", email: "a@b.com", display_name: "A", role: "admin", is_active: true, created_at: "2026-01-01" }], error: null }) as never
+      makeAdminChain({
+        data: [
+          {
+            id: "u1",
+            email: "a@b.com",
+            display_name: "A",
+            role: "admin",
+            is_active: true,
+            created_at: "2026-01-01",
+          },
+        ],
+        error: null,
+      }) as never
     );
+    vi.mocked(supabaseAdmin.auth.admin.listUsers).mockResolvedValue({
+      data: {
+        users: [
+          {
+            id: "u1",
+            invited_at: "2026-01-01T00:00:00Z",
+            email_confirmed_at: undefined,
+          } as any,
+        ],
+      },
+      error: null,
+    });
 
     const result = await getUsers();
     expect(result.error).toBeNull();
     if (result.error === null) {
       expect(result.data).toHaveLength(1);
       expect(result.data[0].id).toBe("u1");
+      expect(result.data[0].is_pending_invite).toBe(true);
     }
   });
 
@@ -72,6 +108,10 @@ describe("getUsers", () => {
     mockSupabaseAdmin.from.mockReturnValue(
       makeAdminChain({ data: null, error: null }) as never
     );
+    vi.mocked(supabaseAdmin.auth.admin.listUsers).mockResolvedValue({
+      data: { users: [] },
+      error: null,
+    });
 
     const result = await getUsers();
     expect(result.error).toBeNull();
@@ -99,6 +139,100 @@ describe("getUsers", () => {
     if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("db");
     }
+  });
+});
+
+describe("reinviteStaffUser", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("resends invite for pending staff user", async () => {
+    mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
+    mockSupabaseAdmin.from.mockReturnValue(
+      makeAdminChain({
+        data: { id: "u1", email: "it@corp.com", role: "it" },
+        error: null,
+      }) as never
+    );
+    vi.mocked(supabaseAdmin.auth.admin.getUserById).mockResolvedValue({
+      data: {
+        user: {
+          id: "u1",
+          invited_at: "2026-01-01T00:00:00Z",
+          email_confirmed_at: undefined,
+        } as any,
+      },
+      error: null,
+    });
+    vi.mocked(supabaseAdmin.auth.admin.inviteUserByEmail).mockResolvedValue({
+      data: { user: { id: "u1" } as any },
+      error: null,
+    });
+    vi.mocked(supabaseAdmin.auth.admin.updateUserById).mockResolvedValue({
+      data: { user: { id: "u1" } as any },
+      error: null,
+    });
+
+    const result = await reinviteStaffUser("u1");
+    expect(result.error).toBeNull();
+    expect(supabaseAdmin.auth.admin.inviteUserByEmail).toHaveBeenCalledWith(
+      "it@corp.com",
+      { redirectTo: expect.stringContaining("/auth/accept-invite") }
+    );
+  });
+
+  it("returns validation error when user is not pending", async () => {
+    mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
+    mockSupabaseAdmin.from.mockReturnValue(
+      makeAdminChain({
+        data: { id: "u1", email: "it@corp.com", role: "it" },
+        error: null,
+      }) as never
+    );
+    vi.mocked(supabaseAdmin.auth.admin.getUserById).mockResolvedValue({
+      data: {
+        user: {
+          id: "u1",
+          invited_at: "2026-01-01T00:00:00Z",
+          email_confirmed_at: "2026-01-02T00:00:00Z",
+        } as any,
+      },
+      error: null,
+    });
+
+    const result = await reinviteStaffUser("u1");
+    expect(result.error).toBe("User is not pending invitation");
+  });
+});
+
+describe("cancelStaffInvite", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("deletes pending staff auth user", async () => {
+    mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
+    mockSupabaseAdmin.from.mockReturnValue(
+      makeAdminChain({
+        data: { id: "u1", email: "admin@corp.com", role: "admin" },
+        error: null,
+      }) as never
+    );
+    vi.mocked(supabaseAdmin.auth.admin.getUserById).mockResolvedValue({
+      data: {
+        user: {
+          id: "u1",
+          invited_at: "2026-01-01T00:00:00Z",
+          email_confirmed_at: undefined,
+        } as any,
+      },
+      error: null,
+    });
+    vi.mocked(supabaseAdmin.auth.admin.deleteUser).mockResolvedValue({
+      data: { user: { id: "u1" } as any },
+      error: null,
+    });
+
+    const result = await cancelStaffInvite("u1");
+    expect(result.error).toBeNull();
+    expect(supabaseAdmin.auth.admin.deleteUser).toHaveBeenCalledWith("u1");
   });
 });
 

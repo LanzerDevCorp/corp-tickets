@@ -6,15 +6,12 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getPostLoginRedirect } from "@/lib/auth/redirect";
 import type { Role } from "@/lib/auth/roles";
 import { redirect } from "next/navigation";
+import { staffInviteRedirectUrl } from "@/lib/auth/staff-invite";
 import { adminInviteSchema } from "@/lib/schemas/admin-invite";
 import { acceptInviteSchema } from "@/lib/schemas/accept-invite";
 
 type AuthResult = { error: string | null; role?: Role };
 type InviteResult = { error: string | null };
-
-function staffInviteRedirectUrl(): string {
-  return `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/auth/accept-invite`;
-}
 
 export async function loginUser(
   _prevState: AuthResult,
@@ -76,7 +73,16 @@ export async function inviteUser(
     { app_metadata: { role } }
   );
 
-  return { error: metaError?.message ?? null };
+  if (metaError) {
+    return { error: metaError.message ?? null };
+  }
+
+  const { error: roleError } = await supabaseAdmin
+    .from("users")
+    .update({ role })
+    .eq("id", invited.user.id);
+
+  return { error: roleError?.message ?? null };
 }
 
 export async function completeInviteSetup(

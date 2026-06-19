@@ -100,6 +100,12 @@ async function main() {
   });
   if (metaError) throw metaError;
 
+  const { error: roleError } = await admin
+    .from("users")
+    .update({ role })
+    .eq("id", data.user.id);
+  if (roleError) throw roleError;
+
   console.log(`Invitation sent to ${email} with role "${role}".`);
   console.log(`User id: ${data.user.id}`);
   console.log(`After accepting, redirect: ${redirectTo}`);

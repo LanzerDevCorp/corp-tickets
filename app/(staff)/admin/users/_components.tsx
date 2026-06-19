@@ -43,6 +43,8 @@ import { inviteUser } from "@/app/actions/auth";
 import {
   deactivateUser,
   reactivateUser,
+  reinviteStaffUser,
+  cancelStaffInvite,
   type UserRow,
 } from "@/app/actions/admin";
 import {
@@ -85,13 +87,23 @@ export function UsersTable({ users, currentUserId }: { users: UserRow[]; current
               </span>
             </TableCell>
             <TableCell>
-              <span className={getStatusBadgeClass(user.is_active)}>
-                {user.is_active ? "Active" : "Inactive"}
+              <span
+                className={getStatusBadgeClass(
+                  user.is_pending_invite,
+                  user.is_active
+                )}
+              >
+                {getStatusLabel(user.is_pending_invite, user.is_active)}
               </span>
             </TableCell>
             <TableCell>{formatDate(user.created_at)}</TableCell>
             <TableCell>
-              {user.is_active ? (
+              {user.is_pending_invite ? (
+                <div className="flex gap-2">
+                  <ReinviteButton userId={user.id} />
+                  <CancelInviteButton userId={user.id} />
+                </div>
+              ) : user.is_active ? (
                 <DeactivateButton userId={user.id} isSelf={user.id === currentUserId} />
               ) : (
                 <ReactivateButton userId={user.id} />
@@ -117,9 +129,17 @@ function getRoleBadgeClass(role: UserRow["role"]) {
   }
 }
 
-function getStatusBadgeClass(isActive: boolean) {
+function getStatusLabel(isPendingInvite: boolean, isActive: boolean) {
+  if (isPendingInvite) return "Pending";
+  return isActive ? "Active" : "Inactive";
+}
+
+function getStatusBadgeClass(isPendingInvite: boolean, isActive: boolean) {
   const base =
     "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium";
+  if (isPendingInvite) {
+    return `${base} bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300`;
+  }
   return isActive
     ? `${base} bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300`
     : `${base} bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300`;
@@ -239,6 +259,96 @@ export function InviteUserDialog() {
             disabled={!form.formState.isValid || form.formState.isSubmitting}
           >
             {form.formState.isSubmitting ? "Sending..." : "Send Invitation"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ReinviteButton
+// ---------------------------------------------------------------------------
+
+export function ReinviteButton({ userId }: { userId: string }) {
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleClick = async () => {
+    setLoading(true);
+    const result = await reinviteStaffUser(userId);
+    setLoading(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Invitation resent.");
+    router.refresh();
+  };
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleClick}
+      disabled={loading}
+    >
+      {loading ? "Sending..." : "Reinvite"}
+    </Button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// CancelInviteButton
+// ---------------------------------------------------------------------------
+
+export function CancelInviteButton({ userId }: { userId: string }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    const result = await cancelStaffInvite(userId);
+    setLoading(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Invitation cancelled.");
+    setOpen(false);
+    router.refresh();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="destructive" size="sm">
+          Cancel Invite
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Cancel Invitation</DialogTitle>
+          <DialogDescription>
+            This will delete the pending account. You can invite this email again
+            later.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={loading}
+          >
+            Keep Invitation
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleConfirm}
+            disabled={loading}
+          >
+            {loading ? "Cancelling..." : "Cancel Invitation"}
           </Button>
         </DialogFooter>
       </DialogContent>
