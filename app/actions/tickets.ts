@@ -34,7 +34,7 @@ export async function submitTicket(
   const { name, email, subject, body, priority, category_id, turnstile_token } =
     parsed.data;
 
-  const turnstileResult = await verifyTurnstileToken(turnstile_token);
+  const turnstileResult = await verifyTurnstileToken(turnstile_token ?? "");
   if (!turnstileResult.success) {
     return { error: turnstileResult.error, code: "turnstile" };
   }

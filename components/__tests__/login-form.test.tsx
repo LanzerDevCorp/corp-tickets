@@ -19,7 +19,7 @@ describe("LoginForm", () => {
   it("renders email and password fields", () => {
     render(<LoginForm />);
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
   });
 
   it("renders a submit button", () => {
@@ -33,7 +33,7 @@ describe("LoginForm", () => {
     render(<LoginForm />);
 
     await userEvent.type(screen.getByLabelText(/email/i), "wrong@test.com");
-    await userEvent.type(screen.getByLabelText(/password/i), "badpass");
+    await userEvent.type(screen.getByLabelText(/^password$/i), "badpass");
     await userEvent.click(screen.getByRole("button", { name: /login/i }));
 
     await waitFor(() => {

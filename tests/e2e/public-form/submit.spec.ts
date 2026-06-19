@@ -5,9 +5,10 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 /**
- * Uses Cloudflare Turnstile test sitekey (1x00000000000000000000AA) which always
- * passes — no bypass required. Set NEXT_PUBLIC_TURNSTILE_SITE_KEY and
- * TURNSTILE_SECRET_KEY to the CF test keys in your local .env for these to work.
+ * Turnstile is currently disabled (see docs/technical-debt.md).
+ * When re-enabled, set CF test keys in .env for E2E:
+ *   NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA
+ *   TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
  */
 test.describe("Formulario público de tickets", () => {
   let categoryId: string;
@@ -85,7 +86,7 @@ test.describe("Formulario público de tickets", () => {
       "Desde esta mañana no puedo iniciar sesión. He intentado restablecer la contraseña y sigue sin funcionar."
     );
 
-    // Turnstile invisible — the widget auto-resolves with test keys
+    // Turnstile disabled — submit without captcha wait
     await page.getByRole("button", { name: /enviar ticket/i }).click();
 
     await expect(

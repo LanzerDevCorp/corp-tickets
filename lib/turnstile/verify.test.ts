@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
+vi.mock("./config", () => ({
+  isTurnstileEnabled: vi.fn(() => true),
+  TURNSTILE_ENABLED: true,
+}));
+
 import { verifyTurnstileToken } from "./verify";
+import { isTurnstileEnabled } from "./config";
 
 const SITEVERIFY_URL =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";
@@ -8,6 +15,7 @@ describe("verifyTurnstileToken", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
+    vi.mocked(isTurnstileEnabled).mockReturnValue(true);
     process.env = { ...originalEnv, TURNSTILE_SECRET_KEY: "test-secret" };
     vi.stubGlobal("fetch", vi.fn());
   });
@@ -75,5 +83,14 @@ describe("verifyTurnstileToken", () => {
         method: "POST",
       })
     );
+  });
+
+  it("retorna success: true cuando Turnstile está deshabilitado", async () => {
+    vi.mocked(isTurnstileEnabled).mockReturnValue(false);
+    delete process.env.TURNSTILE_SECRET_KEY;
+
+    const result = await verifyTurnstileToken("any-token");
+    expect(result.success).toBe(true);
+    expect(fetch).not.toHaveBeenCalled();
   });
 });
