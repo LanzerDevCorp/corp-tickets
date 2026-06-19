@@ -22,7 +22,7 @@ export const ticketSubmitSchema = z.object({
     .trim()
     .min(10, "Describe tu problema con al menos 10 caracteres")
     .max(5000, "La descripción no puede exceder 5000 caracteres"),
-  priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
+  priority: z.enum(["low", "medium", "high", "urgent"]),
   category_id: z.string().uuid("Selecciona una categoría válida"),
   turnstile_token: isTurnstileEnabled()
     ? z.string().min(1, "La verificación de seguridad es requerida")

@@ -59,17 +59,19 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
       return;
     }
 
-    const ticket = ticketRow as {
+    const ticket = ticketRow as unknown as {
       name: string;
       email: string;
       subject: string;
       priority: string;
       body: string;
-      categories: { name: string } | null;
+      categories: { name: string }[] | { name: string } | null;
     };
 
-    const categoryName =
-      (ticket.categories as { name: string } | null)?.name ?? "Uncategorized";
+    const rawCat = ticket.categories;
+    const categoryName = Array.isArray(rawCat)
+      ? (rawCat[0]?.name ?? "Uncategorized")
+      : (rawCat?.name ?? "Uncategorized");
 
     // 3. Render email
     const html = await render(
