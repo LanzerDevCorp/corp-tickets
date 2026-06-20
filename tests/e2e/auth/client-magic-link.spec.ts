@@ -10,9 +10,9 @@ test.describe("Client magic link flow", () => {
   }) => {
     await page.goto("/auth/error?error_code=otp_expired");
 
-    await expect(page.getByLabel(/email/i)).toBeVisible();
+    await expect(page.getByLabel(/correo/i)).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /request new link/i })
+      page.getByRole("button", { name: /solicitar nuevo enlace/i })
     ).toBeVisible();
   });
 
@@ -20,9 +20,9 @@ test.describe("Client magic link flow", () => {
     await page.goto("/auth/error?error_code=otp_expired");
 
     await page.fill('[name="email"]', "test@client.com");
-    await page.click('button:has-text("Request new link")');
+    await page.click('button:has-text("Solicitar nuevo enlace")');
 
-    await expect(page.getByText(/check your email/i)).toBeVisible();
+    await expect(page.getByText(/revisa tu correo/i)).toBeVisible();
   });
 
   test("valid magic link creates session and redirects to /track", async ({

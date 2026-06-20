@@ -1,19 +1,20 @@
 import * as z from "zod";
+import { es } from "@/lib/i18n/es";
 
 export const acceptInviteSchema = z
   .object({
     name: z
       .string()
       .trim()
-      .min(2, { message: "Enter your name (at least 2 characters)." })
-      .max(100, { message: "Name must be 100 characters or fewer." }),
+      .min(2, { message: es.validation.nameMin })
+      .max(100, { message: es.validation.nameMax }),
     password: z
       .string()
-      .min(8, { message: "Password must be at least 8 characters." }),
+      .min(8, { message: es.validation.passwordMin }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match.",
+    message: es.validation.passwordsMismatch,
     path: ["confirmPassword"],
   });
 

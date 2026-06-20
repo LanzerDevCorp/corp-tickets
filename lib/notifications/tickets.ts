@@ -5,6 +5,8 @@ import TicketCreatedEmail from "@/emails/TicketCreatedEmail";
 import TicketClosedEmail from "@/emails/TicketClosedEmail";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { resend } from "@/lib/resend";
+import { t } from "@/lib/i18n/t";
+import { es } from "@/lib/i18n/es";
 
 export async function notifyNewTicket(ticketId: string): Promise<void> {
   try {
@@ -70,8 +72,8 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
 
     const rawCat = ticket.categories;
     const categoryName = Array.isArray(rawCat)
-      ? (rawCat[0]?.name ?? "Uncategorized")
-      : (rawCat?.name ?? "Uncategorized");
+      ? (rawCat[0]?.name ?? es.common.uncategorized)
+      : (rawCat?.name ?? es.common.uncategorized);
 
     // 3. Render email
     const html = await render(
@@ -91,7 +93,7 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
     const { error: sendError } = await resend.emails.send({
       from,
       to: recipients,
-      subject: `New ticket: "${ticket.subject}"`,
+      subject: t("email.subjects.newTicket", { subject: ticket.subject }),
       html,
     });
     if (sendError) {
@@ -147,7 +149,7 @@ export async function notifyTicketCreated(
     };
 
     const categoryName =
-      (ticket.categories as { name: string } | null)?.name ?? "Uncategorized";
+      (ticket.categories as { name: string } | null)?.name ?? es.common.uncategorized;
 
     const html = await render(
       createElement(TicketCreatedEmail, {
@@ -162,7 +164,7 @@ export async function notifyTicketCreated(
     const { error: sendError } = await resend.emails.send({
       from,
       to: ticket.email,
-      subject: `Ticket received: "${ticket.subject}"`,
+      subject: t("email.subjects.ticketCreated", { subject: ticket.subject }),
       html,
     });
     if (sendError) {
@@ -229,7 +231,7 @@ export async function notifyTicketClosed(ticketId: string): Promise<void> {
     const { error: sendError } = await resend.emails.send({
       from,
       to: ticket.email,
-      subject: `Ticket closed: "${ticket.subject}"`,
+      subject: t("email.subjects.ticketClosed", { subject: ticket.subject }),
       html,
     });
     if (sendError) {

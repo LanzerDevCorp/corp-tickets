@@ -17,11 +17,10 @@ describe("ticketSubmitSchema", () => {
     expect(ticketSubmitSchema.safeParse(VALID).success).toBe(true);
   });
 
-  it("aplica default 'medium' cuando priority no se pasa", () => {
+  it("rechaza datos sin priority (campo requerido)", () => {
     const { priority: _, ...noP } = VALID;
     const res = ticketSubmitSchema.safeParse(noP);
-    expect(res.success).toBe(true);
-    if (res.success) expect(res.data.priority).toBe("medium");
+    expect(res.success).toBe(false);
   });
 
   describe("name", () => {

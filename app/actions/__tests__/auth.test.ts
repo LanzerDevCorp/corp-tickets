@@ -76,7 +76,7 @@ describe("loginUser", () => {
     formData.set("password", "wrongpass");
 
     const result = await loginUser({ error: null }, formData);
-    expect(result.error).toBe("Invalid credentials");
+    expect(result.error).toBe("Credenciales inválidas");
   });
 });
 
@@ -187,7 +187,7 @@ describe("completeInviteSetup", () => {
     formData.set("confirmPassword", "SecurePass1!");
 
     const result = await completeInviteSetup({ error: null }, formData);
-    expect(result.error).toContain("expired");
+    expect(result.error).toContain("expiró");
   });
 
   it("updates auth user and profile then redirects", async () => {

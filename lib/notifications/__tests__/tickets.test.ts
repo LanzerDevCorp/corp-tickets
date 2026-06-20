@@ -246,7 +246,7 @@ describe("notifyNewTicket", () => {
     errorSpy.mockRestore();
   });
 
-  it("uses 'Uncategorized' fallback when categories join returns null", async () => {
+  it("uses uncategorized fallback when categories join returns null", async () => {
     mockTables(
       {
         data: {
@@ -263,7 +263,7 @@ describe("notifyNewTicket", () => {
     const rendered = mockRender.mock.calls[0][0] as React.ReactElement<{
       categoryName: string;
     }>;
-    expect(rendered.props.categoryName).toBe("Uncategorized");
+    expect(rendered.props.categoryName).toBe("Sin categoría");
   });
 
   it("calls render() with NewTicketEmail component", async () => {

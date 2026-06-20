@@ -7,6 +7,8 @@ import {
   Button,
   Hr,
 } from "@react-email/components";
+import { es } from "@/lib/i18n/es";
+import { priorityLabel } from "@/lib/i18n/maps";
 
 interface TicketCreatedEmailProps {
   clientName: string;
@@ -16,14 +18,14 @@ interface TicketCreatedEmailProps {
   magicLinkUrl: string;
 }
 
-const priorityConfig: Record<
+const priorityColors: Record<
   TicketCreatedEmailProps["priority"],
-  { label: string; color: string; fontWeight?: string }
+  { color: string; fontWeight?: string }
 > = {
-  low: { label: "Low", color: "#666" },
-  medium: { label: "Medium", color: "#b45309" },
-  high: { label: "High", color: "#c2410c" },
-  urgent: { label: "URGENT", color: "#dc2626", fontWeight: "700" },
+  low: { color: "#666" },
+  medium: { color: "#b45309" },
+  high: { color: "#c2410c" },
+  urgent: { color: "#dc2626", fontWeight: "700" },
 };
 
 export default function TicketCreatedEmail({
@@ -33,10 +35,10 @@ export default function TicketCreatedEmail({
   categoryName,
   magicLinkUrl,
 }: TicketCreatedEmailProps) {
-  const pConfig = priorityConfig[priority] ?? priorityConfig.low;
+  const pConfig = priorityColors[priority] ?? priorityColors.low;
 
   return (
-    <Html lang="en">
+    <Html lang="es-MX">
       <Body
         style={{
           backgroundColor: "#ffffff",
@@ -61,7 +63,7 @@ export default function TicketCreatedEmail({
               margin: "0 0 16px",
             }}
           >
-            Hi {clientName},
+            {es.email.ticketCreated.greeting.replace("{name}", clientName)}
           </Text>
 
           <Text
@@ -72,8 +74,7 @@ export default function TicketCreatedEmail({
               margin: "0 0 16px",
             }}
           >
-            Your support ticket has been received. Use the link below to track
-            its status and reply to our team.
+            {es.email.ticketCreated.intro}
           </Text>
 
           <Heading
@@ -97,17 +98,17 @@ export default function TicketCreatedEmail({
               margin: "0 0 24px",
             }}
           >
-            Priority:{" "}
+            {es.email.ticketCreated.priority}{" "}
             <span
               style={{
                 color: pConfig.color,
                 fontWeight: pConfig.fontWeight ?? "normal",
               }}
             >
-              {pConfig.label}
+              {priorityLabel(priority)}
             </span>
             {"  ·  "}
-            Category: {categoryName}
+            {es.email.ticketCreated.category} {categoryName}
           </Text>
 
           <Button
@@ -124,7 +125,7 @@ export default function TicketCreatedEmail({
               marginBottom: "24px",
             }}
           >
-            Track your ticket
+            {es.email.ticketCreated.trackButton}
           </Button>
 
           <Hr
@@ -143,8 +144,7 @@ export default function TicketCreatedEmail({
               margin: "0",
             }}
           >
-            This link expires after a period of inactivity. If it stops working,
-            request a new one from the error page.
+            {es.email.ticketCreated.footer}
           </Text>
         </Container>
       </Body>

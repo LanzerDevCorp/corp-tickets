@@ -1,5 +1,6 @@
 import TicketQueue from "@/components/dashboard/ticket-queue";
 import { getTickets, getCategories, getStaffUsers } from "@/app/actions/tickets";
+import { t } from "@/lib/i18n/t";
 
 export default async function DashboardPage() {
   const [initialTickets, categories, staffUsers] = await Promise.all([
@@ -13,11 +14,9 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between space-y-2">
         <div>
           <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-zinc-900 to-zinc-600 bg-clip-text text-transparent dark:from-zinc-100 dark:to-zinc-400">
-            Dashboard
+            {t("dashboard.title")}
           </h2>
-          <p className="text-muted-foreground text-sm">
-            Manage helpdesk support tickets and lifecycle assignments.
-          </p>
+          <p className="text-muted-foreground text-sm">{t("dashboard.subtitle")}</p>
         </div>
       </div>
       <TicketQueue

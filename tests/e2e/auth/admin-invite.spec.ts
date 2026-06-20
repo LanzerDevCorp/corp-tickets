@@ -18,9 +18,9 @@ test.describe("Admin invite IT staff", () => {
     // The invite UI is on the admin panel
     await page.goto("/admin");
     await page.fill('[name="invite-email"]', `it-${Date.now()}@corp.test`);
-    await page.click('button:has-text("Invite")');
+    await page.click('button:has-text("Invitar")');
 
-    await expect(page.getByText(/invitation sent/i)).toBeVisible();
+    await expect(page.getByText(/invitación enviada/i)).toBeVisible();
   });
 
   test("client cannot access admin-only invite action", async ({ page }) => {

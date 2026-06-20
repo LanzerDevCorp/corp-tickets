@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./logout-button";
 import { getAppRoleFromClaims } from "@/lib/auth/claims";
 import { getRedirectPath } from "@/lib/auth/roles";
+import { t } from "@/lib/i18n/t";
 
 export async function AuthButton() {
   const supabase = await createClient();
@@ -14,7 +15,7 @@ export async function AuthButton() {
     return (
       <div className="flex gap-2">
         <Button asChild size="sm" variant="outline">
-          <Link href="/auth/login">Sign in</Link>
+          <Link href="/auth/login">{t("auth.signIn")}</Link>
         </Button>
       </div>
     );
@@ -22,7 +23,8 @@ export async function AuthButton() {
 
   const role = getAppRoleFromClaims(claims);
   const homePath = getRedirectPath(role);
-  const homeLabel = role === "client" ? "My tickets" : "Dashboard";
+  const homeLabel =
+    role === "client" ? t("auth.myTickets") : t("auth.dashboard");
 
   return (
     <div className="flex items-center gap-4">

@@ -7,6 +7,7 @@ import { provisionClient } from "@/app/actions/client-provision";
 import { ticketSubmitSchema } from "@/lib/schemas/ticket-submit";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify";
 import { notifyNewTicket, notifyTicketCreated, notifyTicketClosed } from "@/lib/notifications/tickets";
+import { es } from "@/lib/i18n/es";
 
 export type TicketSubmitResult =
   | { error: null; ticketId: string }
@@ -88,7 +89,7 @@ export async function getTickets(filters: {
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error("Not authorized");
+    throw new Error(es.errors.notAuthorized);
   }
 
   let query = supabase
@@ -129,7 +130,7 @@ export async function getTicketDetail(id: string) {
   const email = claimsData?.claims?.email;
 
   if (!role) {
-    throw new Error("Not authorized");
+    throw new Error(es.errors.notAuthorized);
   }
 
   // Client view: enforce email matches
@@ -146,14 +147,14 @@ export async function getTicketDetail(id: string) {
       .single();
 
     if (error || !ticket) {
-      throw new Error("Ticket not found or access denied");
+      throw new Error(es.errors.ticketNotFoundOrDenied);
     }
     return ticket;
   }
 
   // Staff view: check for auto-assignment on first open
   if (!claimsData) {
-    throw new Error("Not authorized");
+    throw new Error(es.errors.notAuthorized);
   }
   const currentUserId = claimsData.claims.sub;
 
@@ -182,7 +183,7 @@ export async function getTicketDetail(id: string) {
       .single();
 
     if (error || !data) {
-      throw new Error("Ticket not found");
+      throw new Error(es.errors.ticketNotFound);
     }
     ticket = data;
   }
@@ -200,11 +201,11 @@ export async function updateTicketStatus(
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error("Not authorized");
+    throw new Error(es.errors.notAuthorized);
   }
 
   if (status === "closed" && !closureReason) {
-    throw new Error("Closure reason is required when status is closed");
+    throw new Error(es.errors.closureReasonRequired);
   }
 
   const updatePayload: any = { status };
@@ -242,7 +243,7 @@ export async function assignTicket(id: string, assignedTo: string | null) {
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error("Not authorized");
+    throw new Error(es.errors.notAuthorized);
   }
 
   const { data, error } = await supabase
@@ -286,7 +287,7 @@ export async function getStaffUsers() {
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error("Not authorized");
+    throw new Error(es.errors.notAuthorized);
   }
 
   const { data, error } = await supabase

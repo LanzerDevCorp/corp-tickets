@@ -34,10 +34,10 @@ describe("ClientCommentForm", () => {
     render(<ClientCommentForm ticketId="ticket-1" onPosted={onPosted} />);
 
     await user.type(
-      screen.getByPlaceholderText(/share additional details/i),
+      screen.getByPlaceholderText(/comparte detalles/i),
       "Hello team"
     );
-    await user.click(screen.getByRole("button", { name: /post comment/i }));
+    await user.click(screen.getByRole("button", { name: /publicar comentario/i }));
 
     await waitFor(() => {
       expect(mockAddComment).toHaveBeenCalledWith({
@@ -66,14 +66,14 @@ describe("ClientCommentForm", () => {
     render(<ClientCommentForm ticketId="ticket-1" onPosted={vi.fn()} />);
 
     await user.type(
-      screen.getByPlaceholderText(/share additional details/i),
+      screen.getByPlaceholderText(/comparte detalles/i),
       "Update"
     );
     await user.type(
-      screen.getByLabelText(/cc \(optional/i),
+      screen.getByLabelText(/cc \(opcional/i),
       "a@test.com, b@test.com"
     );
-    await user.click(screen.getByRole("button", { name: /post comment/i }));
+    await user.click(screen.getByRole("button", { name: /publicar comentario/i }));
 
     await waitFor(() => {
       expect(mockAddComment).toHaveBeenCalledWith(
@@ -91,13 +91,13 @@ describe("ClientCommentForm", () => {
     render(<ClientCommentForm ticketId="ticket-1" onPosted={vi.fn()} />);
 
     await user.type(
-      screen.getByPlaceholderText(/share additional details/i),
+      screen.getByPlaceholderText(/comparte detalles/i),
       "Valid body"
     );
-    await user.type(screen.getByLabelText(/cc \(optional/i), "not-an-email");
-    await user.click(screen.getByRole("button", { name: /post comment/i }));
+    await user.type(screen.getByLabelText(/cc \(opcional/i), "not-an-email");
+    await user.click(screen.getByRole("button", { name: /publicar comentario/i }));
 
-    expect(await screen.findByText(/invalid email address/i)).toBeInTheDocument();
+    expect(await screen.findByText(/correo electrónico inválido/i)).toBeInTheDocument();
     expect(mockAddComment).not.toHaveBeenCalled();
   });
 
@@ -111,8 +111,10 @@ describe("ClientCommentForm", () => {
     );
 
     expect(
-      screen.getByPlaceholderText(/share additional details/i)
+      screen.getByPlaceholderText(/comparte detalles/i)
     ).toBeDisabled();
-    expect(screen.getByRole("button", { name: /post comment/i })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /publicar comentario/i })
+    ).toBeDisabled();
   });
 });

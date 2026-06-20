@@ -7,6 +7,7 @@ import {
   Button,
   Hr,
 } from "@react-email/components";
+import { es } from "@/lib/i18n/es";
 
 interface TicketClosedEmailProps {
   clientName: string;
@@ -22,7 +23,7 @@ export default function TicketClosedEmail({
   trackingUrl,
 }: TicketClosedEmailProps) {
   return (
-    <Html lang="en">
+    <Html lang="es-MX">
       <Body
         style={{
           backgroundColor: "#ffffff",
@@ -47,7 +48,7 @@ export default function TicketClosedEmail({
               margin: "0 0 16px",
             }}
           >
-            Hi {clientName},
+            {es.email.ticketClosed.greeting.replace("{name}", clientName)}
           </Text>
 
           <Heading
@@ -71,7 +72,7 @@ export default function TicketClosedEmail({
               margin: "0 0 16px",
             }}
           >
-            Your ticket has been closed. Here is the reason provided by our team:
+            {es.email.ticketClosed.intro}
           </Text>
 
           <Text
@@ -103,7 +104,7 @@ export default function TicketClosedEmail({
               marginBottom: "24px",
             }}
           >
-            View ticket history
+            {es.email.ticketClosed.viewHistory}
           </Button>
 
           <Hr
@@ -122,7 +123,7 @@ export default function TicketClosedEmail({
               margin: "0",
             }}
           >
-            This is an automated notification from your support ticket system.
+            {es.email.ticketClosed.footer}
           </Text>
         </Container>
       </Body>

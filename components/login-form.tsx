@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { t } from "@/lib/i18n/t";
 
 export function LoginForm({
   className,
@@ -27,16 +28,14 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
-          </CardDescription>
+          <CardTitle className="text-2xl">{t("auth.loginTitle")}</CardTitle>
+          <CardDescription>{t("auth.loginDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={formAction}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("common.email")}</Label>
                 <Input
                   id="email"
                   name="email"
@@ -47,12 +46,12 @@ export function LoginForm({
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t("common.password")}</Label>
                   <Link
                     href="/auth/forgot-password"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
-                    Forgot your password?
+                    {t("auth.forgotPassword")}
                   </Link>
                 </div>
                 <div className="relative">
@@ -69,7 +68,9 @@ export function LoginForm({
                     size="icon-sm"
                     className="absolute top-1/2 right-1 -translate-y-1/2 text-muted-foreground"
                     onClick={() => setShowPassword((visible) => !visible)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? t("common.hidePassword") : t("common.showPassword")
+                    }
                   >
                     {showPassword ? <EyeOff /> : <Eye />}
                   </Button>
@@ -79,7 +80,7 @@ export function LoginForm({
                 <p className="text-sm text-red-500">{state.error}</p>
               )}
               <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? "Logging in..." : "Login"}
+                {isPending ? t("auth.loggingIn") : t("auth.login")}
               </Button>
             </div>
           </form>

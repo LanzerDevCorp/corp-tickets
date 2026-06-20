@@ -31,12 +31,4 @@ export const ticketSubmitSchema = z.object({
 
 export type TicketSubmitData = z.infer<typeof ticketSubmitSchema>;
 
-export const PRIORITY_LABELS: Record<
-  "low" | "medium" | "high" | "urgent",
-  string
-> = {
-  low: "Baja",
-  medium: "Media",
-  high: "Alta",
-  urgent: "Urgente",
-};
+export { PRIORITY_LABELS } from "@/lib/i18n/maps";

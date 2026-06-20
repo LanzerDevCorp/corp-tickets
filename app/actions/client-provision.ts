@@ -1,6 +1,7 @@
 "use server";
 
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { es } from "@/lib/i18n/es";
 
 type ProvisionResult = {
   userId: string | null;
@@ -32,7 +33,7 @@ export async function provisionClient(
       userId: null,
       alreadyExisted: false,
       actionLink: null,
-      error: "Invalid email address",
+      error: es.errors.invalidEmail,
     };
   }
 
@@ -62,7 +63,7 @@ export async function provisionClient(
         userId: null,
         alreadyExisted: false,
         actionLink: null,
-        error: createError?.message ?? "Failed to create user",
+        error: createError?.message ?? es.errors.failedCreateUser,
       };
     }
 

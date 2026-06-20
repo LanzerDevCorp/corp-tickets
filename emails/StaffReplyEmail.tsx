@@ -1,4 +1,5 @@
 import { Html, Body, Container, Heading, Text } from "@react-email/components";
+import { es } from "@/lib/i18n/es";
 
 interface StaffReplyEmailProps {
   clientName: string;
@@ -12,7 +13,7 @@ export default function StaffReplyEmail({
   commentBody,
 }: StaffReplyEmailProps) {
   return (
-    <Html lang="en">
+    <Html lang="es-MX">
       <Body
         style={{
           backgroundColor: "#ffffff",
@@ -37,7 +38,7 @@ export default function StaffReplyEmail({
               margin: "0 0 16px",
             }}
           >
-            Hi {clientName},
+            {es.email.staffReply.greeting.replace("{name}", clientName)}
           </Text>
 
           <Heading
@@ -61,7 +62,7 @@ export default function StaffReplyEmail({
               margin: "0 0 16px",
             }}
           >
-            A team member replied to your ticket:
+            {es.email.staffReply.intro}
           </Text>
 
           <Text
@@ -95,7 +96,7 @@ export default function StaffReplyEmail({
               margin: "0",
             }}
           >
-            This is an automated notification from your support ticket system.
+            {es.email.staffReply.footer}
           </Text>
         </Container>
       </Body>

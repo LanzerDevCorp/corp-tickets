@@ -1,4 +1,4 @@
-const LOCALE = "en-US";
+const LOCALE = "es-MX";
 
 export function formatDate(value: string | Date): string {
   const date = value instanceof Date ? value : new Date(value);

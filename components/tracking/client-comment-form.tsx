@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addComment, type CommentWithAuthor } from "@/app/actions/comments";
 import { CommentSubmitSchema } from "@/lib/schemas/comment-submit";
+import { t } from "@/lib/i18n/t";
 
 const ClientCommentFormSchema = CommentSubmitSchema.omit({
   is_internal: true,
@@ -59,7 +60,7 @@ export default function ClientCommentForm({
     for (const email of ccEmails) {
       const result = z.string().email().safeParse(email);
       if (!result.success) {
-        setCcParseError(`Invalid email address: ${email}`);
+        setCcParseError(t("tracking.invalidEmail", { email }));
         return;
       }
     }
@@ -67,7 +68,7 @@ export default function ClientCommentForm({
     const bodyCheck = CommentSubmitSchema.shape.body.safeParse(data.body);
     if (!bodyCheck.success) {
       form.setError("body", {
-        message: bodyCheck.error.issues[0]?.message ?? "Invalid comment",
+        message: bodyCheck.error.issues[0]?.message ?? t("validation.invalidCommentData"),
       });
       return;
     }
@@ -83,7 +84,7 @@ export default function ClientCommentForm({
       form.reset();
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "Failed to post comment";
+        err instanceof Error ? err.message : t("dashboard.failedPostComment");
       form.setError("root", { message });
     }
   };
@@ -91,7 +92,7 @@ export default function ClientCommentForm({
   return (
     <div className="rounded-xl border border-zinc-200 bg-white/50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
       <h4 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-        Add a comment
+        {t("tracking.addComment")}
       </h4>
 
       <form id={formId} onSubmit={form.handleSubmit(handleSubmit)}>
@@ -101,12 +102,12 @@ export default function ClientCommentForm({
           render={({ field, fieldState }) => (
             <div className="mb-3 space-y-1.5">
               <Label htmlFor={`${formId}-body`} className="sr-only">
-                Comment
+                {t("tracking.comment")}
               </Label>
               <Textarea
                 {...field}
                 id={`${formId}-body`}
-                placeholder="Share additional details or reply to the team..."
+                placeholder={t("tracking.commentPlaceholder")}
                 className="min-h-[100px] resize-y"
                 disabled={disabled || form.formState.isSubmitting}
                 aria-invalid={fieldState.invalid}
@@ -127,7 +128,7 @@ export default function ClientCommentForm({
           render={({ field }) => (
             <div className="mb-3 space-y-1.5">
               <Label htmlFor={`${formId}-cc`} className="text-xs text-zinc-500">
-                CC (optional, comma-separated emails)
+                {t("tracking.ccOptional")}
               </Label>
               <Input
                 {...field}
@@ -155,7 +156,7 @@ export default function ClientCommentForm({
               form.formState.isSubmitting
             }
           >
-            {form.formState.isSubmitting ? "Posting..." : "Post comment"}
+            {form.formState.isSubmitting ? t("common.posting") : t("tracking.postComment")}
           </Button>
         </div>
       </form>

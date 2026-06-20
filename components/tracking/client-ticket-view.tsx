@@ -14,6 +14,8 @@ import CommentThread from "@/components/dashboard/comment-thread";
 import ClientCommentForm from "@/components/tracking/client-comment-form";
 import { type CommentWithAuthor } from "@/app/actions/comments";
 import { formatDateTime } from "@/lib/format-date";
+import { t } from "@/lib/i18n/t";
+import { statusLabel, priorityLabel } from "@/lib/i18n/maps";
 
 type ClientTicketViewProps = {
   initialTicket: {
@@ -62,19 +64,19 @@ export default function ClientTicketView({
               variant="outline"
               className={`${STATUS_COLORS[initialTicket.status] ?? ""} px-2.5 py-0.5 text-[10px] uppercase tracking-wider`}
             >
-              {initialTicket.status.replace("_", " ")}
+              {statusLabel(initialTicket.status)}
             </Badge>
             <Badge
               variant="outline"
               className={`${PRIORITY_COLORS[initialTicket.priority] ?? ""} px-2.5 py-0.5 text-[10px] uppercase tracking-wider`}
             >
-              {initialTicket.priority}
+              {priorityLabel(initialTicket.priority)}
             </Badge>
             <Badge
               variant="secondary"
               className="bg-zinc-100 text-[10px] uppercase tracking-wider text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
             >
-              {initialTicket.category?.name ?? "General"}
+              {initialTicket.category?.name ?? t("common.general")}
             </Badge>
           </div>
           <CardTitle className="text-2xl font-bold text-zinc-950 dark:text-zinc-50">
@@ -83,11 +85,11 @@ export default function ClientTicketView({
           <CardDescription className="mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
             <span className="flex items-center gap-1.5 text-zinc-500">
               <User className="h-3.5 w-3.5" />
-              Assigned:{" "}
+              {t("common.assigned")}{" "}
               <strong className="font-medium text-zinc-700 dark:text-zinc-300">
                 {initialTicket.assignee?.display_name ||
                   initialTicket.assignee?.email ||
-                  "Pending assignment"}
+                  t("common.pendingAssignment")}
               </strong>
             </span>
             <span className="flex items-center gap-1.5 text-zinc-500">
@@ -99,7 +101,7 @@ export default function ClientTicketView({
         <CardContent className="pt-6">
           <div>
             <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-              Description
+              {t("common.description")}
             </h3>
             <p className="whitespace-pre-line leading-relaxed text-zinc-800 dark:text-zinc-200">
               {initialTicket.body}
@@ -109,7 +111,7 @@ export default function ClientTicketView({
           {isClosed && initialTicket.closure_reason && (
             <div className="mt-8 rounded-xl border border-rose-500/20 bg-rose-500/5 p-4">
               <h4 className="mb-1 text-sm font-semibold uppercase tracking-wider text-rose-500">
-                Closure reason
+                {t("dashboard.closureReason")}
               </h4>
               <p className="text-sm italic text-zinc-700 dark:text-zinc-300">
                 {initialTicket.closure_reason}
@@ -121,13 +123,12 @@ export default function ClientTicketView({
 
       <div className="space-y-4">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
-          Conversation
+          {t("common.conversation")}
         </h3>
         <CommentThread comments={comments} />
         {isClosed ? (
           <p className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/50">
-            This ticket is closed. You can review the conversation above but
-            cannot add new comments.
+            {t("tracking.ticketClosedNotice")}
           </p>
         ) : (
           <ClientCommentForm

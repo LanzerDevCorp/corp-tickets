@@ -1,26 +1,23 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Tag } from "lucide-react";
+import { t } from "@/lib/i18n/t";
 
 export default function AdminPage() {
   return (
     <main className="flex min-h-svh flex-col p-8">
-      <h1 className="text-2xl font-bold mb-2">Admin</h1>
-      <p className="text-muted-foreground mb-8">
-        Manage users and ticket categories.
-      </p>
+      <h1 className="text-2xl font-bold mb-2">{t("admin.title")}</h1>
+      <p className="text-muted-foreground mb-8">{t("admin.subtitle")}</p>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-2xl">
         <Link href="/admin/users" className="block">
           <Card className="hover:bg-accent transition-colors cursor-pointer h-full">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">
               <Users className="h-5 w-5 text-muted-foreground" />
-              <CardTitle className="text-base">Users</CardTitle>
+              <CardTitle className="text-base">{t("admin.users")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Invite and manage staff accounts.
-              </p>
+              <p className="text-sm text-muted-foreground">{t("admin.usersDescription")}</p>
             </CardContent>
           </Card>
         </Link>
@@ -29,11 +26,11 @@ export default function AdminPage() {
           <Card className="hover:bg-accent transition-colors cursor-pointer h-full">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">
               <Tag className="h-5 w-5 text-muted-foreground" />
-              <CardTitle className="text-base">Categories</CardTitle>
+              <CardTitle className="text-base">{t("admin.categories")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Add and configure ticket categories.
+                {t("admin.categoriesDescription")}
               </p>
             </CardContent>
           </Card>

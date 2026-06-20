@@ -6,8 +6,6 @@ vi.mock("@/app/actions/auth", () => ({
   loginUser: vi.fn().mockResolvedValue({ error: null }),
 }));
 
-// React 19 useActionState — available in react/experimental or via the global
-// @testing-library/react wraps this automatically in test env
 import { LoginForm } from "../login-form";
 import { loginUser } from "@/app/actions/auth";
 
@@ -18,32 +16,32 @@ describe("LoginForm", () => {
 
   it("renders email and password fields", () => {
     render(<LoginForm />);
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/correo/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^contraseña$/i)).toBeInTheDocument();
   });
 
   it("renders a submit button", () => {
     render(<LoginForm />);
-    expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /iniciar sesión/i })
+    ).toBeInTheDocument();
   });
 
   it("displays error message when action returns error", async () => {
-    mockLoginUser.mockResolvedValue({ error: "Invalid credentials" });
+    mockLoginUser.mockResolvedValue({ error: "Credenciales inválidas" });
 
     render(<LoginForm />);
 
-    await userEvent.type(screen.getByLabelText(/email/i), "wrong@test.com");
-    await userEvent.type(screen.getByLabelText(/^password$/i), "badpass");
-    await userEvent.click(screen.getByRole("button", { name: /login/i }));
+    await userEvent.type(screen.getByLabelText(/correo/i), "wrong@test.com");
+    await userEvent.type(screen.getByLabelText(/^contraseña$/i), "badpass");
+    await userEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
+      expect(screen.getByText(/credenciales inválidas/i)).toBeInTheDocument();
     });
   });
 
   it("does not import from @supabase/supabase-js client directly", async () => {
-    // This is enforced at the code level — no client import in source
-    // Verified by checking that the form uses the Server Action
     const formModule = await import("../login-form");
     expect(formModule.LoginForm).toBeDefined();
   });

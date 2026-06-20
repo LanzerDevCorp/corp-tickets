@@ -52,6 +52,8 @@ import {
   type AdminInviteData,
 } from "@/lib/schemas/admin-invite";
 import { formatDate } from "@/lib/format-date";
+import { t } from "@/lib/i18n/t";
+import { roleLabel } from "@/lib/i18n/maps";
 
 // ---------------------------------------------------------------------------
 // UsersTable
@@ -60,7 +62,7 @@ import { formatDate } from "@/lib/format-date";
 export function UsersTable({ users, currentUserId }: { users: UserRow[]; currentUserId?: string }) {
   if (users.length === 0) {
     return (
-      <p className="text-muted-foreground py-8 text-center">No users found.</p>
+      <p className="text-muted-foreground py-8 text-center">{t("admin.noUsers")}</p>
     );
   }
 
@@ -68,12 +70,12 @@ export function UsersTable({ users, currentUserId }: { users: UserRow[]; current
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Role</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Joined</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead>{t("admin.name")}</TableHead>
+          <TableHead>{t("common.email")}</TableHead>
+          <TableHead>{t("admin.role")}</TableHead>
+          <TableHead>{t("admin.status")}</TableHead>
+          <TableHead>{t("admin.joined")}</TableHead>
+          <TableHead>{t("common.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -83,7 +85,7 @@ export function UsersTable({ users, currentUserId }: { users: UserRow[]; current
             <TableCell>{user.email}</TableCell>
             <TableCell>
               <span className={getRoleBadgeClass(user.role)}>
-                {user.role}
+                {roleLabel(user.role)}
               </span>
             </TableCell>
             <TableCell>
@@ -130,8 +132,8 @@ function getRoleBadgeClass(role: UserRow["role"]) {
 }
 
 function getStatusLabel(isPendingInvite: boolean, isActive: boolean) {
-  if (isPendingInvite) return "Pending";
-  return isActive ? "Active" : "Inactive";
+  if (isPendingInvite) return t("admin.pending");
+  return isActive ? t("admin.active") : t("admin.inactive");
 }
 
 function getStatusBadgeClass(isPendingInvite: boolean, isActive: boolean) {
@@ -171,7 +173,7 @@ export function InviteUserDialog() {
     try {
       result = await inviteUser(parsed.data.email, parsed.data.role);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to send invitation.");
+      toast.error(e instanceof Error ? e.message : t("admin.failedSendInvitation"));
       return;
     }
 
@@ -180,7 +182,7 @@ export function InviteUserDialog() {
       return;
     }
 
-    toast.success("Invitation sent.");
+    toast.success(t("admin.invitationSent"));
     form.reset();
     setOpen(false);
     router.refresh();
@@ -189,13 +191,13 @@ export function InviteUserDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Invite User</Button>
+        <Button>{t("admin.inviteUser")}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Invite User</DialogTitle>
+          <DialogTitle>{t("admin.inviteUserTitle")}</DialogTitle>
           <DialogDescription>
-            Send an invitation email to a new staff member.
+            {t("admin.inviteUserDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -210,7 +212,7 @@ export function InviteUserDialog() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("common.email")}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -229,7 +231,7 @@ export function InviteUserDialog() {
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
+                  <FormLabel>{t("admin.role")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -237,12 +239,12 @@ export function InviteUserDialog() {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
+                        <SelectValue placeholder={t("admin.selectRole")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="it">IT</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="it">{roleLabel("it")}</SelectItem>
+                      <SelectItem value="admin">{roleLabel("admin")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -258,7 +260,7 @@ export function InviteUserDialog() {
             form={formId}
             disabled={!form.formState.isValid || form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? "Sending..." : "Send Invitation"}
+            {form.formState.isSubmitting ? t("common.sending") : t("admin.sendInvitation")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -282,7 +284,7 @@ export function ReinviteButton({ userId }: { userId: string }) {
       toast.error(result.error);
       return;
     }
-    toast.success("Invitation resent.");
+    toast.success(t("admin.invitationResent"));
     router.refresh();
   };
 
@@ -293,7 +295,7 @@ export function ReinviteButton({ userId }: { userId: string }) {
       onClick={handleClick}
       disabled={loading}
     >
-      {loading ? "Sending..." : "Reinvite"}
+      {loading ? t("common.sending") : t("admin.reinvite")}
     </Button>
   );
 }
@@ -315,7 +317,7 @@ export function CancelInviteButton({ userId }: { userId: string }) {
       toast.error(result.error);
       return;
     }
-    toast.success("Invitation cancelled.");
+    toast.success(t("admin.invitationCancelled"));
     setOpen(false);
     router.refresh();
   };
@@ -324,15 +326,14 @@ export function CancelInviteButton({ userId }: { userId: string }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="destructive" size="sm">
-          Cancel Invite
+          {t("admin.cancelInvite")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Cancel Invitation</DialogTitle>
+          <DialogTitle>{t("admin.cancelInviteTitle")}</DialogTitle>
           <DialogDescription>
-            This will delete the pending account. You can invite this email again
-            later.
+            {t("admin.cancelInviteDescription")}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -341,14 +342,14 @@ export function CancelInviteButton({ userId }: { userId: string }) {
             onClick={() => setOpen(false)}
             disabled={loading}
           >
-            Keep Invitation
+            {t("admin.keepInvitation")}
           </Button>
           <Button
             variant="destructive"
             onClick={handleConfirm}
             disabled={loading}
           >
-            {loading ? "Cancelling..." : "Cancel Invitation"}
+            {loading ? t("admin.cancelling") : t("admin.cancelInvitation")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -373,7 +374,7 @@ export function DeactivateButton({ userId, isSelf }: { userId: string; isSelf?: 
       toast.error(result.error);
       return;
     }
-    toast.success("User deactivated.");
+    toast.success(t("admin.userDeactivated"));
     setOpen(false);
     router.refresh();
   };
@@ -382,15 +383,14 @@ export function DeactivateButton({ userId, isSelf }: { userId: string; isSelf?: 
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="destructive" size="sm" disabled={isSelf}>
-          Deactivate
+          {t("admin.deactivate")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Deactivate User</DialogTitle>
+          <DialogTitle>{t("admin.deactivateTitle")}</DialogTitle>
           <DialogDescription>
-            Are you sure you want to deactivate this user? They will no longer
-            be able to access the system.
+            {t("admin.deactivateDescription")}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -399,14 +399,14 @@ export function DeactivateButton({ userId, isSelf }: { userId: string; isSelf?: 
             onClick={() => setOpen(false)}
             disabled={loading}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             variant="destructive"
             onClick={handleConfirm}
             disabled={loading}
           >
-            {loading ? "Deactivating..." : "Deactivate"}
+            {loading ? t("admin.deactivating") : t("admin.deactivate")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -430,7 +430,7 @@ export function ReactivateButton({ userId }: { userId: string }) {
       toast.error(result.error);
       return;
     }
-    toast.success("User reactivated.");
+    toast.success(t("admin.userReactivated"));
     router.refresh();
   };
 
@@ -441,7 +441,7 @@ export function ReactivateButton({ userId }: { userId: string }) {
       onClick={handleClick}
       disabled={loading}
     >
-      {loading ? "Reactivating..." : "Reactivate"}
+      {loading ? t("admin.reactivating") : t("admin.reactivate")}
     </Button>
   );
 }

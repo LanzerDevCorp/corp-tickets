@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { t } from "@/lib/i18n/t";
 
 type Status = "loading" | "ready" | "invalid";
 
@@ -34,7 +35,7 @@ export function AcceptInviteShell() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setErrorMessage(err instanceof Error ? err.message : "Unknown error");
+        setErrorMessage(err instanceof Error ? err.message : t("errors.genericError"));
         setStatus("invalid");
       });
 
@@ -47,8 +48,8 @@ export function AcceptInviteShell() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Verifying invitation…</CardTitle>
-          <CardDescription>Setting up your session from the invite link.</CardDescription>
+          <CardTitle className="text-2xl">{t("auth.verifyingInvite")}</CardTitle>
+          <CardDescription>{t("auth.verifyingInviteDescription")}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -58,10 +59,9 @@ export function AcceptInviteShell() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Invitation link invalid</CardTitle>
+          <CardTitle className="text-2xl">{t("auth.inviteInvalid")}</CardTitle>
           <CardDescription>
-            Open the link from your invitation email, or ask an admin to send a
-            new one.
+            {t("auth.inviteInvalidDescription")}
             {errorMessage ? (
               <>
                 {" "}
@@ -74,7 +74,7 @@ export function AcceptInviteShell() {
         </CardHeader>
         <CardContent>
           <Button asChild className="w-full">
-            <Link href="/auth/login">Go to login</Link>
+            <Link href="/auth/login">{t("auth.goToLogin")}</Link>
           </Button>
         </CardContent>
       </Card>

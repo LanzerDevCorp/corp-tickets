@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { t } from "@/lib/i18n/t";
 
 type State = { error: string | null; submitted?: boolean };
 
@@ -40,14 +41,11 @@ export function ForgotPasswordForm({
       <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Check Your Email</CardTitle>
-            <CardDescription>Password reset instructions sent</CardDescription>
+            <CardTitle className="text-2xl">{t("auth.checkEmailTitle")}</CardTitle>
+            <CardDescription>{t("auth.checkEmailDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
-              If you registered using your email and password, you will receive
-              a password reset email.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("auth.checkEmailBody")}</p>
           </CardContent>
         </Card>
       </div>
@@ -58,17 +56,14 @@ export function ForgotPasswordForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Reset Your Password</CardTitle>
-          <CardDescription>
-            Type in your email and we&apos;ll send you a link to reset your
-            password
-          </CardDescription>
+          <CardTitle className="text-2xl">{t("auth.resetPasswordTitle")}</CardTitle>
+          <CardDescription>{t("auth.resetPasswordDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={formAction}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("common.email")}</Label>
                 <Input
                   id="email"
                   name="email"
@@ -81,13 +76,13 @@ export function ForgotPasswordForm({
                 <p className="text-sm text-red-500">{state.error}</p>
               )}
               <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? "Sending..." : "Send reset email"}
+                {isPending ? t("common.sending") : t("auth.sendResetEmail")}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
+              {t("auth.alreadyHaveAccount")}{" "}
               <Link href="/auth/login" className="underline underline-offset-4">
-                Login
+                {t("auth.login")}
               </Link>
             </div>
           </form>

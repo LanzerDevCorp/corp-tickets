@@ -105,7 +105,7 @@ describe("provisionClient", () => {
   it("returns validation error for invalid email without Supabase call", async () => {
     const result = await provisionClient("not-an-email", "ticket-123");
 
-    expect(result.error).toMatch(/invalid email/i);
+    expect(result.error).toMatch(/correo/i);
     expect(result.userId).toBeNull();
     expect(result.actionLink).toBeNull();
     expect(mockFrom).not.toHaveBeenCalled();

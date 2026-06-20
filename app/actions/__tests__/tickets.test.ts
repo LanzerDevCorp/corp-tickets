@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const mockAdminQueryChain = vi.hoisted(() => ({
+  insert: vi.fn().mockReturnThis(),
+  select: vi.fn().mockReturnThis(),
+  single: vi.fn(),
+}));
+
 vi.mock("@/app/actions/client-provision", () => ({
   provisionClient: vi.fn().mockResolvedValue({
     userId: "user-123",
@@ -21,6 +27,13 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("@/lib/turnstile/verify", () => ({
   verifyTurnstileToken: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/supabase/admin", () => ({
+  supabaseAdmin: {
+    from: vi.fn(() => mockAdminQueryChain),
+    auth: { admin: {} },
+  },
 }));
 
 import {
@@ -76,6 +89,12 @@ function makeSupabaseMock(options: {
 describe("tickets actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAdminQueryChain.insert.mockReturnThis();
+    mockAdminQueryChain.select.mockReturnThis();
+    mockAdminQueryChain.single.mockResolvedValue({
+      data: { id: "ticket-abc" },
+      error: null,
+    });
   });
 
   describe("submitTicket", () => {
@@ -94,12 +113,6 @@ describe("tickets actions", () => {
     }
 
     it("inserta ticket y llama provisionClient con email y ticketId", async () => {
-      mockCreateClient.mockResolvedValue(
-        makeSupabaseMock({
-          queryResult: { data: { id: "ticket-abc" }, error: null },
-        }) as any
-      );
-
       const result = await submitTicket(null as any, validFormData());
 
       expect(result.error).toBeNull();
@@ -143,11 +156,10 @@ describe("tickets actions", () => {
     });
 
     it("retorna error genérico cuando el insert de DB falla", async () => {
-      mockCreateClient.mockResolvedValue(
-        makeSupabaseMock({
-          queryResult: { data: null, error: { message: "DB error" } },
-        }) as any
-      );
+      mockAdminQueryChain.single.mockResolvedValueOnce({
+        data: null,
+        error: { message: "DB error" },
+      });
 
       const result = await submitTicket(null as any, validFormData());
 
@@ -159,11 +171,10 @@ describe("tickets actions", () => {
     });
 
     it("calls notifyTicketCreated with ticketId and actionLink after successful insert", async () => {
-      mockCreateClient.mockResolvedValue(
-        makeSupabaseMock({
-          queryResult: { data: { id: "ticket-created-email" }, error: null },
-        }) as any
-      );
+      mockAdminQueryChain.single.mockResolvedValueOnce({
+        data: { id: "ticket-created-email" },
+        error: null,
+      });
 
       await submitTicket(null as any, validFormData());
 
@@ -174,11 +185,10 @@ describe("tickets actions", () => {
     });
 
     it("does not call notifyTicketCreated when provisionClient returns no actionLink", async () => {
-      mockCreateClient.mockResolvedValue(
-        makeSupabaseMock({
-          queryResult: { data: { id: "ticket-no-link" }, error: null },
-        }) as any
-      );
+      mockAdminQueryChain.single.mockResolvedValueOnce({
+        data: { id: "ticket-no-link" },
+        error: null,
+      });
       mockProvisionClient.mockResolvedValueOnce({
         userId: "user-123",
         alreadyExisted: false,
@@ -192,11 +202,10 @@ describe("tickets actions", () => {
     });
 
     it("calls notifyNewTicket with correct ticketId after successful ticket insert", async () => {
-      mockCreateClient.mockResolvedValue(
-        makeSupabaseMock({
-          queryResult: { data: { id: "ticket-notify-test" }, error: null },
-        }) as any
-      );
+      mockAdminQueryChain.single.mockResolvedValueOnce({
+        data: { id: "ticket-notify-test" },
+        error: null,
+      });
 
       await submitTicket(null as any, validFormData());
 
@@ -204,11 +213,10 @@ describe("tickets actions", () => {
     });
 
     it("does not call notifyNewTicket when ticket insert fails", async () => {
-      mockCreateClient.mockResolvedValue(
-        makeSupabaseMock({
-          queryResult: { data: null, error: { message: "DB error" } },
-        }) as any
-      );
+      mockAdminQueryChain.single.mockResolvedValueOnce({
+        data: null,
+        error: { message: "DB error" },
+      });
 
       await submitTicket(null as any, validFormData());
 
@@ -216,11 +224,10 @@ describe("tickets actions", () => {
     });
 
     it("sigue retornando ticketId aunque provisionClient falle", async () => {
-      mockCreateClient.mockResolvedValue(
-        makeSupabaseMock({
-          queryResult: { data: { id: "ticket-xyz" }, error: null },
-        }) as any
-      );
+      mockAdminQueryChain.single.mockResolvedValueOnce({
+        data: { id: "ticket-xyz" },
+        error: null,
+      });
       mockProvisionClient.mockResolvedValueOnce({
         userId: null,
         alreadyExisted: false,
@@ -258,7 +265,7 @@ describe("tickets actions", () => {
         }) as any
       );
 
-      await expect(getTickets({})).rejects.toThrow("Not authorized");
+      await expect(getTickets({})).rejects.toThrow("No autorizado");
     });
   });
 
@@ -283,7 +290,7 @@ describe("tickets actions", () => {
         }) as any
       );
 
-      await expect(getTicketDetail("ticket-1")).rejects.toThrow("Ticket not found or access denied");
+      await expect(getTicketDetail("ticket-1")).rejects.toThrow("Ticket no encontrado o acceso denegado");
     });
 
     it("triggers auto-assignment to staff if ticket is open and unassigned", async () => {
@@ -338,7 +345,7 @@ describe("tickets actions", () => {
         }) as any
       );
 
-      await expect(updateTicketStatus("ticket-1", "closed")).rejects.toThrow("Closure reason is required when status is closed");
+      await expect(updateTicketStatus("ticket-1", "closed")).rejects.toThrow("Se requiere un motivo de cierre cuando el estado es cerrado");
     });
   });
 

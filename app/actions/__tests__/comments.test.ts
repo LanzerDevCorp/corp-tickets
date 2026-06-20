@@ -100,12 +100,16 @@ describe("comments actions", () => {
       expect(result[2].id).toBe("c3");
     });
 
-    it("throws Not authorized when no role", async () => {
+    it("returns empty list when claims are null (defaults to client role)", async () => {
       mockCreateClient.mockResolvedValue(
-        makeSupabaseMock({ claims: null }) as any
+        makeSupabaseMock({
+          claims: null,
+          queryResult: { data: [], error: null },
+        }) as any
       );
 
-      await expect(getComments("ticket-uuid-1")).rejects.toThrow("Not authorized");
+      const result = await getComments("ticket-uuid-1");
+      expect(result).toEqual([]);
     });
   });
 
@@ -245,7 +249,7 @@ describe("comments actions", () => {
 
       await expect(
         addComment({ ticketId: "ticket-uuid-1", body: "test", is_internal: false })
-      ).rejects.toThrow("Not authorized");
+      ).rejects.toThrow("No autorizado");
     });
   });
 });

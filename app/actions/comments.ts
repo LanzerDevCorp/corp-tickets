@@ -7,6 +7,7 @@ import {
   notifyPublicComment,
   notifyClientComment,
 } from "@/lib/notifications/comments";
+import { es } from "@/lib/i18n/es";
 
 export type CommentWithAuthor = {
   id: string;
@@ -34,7 +35,7 @@ export async function getComments(
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (!role) {
-    throw new Error("Not authorized");
+    throw new Error(es.errors.notAuthorized);
   }
 
   const { data, error } = await supabase
@@ -70,7 +71,7 @@ export async function addComment(input: {
   const authorId = claimsData?.claims?.sub;
 
   if (!role || !authorId) {
-    throw new Error("Not authorized");
+    throw new Error(es.errors.notAuthorized);
   }
 
   const parsed = CommentSubmitSchema.safeParse({
@@ -81,7 +82,7 @@ export async function addComment(input: {
 
   if (!parsed.success) {
     throw new Error(
-      parsed.error.issues[0]?.message ?? "Invalid comment data"
+      parsed.error.issues[0]?.message ?? es.validation.invalidCommentData
     );
   }
 

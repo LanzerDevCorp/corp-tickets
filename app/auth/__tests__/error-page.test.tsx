@@ -9,7 +9,6 @@ vi.mock("@/lib/supabase/admin", () => ({
   supabaseAdmin: { auth: { admin: {} } },
 }));
 
-// Import the page as a default — it's an async server component
 import Page from "../error/page";
 
 describe("auth/error page", () => {
@@ -18,8 +17,8 @@ describe("auth/error page", () => {
     const element = await Page({ searchParams });
     render(element);
 
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /request/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/correo/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /solicitar/i })).toBeInTheDocument();
   });
 
   it("renders generic error message for other error codes", async () => {
@@ -27,8 +26,8 @@ describe("auth/error page", () => {
     const element = await Page({ searchParams });
     render(element);
 
-    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
-    expect(screen.queryByLabelText(/email/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/algo salió mal/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/correo/i)).not.toBeInTheDocument();
   });
 
   it("renders generic message when no error_code is present", async () => {
@@ -36,6 +35,6 @@ describe("auth/error page", () => {
     const element = await Page({ searchParams });
     render(element);
 
-    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+    expect(screen.getByText(/algo salió mal/i)).toBeInTheDocument();
   });
 });

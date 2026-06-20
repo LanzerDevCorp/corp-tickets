@@ -1,4 +1,5 @@
 import { Html, Body, Container, Heading, Text } from "@react-email/components";
+import { es } from "@/lib/i18n/es";
 
 interface ClientCommentEmailProps {
   clientName: string;
@@ -12,7 +13,7 @@ export default function ClientCommentEmail({
   commentBody,
 }: ClientCommentEmailProps) {
   return (
-    <Html lang="en">
+    <Html lang="es-MX">
       <Body
         style={{
           backgroundColor: "#ffffff",
@@ -50,7 +51,7 @@ export default function ClientCommentEmail({
               margin: "0 0 16px",
             }}
           >
-            New comment from {clientName}:
+            {es.email.clientComment.intro.replace("{name}", clientName)}
           </Text>
 
           <Text
@@ -84,7 +85,7 @@ export default function ClientCommentEmail({
               margin: "0",
             }}
           >
-            This is an automated notification from your support ticket system.
+            {es.email.clientComment.footer}
           </Text>
         </Container>
       </Body>

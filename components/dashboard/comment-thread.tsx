@@ -2,6 +2,7 @@ import { Lock, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { type CommentWithAuthor } from "@/app/actions/comments";
 import { formatDateTime } from "@/lib/format-date";
+import { t } from "@/lib/i18n/t";
 
 type CommentThreadProps = {
   comments: CommentWithAuthor[];
@@ -12,7 +13,7 @@ export default function CommentThread({ comments }: CommentThreadProps) {
     return (
       <div className="flex flex-col items-center gap-3 py-12 text-zinc-400">
         <MessageSquare className="h-8 w-8 opacity-40" />
-        <p className="text-sm">No comments yet</p>
+        <p className="text-sm">{t("dashboard.noCommentsYet")}</p>
       </div>
     );
   }
@@ -27,7 +28,7 @@ export default function CommentThread({ comments }: CommentThreadProps) {
 }
 
 function CommentCard({ comment }: { comment: CommentWithAuthor }) {
-  const authorName = comment.author?.display_name ?? comment.author?.email ?? "Unknown";
+  const authorName = comment.author?.display_name ?? comment.author?.email ?? t("common.unknown");
   const timestamp = formatDateTime(comment.created_at);
 
   if (comment.is_internal) {
@@ -43,7 +44,7 @@ function CommentCard({ comment }: { comment: CommentWithAuthor }) {
               className="bg-amber-500/10 text-amber-700 border-amber-500/30 dark:text-amber-400 flex items-center gap-1 text-[10px] px-1.5 py-0"
             >
               <Lock className="h-3 w-3" />
-              Internal
+              {t("dashboard.internal")}
             </Badge>
           </div>
           <time className="text-xs text-zinc-400 shrink-0">{timestamp}</time>

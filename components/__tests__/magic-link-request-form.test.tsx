@@ -16,18 +16,18 @@ describe("MagicLinkRequestForm", () => {
 
   it("renders email field", () => {
     render(<MagicLinkRequestForm />);
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/correo/i)).toBeInTheDocument();
   });
 
   it("pre-fills email from defaultEmail prop", () => {
     render(<MagicLinkRequestForm defaultEmail="pre@filled.com" />);
-    expect(screen.getByLabelText(/email/i)).toHaveValue("pre@filled.com");
+    expect(screen.getByLabelText(/correo/i)).toHaveValue("pre@filled.com");
   });
 
   it("calls requestMagicLink on submit", async () => {
     render(<MagicLinkRequestForm />);
-    await userEvent.type(screen.getByLabelText(/email/i), "client@test.com");
-    await userEvent.click(screen.getByRole("button", { name: /request/i }));
+    await userEvent.type(screen.getByLabelText(/correo/i), "client@test.com");
+    await userEvent.click(screen.getByRole("button", { name: /solicitar/i }));
 
     await waitFor(() => {
       expect(mockRequestMagicLink).toHaveBeenCalled();
@@ -38,11 +38,11 @@ describe("MagicLinkRequestForm", () => {
     mockRequestMagicLink.mockResolvedValue({ error: null });
 
     render(<MagicLinkRequestForm />);
-    await userEvent.type(screen.getByLabelText(/email/i), "client@test.com");
-    await userEvent.click(screen.getByRole("button", { name: /request/i }));
+    await userEvent.type(screen.getByLabelText(/correo/i), "client@test.com");
+    await userEvent.click(screen.getByRole("button", { name: /solicitar/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/check your email/i)).toBeInTheDocument();
+      expect(screen.getByText(/revisa tu correo/i)).toBeInTheDocument();
     });
   });
 
@@ -50,8 +50,8 @@ describe("MagicLinkRequestForm", () => {
     mockRequestMagicLink.mockResolvedValue({ error: "Rate limit exceeded" });
 
     render(<MagicLinkRequestForm />);
-    await userEvent.type(screen.getByLabelText(/email/i), "client@test.com");
-    await userEvent.click(screen.getByRole("button", { name: /request/i }));
+    await userEvent.type(screen.getByLabelText(/correo/i), "client@test.com");
+    await userEvent.click(screen.getByRole("button", { name: /solicitar/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/rate limit exceeded/i)).toBeInTheDocument();

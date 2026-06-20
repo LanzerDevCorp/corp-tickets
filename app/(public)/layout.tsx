@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { t } from "@/lib/i18n/t";
 
 export const metadata: Metadata = {
   title: "Enviar ticket · Corp Tickets",
@@ -14,10 +16,16 @@ export default function PublicLayout({
   return (
     <div lang="es-MX" className="force-light min-h-svh bg-[#F6F7FB] flex flex-col text-foreground">
       <header className="border-b border-border bg-white">
-        <div className="mx-auto max-w-2xl px-6 h-14 flex items-center">
+        <div className="mx-auto max-w-2xl px-6 h-14 flex items-center justify-between">
           <span className="text-sm font-semibold text-[#1C2438] tracking-tight">
             Mesa de ayuda
           </span>
+          <Link
+            href="/auth/login"
+            className="text-sm text-[#1C2438]/70 hover:text-[#1C2438] underline-offset-4 hover:underline"
+          >
+            {t("public.staffAccess")}
+          </Link>
         </div>
       </header>
 

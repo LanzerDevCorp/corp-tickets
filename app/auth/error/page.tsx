@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MagicLinkRequestForm } from "@/components/magic-link-request-form";
+import { t } from "@/lib/i18n/t";
 
 type SearchParams = {
   error?: string;
@@ -21,14 +22,10 @@ export default async function Page({
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">
-                  Sorry, something went wrong.
-                </CardTitle>
+                <CardTitle className="text-2xl">{t("auth.errorTitle")}</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
-                <p className="text-sm text-muted-foreground">
-                  Your link has expired. Request a new one below.
-                </p>
+                <p className="text-sm text-muted-foreground">{t("auth.linkExpired")}</p>
                 <MagicLinkRequestForm />
               </CardContent>
             </Card>
@@ -44,18 +41,14 @@ export default async function Page({
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl">
-                Sorry, something went wrong.
-              </CardTitle>
+              <CardTitle className="text-2xl">{t("auth.errorTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
               {params?.error ? (
-                <p className="text-sm text-muted-foreground">
-                  {params.error}
-                </p>
+                <p className="text-sm text-muted-foreground">{params.error}</p>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  An unspecified error occurred.
+                  {t("auth.unspecifiedError")}
                 </p>
               )}
             </CardContent>

@@ -16,7 +16,7 @@ describe("ForgotPasswordForm", () => {
 
   it("renders email field", () => {
     render(<ForgotPasswordForm />);
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/correo/i)).toBeInTheDocument();
   });
 
   it("shows success message after submit (always — no enumeration)", async () => {
@@ -24,11 +24,11 @@ describe("ForgotPasswordForm", () => {
 
     render(<ForgotPasswordForm />);
 
-    await userEvent.type(screen.getByLabelText(/email/i), "any@email.com");
-    await userEvent.click(screen.getByRole("button", { name: /send/i }));
+    await userEvent.type(screen.getByLabelText(/correo/i), "any@email.com");
+    await userEvent.click(screen.getByRole("button", { name: /enviar/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/check your email/i)).toBeInTheDocument();
+      expect(screen.getByText(/revisa tu correo/i)).toBeInTheDocument();
     });
   });
 
@@ -37,11 +37,11 @@ describe("ForgotPasswordForm", () => {
 
     render(<ForgotPasswordForm />);
 
-    await userEvent.type(screen.getByLabelText(/email/i), "unknown@nobody.com");
-    await userEvent.click(screen.getByRole("button", { name: /send/i }));
+    await userEvent.type(screen.getByLabelText(/correo/i), "unknown@nobody.com");
+    await userEvent.click(screen.getByRole("button", { name: /enviar/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/check your email/i)).toBeInTheDocument();
+      expect(screen.getByText(/revisa tu correo/i)).toBeInTheDocument();
     });
   });
 

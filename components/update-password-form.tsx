@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { t } from "@/lib/i18n/t";
 
 export function UpdatePasswordForm({
   className,
@@ -40,7 +41,9 @@ export function UpdatePasswordForm({
       const role = getAppRoleFromClaims(data?.claims);
       router.push(getPostLoginRedirect(role));
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      setError(
+        error instanceof Error ? error.message : t("errors.genericError")
+      );
     } finally {
       setIsLoading(false);
     }
@@ -50,20 +53,18 @@ export function UpdatePasswordForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Reset Your Password</CardTitle>
-          <CardDescription>
-            Please enter your new password below.
-          </CardDescription>
+          <CardTitle className="text-2xl">{t("auth.updatePasswordTitle")}</CardTitle>
+          <CardDescription>{t("auth.updatePasswordDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleForgotPassword}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="password">New password</Label>
+                <Label htmlFor="password">{t("auth.newPassword")}</Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="New password"
+                  placeholder={t("auth.newPasswordPlaceholder")}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -71,7 +72,7 @@ export function UpdatePasswordForm({
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save new password"}
+                {isLoading ? t("common.saving") : t("auth.saveNewPassword")}
               </Button>
             </div>
           </form>

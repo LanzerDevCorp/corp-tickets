@@ -21,7 +21,7 @@ test.describe("Staff login flow", () => {
     await page.fill('[name="password"]', "wrongpassword");
     await page.click('[type="submit"]');
 
-    await expect(page.getByText(/invalid credentials/i)).toBeVisible();
+    await expect(page.getByText(/credenciales inválidas/i)).toBeVisible();
     await expect(page).toHaveURL(/\/auth\/login/);
   });
 
@@ -39,7 +39,7 @@ test.describe("Staff login flow", () => {
     await page.click('[type="submit"]');
     await expect(page).toHaveURL(/\/dashboard/);
 
-    await page.click('button:has-text("Logout")');
+    await page.click('button:has-text("Cerrar sesión")');
     await expect(page).toHaveURL("/");
 
     await page.goto("/dashboard");

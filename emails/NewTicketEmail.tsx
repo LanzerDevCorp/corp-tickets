@@ -1,4 +1,6 @@
 import { Html, Body, Container, Heading, Text, Button, Hr } from "@react-email/components";
+import { es } from "@/lib/i18n/es";
+import { priorityLabel } from "@/lib/i18n/maps";
 
 interface NewTicketEmailProps {
   ticketId: string;
@@ -11,14 +13,14 @@ interface NewTicketEmailProps {
   dashboardUrl: string;
 }
 
-const priorityConfig: Record<
+const priorityColors: Record<
   NewTicketEmailProps["priority"],
-  { label: string; color: string; fontWeight?: string }
+  { color: string; fontWeight?: string }
 > = {
-  low: { label: "Low", color: "#666" },
-  medium: { label: "Medium", color: "#b45309" },
-  high: { label: "High", color: "#c2410c" },
-  urgent: { label: "URGENT", color: "#dc2626", fontWeight: "700" },
+  low: { color: "#666" },
+  medium: { color: "#b45309" },
+  high: { color: "#c2410c" },
+  urgent: { color: "#dc2626", fontWeight: "700" },
 };
 
 export default function NewTicketEmail({
@@ -31,10 +33,10 @@ export default function NewTicketEmail({
   body,
   dashboardUrl,
 }: NewTicketEmailProps) {
-  const pConfig = priorityConfig[priority] ?? priorityConfig.low;
+  const pConfig = priorityColors[priority] ?? priorityColors.low;
 
   return (
-    <Html lang="en">
+    <Html lang="es-MX">
       <Body
         style={{
           backgroundColor: "#ffffff",
@@ -59,7 +61,7 @@ export default function NewTicketEmail({
               margin: "0 0 16px",
             }}
           >
-            A new support ticket has been submitted.
+            {es.email.newTicket.intro}
           </Text>
 
           <Heading
@@ -83,16 +85,16 @@ export default function NewTicketEmail({
               margin: "0 0 8px",
             }}
           >
-            Priority:{" "}
+            {es.email.newTicket.priority}{" "}
             <span
               style={{
                 color: pConfig.color,
                 fontWeight: pConfig.fontWeight ?? "normal",
               }}
             >
-              {pConfig.label}
+              {priorityLabel(priority)}
             </span>
-            {"  ·  "}Category: {categoryName}
+            {"  ·  "}{es.email.newTicket.category} {categoryName}
           </Text>
 
           <Text
@@ -103,7 +105,7 @@ export default function NewTicketEmail({
               margin: "0 0 16px",
             }}
           >
-            From: {submitterName} &lt;{submitterEmail}&gt;
+            {es.email.newTicket.from} {submitterName} &lt;{submitterEmail}&gt;
           </Text>
 
           <Text
@@ -135,7 +137,7 @@ export default function NewTicketEmail({
               marginBottom: "24px",
             }}
           >
-            View in Dashboard
+            {es.email.newTicket.viewDashboard}
           </Button>
 
           <Hr
@@ -154,7 +156,7 @@ export default function NewTicketEmail({
               margin: "0",
             }}
           >
-            This is an automated notification from your support ticket system.
+            {es.email.newTicket.footer}
           </Text>
         </Container>
       </Body>

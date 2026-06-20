@@ -43,6 +43,7 @@ import {
   categoryUpsertSchema,
 } from "@/lib/schemas/category-upsert";
 import { formatDate } from "@/lib/format-date";
+import { t } from "@/lib/i18n/t";
 
 // ---------------------------------------------------------------------------
 // CategoriesTable
@@ -52,7 +53,7 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
   if (categories.length === 0) {
     return (
       <p className="text-muted-foreground py-8 text-center">
-        No categories yet. Create the first one.
+        {t("admin.noCategoriesYet")}
       </p>
     );
   }
@@ -61,10 +62,10 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Created</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead>{t("admin.name")}</TableHead>
+          <TableHead>{t("admin.status")}</TableHead>
+          <TableHead>{t("admin.joined")}</TableHead>
+          <TableHead>{t("common.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -74,11 +75,11 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
             <TableCell>
               {cat.is_enabled ? (
                 <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                  Enabled
+                  {t("admin.enabled")}
                 </span>
               ) : (
                 <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground">
-                  Disabled
+                  {t("admin.disabled")}
                 </span>
               )}
             </TableCell>
@@ -132,7 +133,7 @@ export function NewCategoryDialog() {
       return;
     }
 
-    toast.success("Category created.");
+    toast.success(t("admin.categoryCreated"));
     form.reset();
     setOpen(false);
     router.refresh();
@@ -141,13 +142,13 @@ export function NewCategoryDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>New Category</Button>
+        <Button>{t("admin.newCategory")}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New Category</DialogTitle>
+          <DialogTitle>{t("admin.newCategoryTitle")}</DialogTitle>
           <DialogDescription>
-            Create a new ticket category.
+            {t("admin.newCategoryDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -162,7 +163,7 @@ export function NewCategoryDialog() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{t("admin.name")}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -183,7 +184,7 @@ export function NewCategoryDialog() {
             form={formId}
             disabled={!form.formState.isValid || form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? "Creating..." : "Create Category"}
+            {form.formState.isSubmitting ? t("admin.creating") : t("admin.createCategory")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -222,7 +223,7 @@ export function EditCategoryDialog({ category }: { category: CategoryRow }) {
       return;
     }
 
-    toast.success("Category updated.");
+    toast.success(t("admin.categoryUpdated"));
     setOpen(false);
     router.refresh();
   };
@@ -230,15 +231,15 @@ export function EditCategoryDialog({ category }: { category: CategoryRow }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Edit category">
+        <Button variant="ghost" size="icon" aria-label={t("admin.editCategoryAria")}>
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Category</DialogTitle>
+          <DialogTitle>{t("admin.editCategoryTitle")}</DialogTitle>
           <DialogDescription>
-            Update the category name.
+            {t("admin.editCategoryDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -253,7 +254,7 @@ export function EditCategoryDialog({ category }: { category: CategoryRow }) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{t("admin.name")}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -273,7 +274,7 @@ export function EditCategoryDialog({ category }: { category: CategoryRow }) {
             form={formId}
             disabled={!form.formState.isValid || form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
+            {form.formState.isSubmitting ? t("common.saving") : t("admin.saveChanges")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -310,7 +311,7 @@ export function CategoryToggleSwitch({
     <Switch
       checked={checked}
       onCheckedChange={handleToggle}
-      aria-label="Toggle category enabled"
+      aria-label={t("admin.toggleCategoryAria")}
     />
   );
 }

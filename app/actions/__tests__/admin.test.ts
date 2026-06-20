@@ -200,7 +200,7 @@ describe("reinviteStaffUser", () => {
     });
 
     const result = await reinviteStaffUser("u1");
-    expect(result.error).toBe("User is not pending invitation");
+    expect(result.error).toBe("El usuario no tiene una invitación pendiente");
   });
 });
 
@@ -418,7 +418,7 @@ describe("createCategory", () => {
     mockSupabaseAdmin.from.mockReturnValue(chain as never);
 
     const result = await createCategory({ name: "Hardware" });
-    expect(result.error).toBe("A category with this name already exists.");
+    expect(result.error).toBe("Ya existe una categoría con este nombre.");
     if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("db");
     }
@@ -490,7 +490,7 @@ describe("updateCategory", () => {
     mockSupabaseAdmin.from.mockReturnValue(chain as never);
 
     const result = await updateCategory("c1", { name: "Existing" });
-    expect(result.error).toBe("A category with this name already exists.");
+    expect(result.error).toBe("Ya existe una categoría con este nombre.");
     if (result.error !== null) {
       expect((result as { code?: string }).code).toBe("db");
     }

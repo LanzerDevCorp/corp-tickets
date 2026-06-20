@@ -35,7 +35,9 @@ describe("AuthButton", () => {
     const element = await AuthButton();
     render(element);
 
-    expect(screen.getByRole("link", { name: /sign in/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /iniciar sesión/i })
+    ).toBeInTheDocument();
   });
 
   it("shows /dashboard link for staff role (admin)", async () => {
@@ -46,7 +48,7 @@ describe("AuthButton", () => {
     const element = await AuthButton();
     render(element);
 
-    const dashboardLink = screen.getByRole("link", { name: /dashboard/i });
+    const dashboardLink = screen.getByRole("link", { name: /panel/i });
     expect(dashboardLink).toHaveAttribute("href", "/dashboard");
   });
 
@@ -58,8 +60,7 @@ describe("AuthButton", () => {
     const element = await AuthButton();
     render(element);
 
-    // Client link points to /track (label is "My tickets")
-    const trackLink = screen.getByRole("link", { name: /my tickets/i });
+    const trackLink = screen.getByRole("link", { name: /mis tickets/i });
     expect(trackLink).toHaveAttribute("href", "/track");
   });
 });

@@ -28,6 +28,8 @@ import CommentThread from "@/components/dashboard/comment-thread";
 import CommentForm from "@/components/dashboard/comment-form";
 import { type CommentWithAuthor } from "@/app/actions/comments";
 import { formatDateTime } from "@/lib/format-date";
+import { t } from "@/lib/i18n/t";
+import { statusLabel, priorityLabel } from "@/lib/i18n/maps";
 
 type TicketDetailProps = {
   initialTicket: any;
@@ -78,7 +80,7 @@ export default function TicketDetail({
       const updated = await updateTicketStatus(ticket.id, newStatus as any);
       setTicket(updated);
     } catch (err: any) {
-      setErrorMsg(err.message || "Failed to update status");
+      setErrorMsg(err.message || t("dashboard.failedUpdateStatus"));
     } finally {
       setIsUpdating(false);
     }
@@ -86,7 +88,7 @@ export default function TicketDetail({
 
   const submitClosure = async () => {
     if (!closureReason.trim()) {
-      setDialogError("Please provide a reason for closing the ticket");
+      setDialogError(t("dashboard.closureReasonRequired"));
       return;
     }
 
@@ -97,7 +99,7 @@ export default function TicketDetail({
       const updated = await updateTicketStatus(ticket.id, "closed", closureReason);
       setTicket(updated);
     } catch (err: any) {
-      setErrorMsg(err.message || "Failed to close ticket");
+      setErrorMsg(err.message || t("dashboard.failedCloseTicket"));
     } finally {
       setIsUpdating(false);
     }
@@ -111,7 +113,7 @@ export default function TicketDetail({
       const updated = await assignTicket(ticket.id, val);
       setTicket(updated);
     } catch (err: any) {
-      setErrorMsg(err.message || "Failed to assign ticket");
+      setErrorMsg(err.message || t("dashboard.failedAssignTicket"));
     } finally {
       setIsUpdating(false);
     }
@@ -124,11 +126,11 @@ export default function TicketDetail({
         <Button variant="outline" size="sm" asChild className="gap-2">
           <Link href="/dashboard">
             <ArrowLeft className="h-4 w-4" />
-            Back to Queue
+            {t("dashboard.backToQueue")}
           </Link>
         </Button>
         {isUpdating && (
-          <span className="text-sm text-zinc-400 animate-pulse">Saving changes...</span>
+          <span className="text-sm text-zinc-400 animate-pulse">{t("dashboard.savingChanges")}</span>
         )}
       </div>
 
@@ -146,25 +148,25 @@ export default function TicketDetail({
             <CardHeader className="border-b border-zinc-100 pb-6 dark:border-zinc-900">
               <div className="flex flex-wrap gap-2 mb-3">
                 <Badge variant="outline" className={`${STATUS_COLORS[ticket.status]} uppercase tracking-wider text-[10px] px-2.5 py-0.5`}>
-                  {ticket.status.replace("_", " ")}
+                  {statusLabel(ticket.status)}
                 </Badge>
                 <Badge variant="outline" className={`${PRIORITY_COLORS[ticket.priority]} uppercase tracking-wider text-[10px] px-2.5 py-0.5`}>
-                  {ticket.priority}
+                  {priorityLabel(ticket.priority)}
                 </Badge>
                 <Badge variant="secondary" className="bg-zinc-100 text-zinc-700 uppercase tracking-wider text-[10px] dark:bg-zinc-900 dark:text-zinc-300">
-                  {ticket.category?.name || "General"}
+                  {ticket.category?.name || t("common.general")}
                 </Badge>
               </div>
               <CardTitle className="text-2xl font-bold text-zinc-950 dark:text-zinc-50">
                 {ticket.subject}
               </CardTitle>
               <CardDescription className="flex items-center gap-2 mt-2">
-                <span>Submitted by: <strong>{ticket.name}</strong> ({ticket.email})</span>
+                <span>{t("common.submittedBy")} <strong>{ticket.name}</strong> ({ticket.email})</span>
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="prose prose-zinc max-w-none dark:prose-invert">
-                <h3 className="text-sm font-semibold text-zinc-400 mb-2 uppercase tracking-wider">Description</h3>
+                <h3 className="text-sm font-semibold text-zinc-400 mb-2 uppercase tracking-wider">{t("common.description")}</h3>
                 <p className="text-zinc-800 dark:text-zinc-200 whitespace-pre-line leading-relaxed">
                   {ticket.body || ticket.description}
                 </p>
@@ -172,7 +174,7 @@ export default function TicketDetail({
 
               {ticket.status === "closed" && ticket.closure_reason && (
                 <div className="mt-8 p-4 rounded-xl border border-rose-500/20 bg-rose-500/5">
-                  <h4 className="text-sm font-semibold text-rose-500 uppercase tracking-wider mb-1">Closure Reason</h4>
+                  <h4 className="text-sm font-semibold text-rose-500 uppercase tracking-wider mb-1">{t("dashboard.closureReason")}</h4>
                   <p className="text-sm text-zinc-700 dark:text-zinc-300 italic">{ticket.closure_reason}</p>
                 </div>
               )}
@@ -182,7 +184,7 @@ export default function TicketDetail({
           {/* Comment thread + form */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
-              Comments
+              {t("common.comments")}
             </h3>
             <CommentThread comments={comments} />
             <CommentForm
@@ -196,12 +198,12 @@ export default function TicketDetail({
         <div className="space-y-6">
           <Card className="border-zinc-200 bg-white/50 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/50">
             <CardHeader>
-              <CardTitle className="text-lg font-bold">Actions</CardTitle>
+              <CardTitle className="text-lg font-bold">{t("common.actions")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Status Selector */}
               <div className="space-y-2">
-                <Label htmlFor="status" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Ticket Status</Label>
+                <Label htmlFor="status" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{t("dashboard.ticketStatus")}</Label>
                 <Select
                   value={ticket.status}
                   onValueChange={handleStatusChange}
@@ -211,17 +213,17 @@ export default function TicketDetail({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="open">Open</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="resolved">Resolved</SelectItem>
-                    <SelectItem value="closed">Closed</SelectItem>
+                    <SelectItem value="open">{statusLabel("open")}</SelectItem>
+                    <SelectItem value="in_progress">{statusLabel("in_progress")}</SelectItem>
+                    <SelectItem value="resolved">{statusLabel("resolved")}</SelectItem>
+                    <SelectItem value="closed">{statusLabel("closed")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Assignee Selector */}
               <div className="space-y-2">
-                <Label htmlFor="assignee" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Assigned Staff</Label>
+                <Label htmlFor="assignee" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{t("dashboard.assignedStaff")}</Label>
                 <Select
                   value={ticket.assigned_to || "unassigned"}
                   onValueChange={handleAssigneeChange}
@@ -231,7 +233,7 @@ export default function TicketDetail({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    <SelectItem value="unassigned">{t("common.unassigned")}</SelectItem>
                     {staffUsers.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.display_name || user.email}
@@ -244,13 +246,13 @@ export default function TicketDetail({
               {/* Sidebar Info Summary */}
               <div className="pt-4 border-t border-zinc-100 space-y-3 text-xs text-zinc-500 dark:border-zinc-900">
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> Created:</span>
+                  <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> {t("common.created")}:</span>
                   <span className="font-medium">{formatDateTime(ticket.created_at)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> Assignee:</span>
+                  <span className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> {t("common.assignee")}</span>
                   <span className="font-medium">
-                    {ticket.assignee?.display_name || ticket.assignee?.email || "Unassigned"}
+                    {ticket.assignee?.display_name || ticket.assignee?.email || t("common.unassigned")}
                   </span>
                 </div>
               </div>
@@ -263,20 +265,20 @@ export default function TicketDetail({
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Provide Closure Reason</DialogTitle>
+            <DialogTitle>{t("dashboard.closureReasonDialogTitle")}</DialogTitle>
             <DialogDescription>
-              Please explain why this ticket is being closed without resolution. This reason will be visible to the client.
+              {t("dashboard.closureReasonDialogDescription")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="reason">Closure Reason</Label>
+              <Label htmlFor="reason">{t("dashboard.closureReason")}</Label>
               <Textarea
                 id="reason"
                 value={closureReason}
                 onChange={(e) => setClosureReason(e.target.value)}
-                placeholder="e.g. Duplicate ticket, out of scope, or client withdrew request."
+                placeholder={t("dashboard.closureReasonPlaceholder")}
                 className="min-h-[100px]"
               />
               {dialogError && (
@@ -287,10 +289,10 @@ export default function TicketDetail({
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isUpdating}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button onClick={submitClosure} disabled={isUpdating}>
-              Confirm Closure
+              {t("dashboard.confirmClosure")}
             </Button>
           </DialogFooter>
         </DialogContent>
