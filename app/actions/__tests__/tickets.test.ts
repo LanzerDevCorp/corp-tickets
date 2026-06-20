@@ -58,6 +58,7 @@ function makeSupabaseMock(options: {
   claims?: any;
   queryResult?: any;
   updateResult?: any;
+  userEmail?: string;
 }) {
   const queryChain: any = {
     select: vi.fn().mockReturnThis(),
@@ -80,6 +81,13 @@ function makeSupabaseMock(options: {
     auth: {
       getClaims: vi.fn().mockResolvedValue({
         data: options.claims ? { claims: options.claims } : { claims: null },
+      }),
+      getUser: vi.fn().mockResolvedValue({
+        data: {
+          user: options.userEmail
+            ? { email: options.userEmail }
+            : null,
+        },
       }),
     },
     from: vi.fn().mockReturnValue(queryChain),
@@ -273,7 +281,7 @@ describe("tickets actions", () => {
     it("allows clients to fetch their own ticket if email matches", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { app_role: "client", email: "my-email@test.com" },
+          claims: { app_role: "client", email: "my-email@test.com", sub: "client-1" },
           queryResult: { data: { id: "ticket-1", email: "my-email@test.com" }, error: null },
         }) as any
       );
@@ -282,10 +290,20 @@ describe("tickets actions", () => {
       expect(ticket.id).toBe("ticket-1");
     });
 
+    it("throws not authorized when client session is missing", async () => {
+      mockCreateClient.mockResolvedValue(
+        makeSupabaseMock({
+          claims: null,
+        }) as any
+      );
+
+      await expect(getTicketDetail("ticket-1")).rejects.toThrow("No autorizado");
+    });
+
     it("throws error for clients if ticket email does not match client email", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { app_role: "client", email: "other@test.com" },
+          claims: { app_role: "client", email: "other@test.com", sub: "client-1" },
           queryResult: { data: null, error: { message: "No rows found" } },
         }) as any
       );

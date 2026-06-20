@@ -49,6 +49,7 @@ function makeStaffChain(result: unknown) {
 }
 
 const TICKET_ROW = {
+  id: "6087bb67-a0e1-4bca-86d9-568137c7e38f",
   name: "Alice",
   email: "alice@example.com",
   subject: "Printer jammed",
@@ -352,9 +353,11 @@ describe("notifyTicketCreated", () => {
     const rendered = mockRender.mock.calls[0][0] as React.ReactElement<{
       magicLinkUrl: string;
       clientName: string;
+      ticketReference: string;
     }>;
     expect(rendered.props.magicLinkUrl).toBe("https://auth.test/magic-link");
     expect(rendered.props.clientName).toBe("Alice");
+    expect(rendered.props.ticketReference).toBe("6087BB67");
   });
 });
 

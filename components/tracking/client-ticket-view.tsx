@@ -14,6 +14,7 @@ import CommentThread from "@/components/dashboard/comment-thread";
 import ClientCommentForm from "@/components/tracking/client-comment-form";
 import { type CommentWithAuthor } from "@/app/actions/comments";
 import { formatDateTime } from "@/lib/format-date";
+import { formatTicketReference } from "@/lib/tickets/reference";
 import { t } from "@/lib/i18n/t";
 import { statusLabel, priorityLabel } from "@/lib/i18n/maps";
 
@@ -82,6 +83,9 @@ export default function ClientTicketView({
           <CardTitle className="text-2xl font-bold text-zinc-950 dark:text-zinc-50">
             {initialTicket.subject}
           </CardTitle>
+          <CardDescription className="mt-1 font-mono text-xs uppercase tracking-wider text-zinc-400">
+            #{formatTicketReference(initialTicket.id)}
+          </CardDescription>
           <CardDescription className="mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
             <span className="flex items-center gap-1.5 text-zinc-500">
               <User className="h-3.5 w-3.5" />

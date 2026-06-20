@@ -1,10 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MagicLinkRequestForm } from "@/components/magic-link-request-form";
+import { TrackAccessPanel } from "@/components/tracking/track-access-panel";
 import { t } from "@/lib/i18n/t";
 
 type SearchParams = {
   error?: string;
   error_code?: string;
+  ref?: string;
+  email?: string;
 };
 
 export default async function Page({
@@ -15,21 +17,22 @@ export default async function Page({
   const params = await searchParams;
   const errorCode = params?.error_code;
 
-  if (errorCode === "otp_expired") {
+  if (errorCode === "otp_expired" || errorCode === "session_expired") {
     return (
       <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-        <div className="w-full max-w-sm">
-          <div className="flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">{t("auth.errorTitle")}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4">
-                <p className="text-sm text-muted-foreground">{t("auth.linkExpired")}</p>
-                <MagicLinkRequestForm />
-              </CardContent>
-            </Card>
-          </div>
+        <div className="w-full max-w-md">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">{t("auth.sessionExpiredTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <p className="text-sm text-muted-foreground">{t("auth.linkExpired")}</p>
+              <TrackAccessPanel
+                defaultEmail={params.email ?? ""}
+                defaultTicketRef={params.ref ?? ""}
+              />
+            </CardContent>
+          </Card>
         </div>
       </div>
     );

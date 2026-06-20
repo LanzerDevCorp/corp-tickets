@@ -13,6 +13,7 @@ import { priorityLabel } from "@/lib/i18n/maps";
 interface TicketCreatedEmailProps {
   clientName: string;
   ticketSubject: string;
+  ticketReference: string;
   priority: "low" | "medium" | "high" | "urgent";
   categoryName: string;
   magicLinkUrl: string;
@@ -31,6 +32,7 @@ const priorityColors: Record<
 export default function TicketCreatedEmail({
   clientName,
   ticketSubject,
+  ticketReference,
   priority,
   categoryName,
   magicLinkUrl,
@@ -89,6 +91,18 @@ export default function TicketCreatedEmail({
           >
             {ticketSubject}
           </Heading>
+
+          <Text
+            style={{
+              fontSize: "13px",
+              lineHeight: "1.5",
+              color: "#666",
+              margin: "0 0 16px",
+              fontFamily: "monospace",
+            }}
+          >
+            {es.email.ticketCreated.referenceLabel} #{ticketReference}
+          </Text>
 
           <Text
             style={{

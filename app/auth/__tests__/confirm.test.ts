@@ -15,10 +15,13 @@ import { createClient } from "@/lib/supabase/server";
 
 const mockCreateClient = vi.mocked(createClient);
 
-function makeSupabaseMock(verifyOtpResult: { error: { message: string } | null }) {
+function makeSupabaseMock(verifyOtpResult: { error: { message: string } | null }, options?: { hasUser?: boolean }) {
   return {
     auth: {
       verifyOtp: vi.fn().mockResolvedValue(verifyOtpResult),
+      getUser: vi.fn().mockResolvedValue({
+        data: { user: options?.hasUser ? { id: "user-1", email: "client@test.com" } : null },
+      }),
     },
   };
 }
@@ -69,7 +72,7 @@ describe("GET /auth/confirm — magiclink type", () => {
     }
   });
 
-  it("redirects to error page on expired magiclink token", async () => {
+  it("redirects to error page on expired magiclink token without session", async () => {
     mockCreateClient.mockResolvedValue(
       makeSupabaseMock({ error: { message: "Token has expired" } }) as never
     );
@@ -83,8 +86,26 @@ describe("GET /auth/confirm — magiclink type", () => {
       await GET(req as never);
     } catch (e: unknown) {
       expect((e as Error).message).toContain(
-        "REDIRECT:/auth/error?error_code=otp_expired"
+        "REDIRECT:/track/access?error_code=otp_expired"
       );
+    }
+  });
+
+  it("redirects to next when magiclink token expired but session already exists", async () => {
+    mockCreateClient.mockResolvedValue(
+      makeSupabaseMock({ error: { message: "Token has expired" } }, { hasUser: true }) as never
+    );
+
+    const req = makeRequest({
+      token_hash: "expired-hash",
+      type: "magiclink",
+      next: "/track/abc-123",
+    });
+
+    try {
+      await GET(req as never);
+    } catch (e: unknown) {
+      expect((e as Error).message).toContain("REDIRECT:/track/abc-123");
     }
   });
 });

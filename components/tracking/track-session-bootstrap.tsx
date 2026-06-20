@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { establishBrowserSessionFromUrl } from "@/lib/auth/establish-browser-session";
+import { formatTicketReference } from "@/lib/tickets/reference";
 
 type Props = {
   children: React.ReactNode;
@@ -20,6 +21,7 @@ export function TrackSessionBootstrap({
   hasServerSession,
 }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const [status, setStatus] = useState<Status>(
     hasServerSession ? "ready" : "checking"
   );
@@ -55,8 +57,16 @@ export function TrackSessionBootstrap({
 
   useEffect(() => {
     if (status !== "expired") return;
-    router.replace("/auth/error?error_code=otp_expired");
-  }, [status, router]);
+
+    const ticketMatch = pathname.match(/^\/track\/(?!access$)([^/]+)$/);
+    const ticketId = ticketMatch?.[1];
+    const ref = ticketId ? formatTicketReference(ticketId) : undefined;
+    const query = ref
+      ? `?error_code=session_expired&ref=${encodeURIComponent(ref)}`
+      : "?error_code=session_expired";
+
+    router.replace(`/track/access${query}`);
+  }, [status, router, pathname]);
 
   if (status === "checking") {
     return (

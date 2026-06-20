@@ -37,7 +37,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (type === "magiclink") {
-      redirect(`/auth/error?error_code=otp_expired`);
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        redirect(postVerifyRedirect(type, next));
+      }
+      redirect(`/track/access?error_code=otp_expired`);
     }
 
     redirect(`/auth/error?error=${encodeURIComponent(error.message)}`);

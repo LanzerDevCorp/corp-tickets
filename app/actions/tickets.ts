@@ -1,6 +1,7 @@
 "use server";
 
 import { getAppRoleFromClaims } from "@/lib/auth/claims";
+import { getAuthenticatedEmail } from "@/lib/auth/session-email";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { provisionClient } from "@/app/actions/client-provision";
@@ -126,15 +127,22 @@ export async function getTickets(filters: {
 export async function getTicketDetail(id: string) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
-  const role = getAppRoleFromClaims(claimsData?.claims);
-  const email = claimsData?.claims?.email;
+  const claims = claimsData?.claims;
+  const userId = claims?.sub as string | undefined;
 
-  if (!role) {
+  if (!userId) {
     throw new Error(es.errors.notAuthorized);
   }
 
+  const role = getAppRoleFromClaims(claims);
+
   // Client view: enforce email matches
   if (role === "client") {
+    const email = await getAuthenticatedEmail(supabase, claims);
+    if (!email) {
+      throw new Error(es.errors.notAuthorized);
+    }
+
     const { data: ticket, error } = await supabase
       .from("tickets")
       .select(`
@@ -153,10 +161,7 @@ export async function getTicketDetail(id: string) {
   }
 
   // Staff view: check for auto-assignment on first open
-  if (!claimsData) {
-    throw new Error(es.errors.notAuthorized);
-  }
-  const currentUserId = claimsData.claims.sub;
+  const currentUserId = userId;
 
   let { data: ticket } = await supabase
     .from("tickets")

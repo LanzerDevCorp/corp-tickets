@@ -1,6 +1,12 @@
 "use server";
 
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import {
+  ensureClientUser,
+  establishClientSession,
+} from "@/lib/auth/client-session";
+import { buildTicketAccessUrl } from "@/lib/auth/ticket-access";
+import { sendTicketAccessEmail } from "@/lib/notifications/tickets";
 import { es } from "@/lib/i18n/es";
 
 type ProvisionResult = {
@@ -12,16 +18,6 @@ type ProvisionResult = {
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-/** SSR-safe magic link via /auth/confirm (not Supabase action_link with #hash). */
-function buildMagicLinkConfirmUrl(
-  ticketId: string,
-  hashedToken: string
-): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
-  const next = encodeURIComponent(`/track/${ticketId}`);
-  return `${siteUrl}/auth/confirm?token_hash=${hashedToken}&type=magiclink&next=${next}`;
 }
 
 export async function provisionClient(
@@ -37,55 +33,39 @@ export async function provisionClient(
     };
   }
 
-  // Query public.users to check if client already exists (sync'd by auth trigger)
   const { data: existingUser } = await supabaseAdmin
     .from("users")
     .select("id")
     .eq("email", email)
     .maybeSingle();
 
-  let userId: string | null = null;
-  let alreadyExisted = false;
+  const alreadyExisted = Boolean(existingUser);
+  const ensured = existingUser
+    ? { userId: existingUser.id, error: null }
+    : await ensureClientUser(email);
 
-  if (existingUser) {
-    userId = existingUser.id;
-    alreadyExisted = true;
-  } else {
-    const { data: created, error: createError } =
-      await supabaseAdmin.auth.admin.createUser({
-        email,
-        email_confirm: true,
-        app_metadata: { role: "client" },
-      });
-
-    if (createError || !created?.user) {
-      return {
-        userId: null,
-        alreadyExisted: false,
-        actionLink: null,
-        error: createError?.message ?? es.errors.failedCreateUser,
-      };
-    }
-
-    userId = created.user.id;
+  if (ensured.error || !ensured.userId) {
+    return {
+      userId: null,
+      alreadyExisted: false,
+      actionLink: null,
+      error: ensured.error ?? es.errors.failedCreateUser,
+    };
   }
 
-  const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/track/${ticketId}`;
-  const { data: linkData, error: linkError } =
-    await supabaseAdmin.auth.admin.generateLink({
-      type: "magiclink",
-      email,
-      options: { redirectTo },
-    });
+  const userId = ensured.userId;
 
-  if (linkError) {
-    return { userId, alreadyExisted, actionLink: null, error: linkError.message };
+  let actionLink: string | null = null;
+  try {
+    actionLink = buildTicketAccessUrl(ticketId, email);
+  } catch (err) {
+    return {
+      userId,
+      alreadyExisted,
+      actionLink: null,
+      error: err instanceof Error ? err.message : es.errors.failedCreateUser,
+    };
   }
-
-  const hashedToken = linkData?.properties?.hashed_token;
-  const actionLink = hashedToken
-    ? buildMagicLinkConfirmUrl(ticketId, hashedToken)
-    : null;
 
   return { userId, alreadyExisted, actionLink, error: null };
 }
@@ -93,10 +73,31 @@ export async function provisionClient(
 export async function requestMagicLink(
   email: string
 ): Promise<{ error: string | null }> {
-  const { error } = await supabaseAdmin.auth.admin.generateLink({
-    type: "magiclink",
-    email,
-  });
+  const trimmed = email.trim();
 
-  return { error: error?.message ?? null };
+  if (!isValidEmail(trimmed)) {
+    return { error: es.errors.invalidEmail };
+  }
+
+  const { data: ticket, error: lookupError } = await supabaseAdmin
+    .from("tickets")
+    .select("id")
+    .ilike("email", trimmed)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (lookupError) {
+    console.error("[requestMagicLink] ticket lookup failed", lookupError);
+    return { error: es.errors.magicLinkSendFailed };
+  }
+
+  if (!ticket) {
+    // Avoid email enumeration — show the same success copy in the UI.
+    return { error: null };
+  }
+
+  return sendTicketAccessEmail(ticket.id);
 }
+
+export { ensureClientUser, establishClientSession };

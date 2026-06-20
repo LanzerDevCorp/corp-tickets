@@ -74,7 +74,18 @@ export const es = {
       "Solicita un nuevo restablecimiento de contraseña desde la página de inicio de sesión.",
     requestReset: "Solicitar restablecimiento",
     errorTitle: "Lo sentimos, algo salió mal.",
-    linkExpired: "Tu enlace expiró. Solicita uno nuevo abajo.",
+    linkExpired: "Tu enlace expiró. Puedes entrar con tu correo y número de ticket, o solicitar un nuevo enlace.",
+    sessionExpiredTitle: "Continuar seguimiento",
+    sessionExpiredDescription:
+      "Tu sesión expiró. Ingresa tu correo y el número de ticket que recibiste al enviar la solicitud.",
+    ticketReference: "Número de ticket",
+    ticketReferencePlaceholder: "Ej. 6087BB67",
+    ticketReferenceHint:
+      "Es la referencia de 8 caracteres que aparece en la confirmación o en el correo (#6087BB67).",
+    enterTicket: "Entrar al ticket",
+    resendLinkSection: "¿Prefieres un enlace por correo?",
+    resendLinkDescription:
+      "Te enviaremos un enlace reutilizable al correo con el que enviaste el ticket.",
     unspecifiedError: "Ocurrió un error no especificado.",
   },
   dashboard: {
@@ -239,6 +250,12 @@ export const es = {
     failedLoadAuthUsers: "No se pudieron cargar los usuarios de autenticación",
     invalidEmail: "Correo electrónico inválido",
     failedCreateUser: "No se pudo crear el usuario",
+    magicLinkSendFailed:
+      "No pudimos enviar el enlace. Intenta de nuevo en unos minutos.",
+    invalidTicketReference:
+      "El número de ticket debe ser la referencia de 8 caracteres o el ID completo.",
+    ticketAccessFailed:
+      "No encontramos un ticket con ese correo y número. Verifica los datos.",
     ticketNotFound: "Ticket no encontrado",
     ticketNotFoundOrDenied: "Ticket no encontrado o acceso denegado",
     closureReasonRequired: "Se requiere un motivo de cierre cuando el estado es cerrado",
@@ -264,11 +281,12 @@ export const es = {
       greeting: "Hola {name},",
       intro:
         "Recibimos tu ticket de soporte. Usa el enlace de abajo para ver su estado y responder a nuestro equipo.",
+      referenceLabel: "Número de ticket:",
       priority: "Prioridad:",
       category: "Categoría:",
       trackButton: "Seguir tu ticket",
       footer:
-        "Este enlace expira después de un periodo de inactividad. Si deja de funcionar, solicita uno nuevo desde la página de error.",
+        "Guarda tu número de ticket. Si caduca la sesión, podrás volver a entrar con tu correo y ese número en la página de seguimiento.",
     },
     ticketClosed: {
       greeting: "Hola {name},",
