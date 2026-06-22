@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useActionState, startTransition } from "react";
+import { useRef, useState, useActionState, startTransition, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { Turnstile } from "@marsidev/react-turnstile";
@@ -35,6 +35,8 @@ import {
 } from "@/app/actions/tickets";
 import { isTurnstileEnabled } from "@/lib/turnstile/config";
 import { SubmitSuccess } from "./submit-success";
+import { FileUploadZone } from "./file-upload-zone";
+import { orchestrateFileUpload } from "./upload-orchestration";
 
 const INITIAL_STATE: TicketSubmitResult = { error: "no-submit" as unknown as string } as unknown as TicketSubmitResult;
 
@@ -74,6 +76,14 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
   const [turnstileToken, setTurnstileToken] = useState<string>("");
   const [turnstileError, setTurnstileError] = useState(false);
 
+  // File upload state
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [canRetryWithoutFiles, setCanRetryWithoutFiles] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [successTicketId, setSuccessTicketId] = useState<string | null>(null);
+
   const [actionState, formAction, isPending] = useActionState(
     submitTicket,
     null as unknown as TicketSubmitResult
@@ -92,10 +102,59 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
     },
   });
 
-  const isSuccess = actionState && actionState.error === null;
+  // Phase 1 success + files → enter upload phase
+  const isPhase1Success = actionState && actionState.error === null && "ticketId" in actionState;
+
+  const isSuccess = isPhase1Success && (selectedFiles.length === 0 || uploadSuccess);
+
+  // Trigger file upload phases after ticket is created
+  // We use useCallback to avoid stale closure issues
+  const handleFileUploadPhase = useCallback(
+    async (ticketId: string) => {
+      if (selectedFiles.length === 0) {
+        setUploadSuccess(true);
+        return;
+      }
+
+      setIsUploading(true);
+      setUploadError(null);
+
+      const result = await orchestrateFileUpload(ticketId, selectedFiles);
+
+      setIsUploading(false);
+
+      if (result.error) {
+        setUploadError(result.error);
+        setCanRetryWithoutFiles(result.canRetryWithoutFiles);
+      } else {
+        setUploadSuccess(true);
+      }
+    },
+    [selectedFiles]
+  );
+
+  // When phase 1 succeeds and files are pending, run upload orchestration
+  if (isPhase1Success && selectedFiles.length > 0 && !uploadSuccess && !uploadError && !isUploading) {
+    handleFileUploadPhase((actionState as { error: null; ticketId: string }).ticketId);
+  }
 
   if (isSuccess) {
-    return <SubmitSuccess ticketId={actionState.ticketId} />;
+    const ticketId =
+      successTicketId ??
+      (actionState && actionState.error === null && "ticketId" in actionState
+        ? (actionState as { error: null; ticketId: string }).ticketId
+        : "");
+    return <SubmitSuccess ticketId={ticketId} />;
+  }
+
+  if (isUploading) {
+    return (
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="bg-white rounded-xl border border-border shadow-sm p-8 text-center">
+          <p className="text-sm text-muted-foreground animate-pulse">Uploading files...</p>
+        </div>
+      </div>
+    );
   }
 
   const isTurnstileReady =
@@ -312,6 +371,39 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
                 )}
               />
 
+              {/* File attachments */}
+              <div>
+                <p className="text-sm font-medium mb-2">Archivos adjuntos (opcional)</p>
+                <FileUploadZone
+                  selectedFiles={selectedFiles}
+                  onFilesChange={setSelectedFiles}
+                  disabled={isPending}
+                />
+              </div>
+
+              {/* Upload error + retry without files */}
+              {uploadError && (
+                <div className="space-y-2">
+                  <p className="text-sm text-destructive">{uploadError}</p>
+                  {canRetryWithoutFiles && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedFiles([]);
+                        setUploadError(null);
+                        setCanRetryWithoutFiles(false);
+                        // Re-submit the form without files
+                        form.handleSubmit(handleSubmit)();
+                      }}
+                    >
+                      Retry without files
+                    </Button>
+                  )}
+                </div>
+              )}
+
               {/* Turnstile invisible + error display (disabled — see docs/technical-debt.md) */}
               {turnstileOn && (
                 <div>
@@ -351,7 +443,7 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
                 type="submit"
                 size="lg"
                 className="w-full bg-[#1C2438] hover:bg-[#2a3450] text-white transition-colors"
-                disabled={!isFormValid || isPending}
+                disabled={!isFormValid || isPending || isUploading}
               >
                 {isPending ? "Enviando..." : "Enviar ticket →"}
               </Button>

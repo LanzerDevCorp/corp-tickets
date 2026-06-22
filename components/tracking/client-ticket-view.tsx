@@ -13,6 +13,8 @@ import {
 import CommentThread from "@/components/dashboard/comment-thread";
 import ClientCommentForm from "@/components/tracking/client-comment-form";
 import { type CommentWithAuthor } from "@/app/actions/comments";
+import { type AttachmentItem } from "@/app/actions/attachments";
+import AttachmentList from "@/components/dashboard/attachment-list";
 import { formatDateTime } from "@/lib/format-date";
 import { formatTicketReference } from "@/lib/tickets/reference";
 import { t } from "@/lib/i18n/t";
@@ -31,6 +33,7 @@ type ClientTicketViewProps = {
     assignee?: { display_name: string | null; email: string } | null;
   };
   initialComments: CommentWithAuthor[];
+  initialAttachments?: AttachmentItem[];
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -51,6 +54,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function ClientTicketView({
   initialTicket,
   initialComments,
+  initialAttachments = [],
 }: ClientTicketViewProps) {
   const [comments, setComments] =
     useState<CommentWithAuthor[]>(initialComments);
@@ -120,6 +124,15 @@ export default function ClientTicketView({
               <p className="text-sm italic text-zinc-700 dark:text-zinc-300">
                 {initialTicket.closure_reason}
               </p>
+            </div>
+          )}
+
+          {initialAttachments.length > 0 && (
+            <div className="mt-6 space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+                Attachments
+              </h3>
+              <AttachmentList attachments={initialAttachments} />
             </div>
           )}
         </CardContent>

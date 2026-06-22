@@ -124,6 +124,17 @@ file_size_limit = "50MiB"
 # allowed_mime_types = ["image/png", "image/jpeg"]
 # objects_path = "./images"
 
+[storage.buckets.ticket-attachments]
+public = false
+file_size_limit = "50MiB"
+allowed_mime_types = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/zip",
+]
+
 # Allow connections via S3 compatible clients
 [storage.s3_protocol]
 enabled = true

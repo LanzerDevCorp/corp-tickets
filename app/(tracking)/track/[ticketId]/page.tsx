@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getTicketDetail } from "@/app/actions/tickets";
 import { getComments } from "@/app/actions/comments";
+import { getTicketAttachments } from "@/app/actions/attachments";
 import { notFound } from "next/navigation";
 import ClientTicketView from "@/components/tracking/client-ticket-view";
 import { es } from "@/lib/i18n/es";
@@ -20,15 +21,17 @@ export default async function ClientTrackTicketPage({ params }: PageProps) {
   }
 
   try {
-    const [ticket, initialComments] = await Promise.all([
+    const [ticket, initialComments, initialAttachments] = await Promise.all([
       getTicketDetail(ticketId),
       getComments(ticketId),
+      getTicketAttachments(ticketId).catch(() => []),
     ]);
 
     return (
       <ClientTicketView
         initialTicket={ticket}
         initialComments={initialComments}
+        initialAttachments={initialAttachments}
       />
     );
   } catch (error) {
