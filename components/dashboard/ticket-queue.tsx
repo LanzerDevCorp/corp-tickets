@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getTickets } from "@/app/actions/tickets";
 import {
@@ -18,6 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  MultiSelect,
+  MultiSelectContent,
+  MultiSelectGroup,
+  MultiSelectItem,
+  MultiSelectTrigger,
+  MultiSelectValue,
+} from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,18 +68,53 @@ const STATUS_COLORS: Record<string, string> = {
   closed: "bg-rose-500/10 text-rose-500 border-rose-500/20",
 };
 
+const STATUS_DOT_COLORS: Record<string, string> = {
+  open: "bg-emerald-500",
+  in_progress: "bg-indigo-500",
+  resolved: "bg-zinc-400",
+  closed: "bg-rose-500",
+};
+
+const DEFAULT_STATUSES = ["open", "in_progress"];
+
+function normalizeStatusSelection(prev: string[], next: string[]): string[] {
+  if (next.length === 0) return [...DEFAULT_STATUSES];
+  const added = next.find((v) => !prev.includes(v));
+  if (added === "all") return ["all"];
+  if (prev.includes("all") && added) return [added];
+  if (next.includes("all")) return next.filter((v) => v !== "all");
+  return next;
+}
+
 export default function TicketQueue({
   initialTickets,
   categories,
   staffUsers,
 }: TicketQueueProps) {
-  const [status, setStatus] = useState<string>("all");
+  const [statusSelection, setStatusSelection] = useState<string[]>([...DEFAULT_STATUSES]);
+
+  const statusBadgeLabels = useMemo(
+    () =>
+      (["open", "in_progress", "resolved", "closed"] as const).reduce(
+        (acc, s) => ({
+          ...acc,
+          [s]: (
+            <span className="flex items-center gap-1.5">
+              <span className={`h-2 w-2 rounded-full ${STATUS_DOT_COLORS[s]}`} />
+              {statusLabel(s)}
+            </span>
+          ),
+        }),
+        {} as Record<string, React.ReactNode>,
+      ),
+    [],
+  );
   const [priority, setPriority] = useState<string>("all");
   const [assignedTo, setAssignedTo] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const filters = {
-    status: status === "all" ? undefined : status,
+    statuses: statusSelection.includes("all") ? undefined : statusSelection,
     priority: priority === "all" ? undefined : priority,
     assigned_to: assignedTo === "all" ? undefined : assignedTo,
     sortOrder,
@@ -80,7 +123,7 @@ export default function TicketQueue({
   const { data: tickets = initialTickets, refetch, isFetching } = useQuery({
     queryKey: ["tickets", filters],
     queryFn: () => getTickets(filters),
-    initialData: initialTickets,
+    placeholderData: (prev) => prev ?? initialTickets,
     refetchOnWindowFocus: false,
   });
 
@@ -110,20 +153,35 @@ export default function TicketQueue({
           </div>
 
           {/* Status Filter */}
-          <div className="w-[160px]">
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="bg-white dark:bg-zinc-900">
-                <SelectValue placeholder={t("dashboard.status")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("dashboard.allStatuses")}</SelectItem>
-                <SelectItem value="open">{statusLabel("open")}</SelectItem>
-                <SelectItem value="in_progress">{statusLabel("in_progress")}</SelectItem>
-                <SelectItem value="resolved">{statusLabel("resolved")}</SelectItem>
-                <SelectItem value="closed">{statusLabel("closed")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <MultiSelect
+            values={statusSelection}
+            onValuesChange={(next) =>
+              setStatusSelection((prev) => normalizeStatusSelection(prev, next))
+            }
+          >
+            <MultiSelectTrigger className="min-w-[200px] bg-white dark:bg-zinc-900">
+              <MultiSelectValue placeholder={t("dashboard.status")} />
+            </MultiSelectTrigger>
+            <MultiSelectContent search={false}>
+              <MultiSelectGroup>
+                <MultiSelectItem value="all">
+                  {t("dashboard.allStatuses")}
+                </MultiSelectItem>
+                {(["open", "in_progress", "resolved", "closed"] as const).map((s) => (
+                  <MultiSelectItem
+                    key={s}
+                    value={s}
+                    badgeLabel={statusBadgeLabels[s]}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span className={`h-2 w-2 rounded-full ${STATUS_DOT_COLORS[s]}`} />
+                      {statusLabel(s)}
+                    </span>
+                  </MultiSelectItem>
+                ))}
+              </MultiSelectGroup>
+            </MultiSelectContent>
+          </MultiSelect>
 
           {/* Priority Filter */}
           <div className="w-[160px]">

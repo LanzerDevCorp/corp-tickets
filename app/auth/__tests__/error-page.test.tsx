@@ -12,13 +12,17 @@ vi.mock("@/lib/supabase/admin", () => ({
 import Page from "../error/page";
 
 describe("auth/error page", () => {
-  it("renders MagicLinkRequestForm for otp_expired error code", async () => {
+  it("renders track access panel for otp_expired error code", async () => {
     const searchParams = Promise.resolve({ error_code: "otp_expired", error: "" });
     const element = await Page({ searchParams });
     render(element);
 
-    expect(screen.getByLabelText(/correo/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /solicitar/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/^correo electrónico$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/número de ticket/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /entrar al ticket/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /prefieres un enlace por correo/i })
+    ).toBeInTheDocument();
   });
 
   it("renders generic error message for other error codes", async () => {

@@ -20,12 +20,6 @@ export default function PublicLayout({
           <span className="text-sm font-semibold text-[#1C2438] tracking-tight">
             Mesa de ayuda
           </span>
-          <Link
-            href="/auth/login"
-            className="text-sm text-[#1C2438]/70 hover:text-[#1C2438] underline-offset-4 hover:underline"
-          >
-            {t("public.staffAccess")}
-          </Link>
         </div>
       </header>
 

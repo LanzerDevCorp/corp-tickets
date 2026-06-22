@@ -275,6 +275,45 @@ describe("tickets actions", () => {
 
       await expect(getTickets({})).rejects.toThrow("No autorizado");
     });
+
+    it("applies .in() filter when statuses are provided", async () => {
+      const mock = makeSupabaseMock({
+        claims: { app_role: "it" },
+        queryResult: { data: [{ id: "ticket-1" }], error: null },
+      });
+      mockCreateClient.mockResolvedValue(mock as any);
+
+      await getTickets({ statuses: ["open", "in_progress"] });
+
+      const chain = (mock.from as ReturnType<typeof vi.fn>).mock.results[0].value;
+      expect(chain.in).toHaveBeenCalledWith("status", ["open", "in_progress"]);
+    });
+
+    it("does not apply status filter when statuses is undefined", async () => {
+      const mock = makeSupabaseMock({
+        claims: { app_role: "it" },
+        queryResult: { data: [{ id: "ticket-1" }], error: null },
+      });
+      mockCreateClient.mockResolvedValue(mock as any);
+
+      await getTickets({});
+
+      const chain = (mock.from as ReturnType<typeof vi.fn>).mock.results[0].value;
+      expect(chain.in).not.toHaveBeenCalled();
+    });
+
+    it("does not apply status filter when statuses contains only 'all'", async () => {
+      const mock = makeSupabaseMock({
+        claims: { app_role: "it" },
+        queryResult: { data: [{ id: "ticket-1" }], error: null },
+      });
+      mockCreateClient.mockResolvedValue(mock as any);
+
+      await getTickets({ statuses: ["all"] });
+
+      const chain = (mock.from as ReturnType<typeof vi.fn>).mock.results[0].value;
+      expect(chain.in).not.toHaveBeenCalled();
+    });
   });
 
   describe("getTicketDetail", () => {

@@ -4,7 +4,7 @@ import { t } from "@/lib/i18n/t";
 
 export default async function DashboardPage() {
   const [initialTickets, categories, staffUsers] = await Promise.all([
-    getTickets({ sortOrder: "desc" }),
+    getTickets({ statuses: ["open", "in_progress"], sortOrder: "desc" }),
     getCategories(),
     getStaffUsers(),
   ]);

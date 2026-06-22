@@ -80,7 +80,7 @@ export async function submitTicket(
 }
 
 export async function getTickets(filters: {
-  status?: string;
+  statuses?: string[];
   priority?: string;
   assigned_to?: string;
   sortOrder?: "asc" | "desc";
@@ -101,8 +101,9 @@ export async function getTickets(filters: {
       assignee:users!assigned_to(display_name, email)
     `);
 
-  if (filters.status) {
-    query = query.eq("status", filters.status);
+  const activeStatuses = filters.statuses?.filter((s) => s !== "all");
+  if (activeStatuses && activeStatuses.length > 0) {
+    query = query.in("status", activeStatuses);
   }
   if (filters.priority) {
     query = query.eq("priority", filters.priority);
