@@ -124,7 +124,7 @@ export function FileUploadZone({
         )}
       >
         <p className="text-sm text-muted-foreground">
-          Drag files here or{" "}
+          Arrastra los archivos aquí o{" "}
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
@@ -132,11 +132,11 @@ export function FileUploadZone({
             className="font-medium text-[#1C2438] underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Choose files to attach"
           >
-            Choose files
+            elige los archivos
           </button>
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          PDF, JPEG, PNG, WebP, ZIP — up to {MAX_FILES} files, 50 MB total
+          PDF, JPEG, PNG, WebP, ZIP — hasta {MAX_FILES} archivos, 50 MB total
         </p>
         <input
           ref={inputRef}

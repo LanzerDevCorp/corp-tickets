@@ -1,0 +1,1 @@
+-- Remote migration stub (applied remotely under different filename)
