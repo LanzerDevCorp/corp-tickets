@@ -398,7 +398,7 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
                         form.handleSubmit(handleSubmit)();
                       }}
                     >
-                      Retry without files
+                      Reintentar sin archivos
                     </Button>
                   )}
                 </div>

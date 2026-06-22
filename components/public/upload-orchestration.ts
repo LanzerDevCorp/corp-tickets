@@ -72,7 +72,7 @@ export async function orchestrateFileUpload(
         };
       }
       return {
-        error: "File upload failed. Please try again or submit without files.",
+        error: "El archivo no pudo ser subido. Por favor, inténtalo de nuevo o envía sin archivos.",
         canRetryWithoutFiles: true,
       };
     }
