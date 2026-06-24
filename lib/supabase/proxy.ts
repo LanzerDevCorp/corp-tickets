@@ -47,12 +47,15 @@ export async function updateSession(request: NextRequest) {
   const claims = data?.claims;
   const pathname = request.nextUrl.pathname;
 
-  // Authenticated user on /auth/login → redirect away to avoid loop
+  // Staff already signed in on /auth/login → redirect away to avoid loop.
+  // Clients may still open login (e.g. after a ticket magic-link session).
   if (claims && pathname === "/auth/login") {
     const role = getAppRoleFromClaims(claims);
-    const url = request.nextUrl.clone();
-    url.pathname = getRedirectPath(role);
-    return NextResponse.redirect(url);
+    if (isStaff(role)) {
+      const url = request.nextUrl.clone();
+      url.pathname = getRedirectPath(role);
+      return NextResponse.redirect(url);
+    }
   }
 
   // No session + protected (non-public) route → redirect to login

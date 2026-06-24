@@ -50,7 +50,7 @@ Formulario público de envío de tickets con protección Cloudflare Turnstile. F
 | 8 | Idioma | **Español (MX)** — UI pública de esta fase |
 | 9 | Tests | Unit/integration + **Playwright e2e** happy path |
 | 10 | Seed | `supabase/seed.sql` con categorías de ejemplo |
-| 11 | Layout | Header *"Mesa de ayuda"* + link *"Acceso staff"* → `/auth/login` |
+| 11 | Layout | Header *"Mesa de ayuda"* + link *"Consultar ticket"* → `/track/access` |
 | 12 | Errores | Por campo (validación) / Turnstile con reset widget / genérico catch-all |
 
 ---
@@ -153,7 +153,7 @@ Referenciado por `supabase/config.toml` → `[db.seed] sql_paths`.
 |----------|-------|
 | `lang` | `es-MX` |
 | `title` | Enviar ticket · Corp Tickets |
-| Header | *Mesa de ayuda* + link *Acceso staff* → `/auth/login` |
+| Header | *Mesa de ayuda* + link *Consultar ticket* → `/track/access` |
 | Contenido | Card centrado con formulario o mensaje de éxito / sin categorías |
 
 ---
@@ -189,7 +189,7 @@ Respuesta tipada de la action:
 | Turnstile fallido | La verificación de seguridad falló. Intenta de nuevo. |
 | Error genérico | No pudimos enviar tu ticket. Intenta de nuevo. |
 | Header | Mesa de ayuda |
-| Link staff | Acceso staff |
+| Link consultar | Consultar ticket |
 
 ---
 

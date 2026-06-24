@@ -46,12 +46,20 @@ test.describe("Formulario público de tickets", () => {
     await expect(page.getByLabel(/describe tu problema/i)).toBeVisible();
   });
 
-  test("muestra el link de acceso staff en el header", async ({ page }) => {
+  test("muestra el link Consultar ticket en el header", async ({ page }) => {
     await page.goto("/");
 
-    const staffLink = page.getByRole("link", { name: /acceso staff/i });
-    await expect(staffLink).toBeVisible();
-    await expect(staffLink).toHaveAttribute("href", "/auth/login");
+    const trackLink = page.getByRole("link", { name: /consultar ticket/i });
+    await expect(trackLink).toBeVisible();
+    await expect(trackLink).toHaveAttribute("href", "/track/access");
+  });
+
+  test("no muestra link de Acceso staff en el header público", async ({ page }) => {
+    await page.goto("/");
+
+    await expect(
+      page.getByRole("link", { name: /acceso staff/i })
+    ).not.toBeVisible();
   });
 
   test("el toggle de prioridad tiene los 4 valores", async ({ page }) => {

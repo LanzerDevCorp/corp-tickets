@@ -29,6 +29,12 @@ export function TrackSessionBootstrap({
   useEffect(() => {
     if (hasServerSession) return;
 
+    // /track/access is always a public recovery page — never gate it.
+    if (pathname === "/track/access") {
+      setStatus("ready");
+      return;
+    }
+
     const hasHash =
       typeof window !== "undefined" &&
       window.location.hash.includes("access_token");

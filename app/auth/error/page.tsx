@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrackAccessPanel } from "@/components/tracking/track-access-panel";
+import { redirect } from "next/navigation";
 import { t } from "@/lib/i18n/t";
 
 type SearchParams = {
@@ -18,24 +18,10 @@ export default async function Page({
   const errorCode = params?.error_code;
 
   if (errorCode === "otp_expired" || errorCode === "session_expired") {
-    return (
-      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-        <div className="w-full max-w-md">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">{t("auth.sessionExpiredTitle")}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <p className="text-sm text-muted-foreground">{t("auth.linkExpired")}</p>
-              <TrackAccessPanel
-                defaultEmail={params.email ?? ""}
-                defaultTicketRef={params.ref ?? ""}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
+    const query = new URLSearchParams({ error_code: errorCode });
+    if (params.ref) query.set("ref", params.ref);
+    if (params.email) query.set("email", params.email);
+    redirect(`/track/access?${query.toString()}`);
   }
 
   return (

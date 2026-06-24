@@ -196,6 +196,12 @@ export const es = {
   tracking: {
     support: "Soporte",
     ticketTracking: "Seguimiento de ticket",
+    accessTitle: "Consultar tu ticket",
+    accessDescription:
+      "Ingresa el correo y el número de ticket que recibiste al enviar la solicitud.",
+    otpExpiredTitle: "Enlace expirado",
+    otpExpiredDescription:
+      "Tu enlace de acceso expiró. Ingresa tu correo y número de ticket para continuar, o solicita un nuevo enlace.",
     addComment: "Agregar comentario",
     comment: "Comentario",
     commentPlaceholder: "Comparte detalles adicionales o responde al equipo...",
@@ -218,7 +224,8 @@ export const es = {
     message: "No tienes permiso para acceder a esta página.",
   },
   public: {
-    staffAccess: "Acceso staff",
+    trackTicket: "Consultar ticket",
+    submitTicket: "Enviar ticket",
   },
   validation: {
     invalidInput: "Datos inválidos",

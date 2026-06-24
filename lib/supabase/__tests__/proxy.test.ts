@@ -123,7 +123,7 @@ describe("updateSession — authenticated user on /auth/login", () => {
     expect(res.headers.get("location")).toContain("/dashboard");
   });
 
-  it("redirects authenticated client away from /auth/login to /track", async () => {
+  it("allows authenticated client to access /auth/login", async () => {
     mockCreateServerClient.mockReturnValue(
       makeSupabaseMock({ role: "client", email: "client@corp.com" }) as never
     );
@@ -131,7 +131,6 @@ describe("updateSession — authenticated user on /auth/login", () => {
     const req = makeRequest("/auth/login");
     const res = await updateSession(req);
 
-    expect(res.status).toBe(307);
-    expect(res.headers.get("location")).toContain("/track");
+    expect(res.status).not.toBe(307);
   });
 });

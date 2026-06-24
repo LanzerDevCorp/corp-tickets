@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { t } from "@/lib/i18n/t";
+import { PublicSiteHeader } from "@/components/public/public-site-header";
 
 export const metadata: Metadata = {
   title: "Enviar ticket · Corp Tickets",
@@ -15,13 +15,7 @@ export default function PublicLayout({
 }) {
   return (
     <div lang="es-MX" className="force-light min-h-svh bg-[#F6F7FB] flex flex-col text-foreground">
-      <header className="border-b border-border bg-white">
-        <div className="mx-auto max-w-2xl px-6 h-14 flex items-center justify-between">
-          <span className="text-sm font-semibold text-[#1C2438] tracking-tight">
-            Mesa de ayuda
-          </span>
-        </div>
-      </header>
+      <PublicSiteHeader rightLink={{ href: "/track/access", label: t("public.trackTicket") }} />
 
       <main className="flex-1 flex flex-col justify-center px-4 py-12">
         {children}
