@@ -17,12 +17,12 @@ Each link uses:
 
 ## Dashboard checklist
 
-1. **Site URL**: `https://corp-tickets.vercel.app`
+1. **Site URL**: `https://corp-tickets.com.app`
 2. **Redirect URLs** (add all):
-   - `https://corp-tickets.vercel.app/auth/confirm`
-   - `https://corp-tickets.vercel.app/auth/accept-invite`
-   - `https://corp-tickets.vercel.app/auth/update-password`
-   - `https://corp-tickets.vercel.app/track/**` (legacy magic links; new links use `/auth/confirm`)
+   - `https://corp-tickets.com.app/auth/confirm`
+   - `https://corp-tickets.com.app/auth/accept-invite`
+   - `https://corp-tickets.com.app/auth/update-password`
+   - `https://corp-tickets.com.app/track/**` (legacy magic links; new links use `/auth/confirm`)
 3. **Invite + Recovery templates**: paste from `supabase/templates/` (see above)
 4. **Resend SMTP**: disable **click tracking / link tracking** on the sending domain. Wrapped links break Supabase tokens ([Supabase SMTP docs](https://supabase.com/docs/guides/deployment/going-into-prod#email-link-validity)).
 5. **Vercel env**: `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` must match the active publishable key in Supabase → Project Settings → API.

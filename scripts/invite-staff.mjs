@@ -49,7 +49,7 @@ if (!url || !serviceKey) {
 
 if (!siteUrl) {
   console.error(
-    "Missing NEXT_PUBLIC_SITE_URL. Set it to your app URL (e.g. https://corp-tickets.vercel.app)."
+    "Missing NEXT_PUBLIC_SITE_URL. Set it to your app URL (e.g. https://corp-tickets.com.app)."
   );
   process.exit(1);
 }

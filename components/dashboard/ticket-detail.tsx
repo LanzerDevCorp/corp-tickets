@@ -189,7 +189,7 @@ export default function TicketDetail({
           {initialAttachments.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
-                Attachments
+                Adjuntos
               </h3>
               <AttachmentList attachments={initialAttachments} />
             </div>
