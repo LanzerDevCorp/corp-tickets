@@ -28,7 +28,7 @@ export function validateFiles(
     if (!allowedSet.has(file.type)) {
       return {
         valid: [],
-        error: `File type not allowed: "${file.type}". Accepted formats: PDF, JPEG, PNG, WebP, ZIP.`,
+        error: `File type not allowed: "${file.type}". Accepted formats: PDF, JPEG, PNG, WebP, ZIP, DOCX, XLSX.`,
       };
     }
   }
@@ -136,7 +136,7 @@ export function FileUploadZone({
           </button>
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          PDF, JPEG, PNG, WebP, ZIP — hasta {MAX_FILES} archivos, 50 MB total
+          PDF, JPEG, PNG, WebP, ZIP, DOCX, XLSX — hasta {MAX_FILES} archivos, 50 MB total
         </p>
         <input
           ref={inputRef}
