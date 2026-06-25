@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useActionState, startTransition, useCallback } from "react";
+import { useFormDraft } from "@/hooks/use-form-draft";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { Turnstile } from "@marsidev/react-turnstile";
@@ -106,6 +107,18 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
   const isPhase1Success = actionState && actionState.error === null && "ticketId" in actionState;
 
   const isSuccess = isPhase1Success && (selectedFiles.length === 0 || uploadSuccess);
+
+  // T-06: Draft persistence hook — MUST be called before any early return (Rules of Hooks)
+  const { hasDraft, clearDraft } = useFormDraft(form, categories, !!isSuccess);
+
+  // T-08: Inline confirm state machine for the "Limpiar" button
+  const [confirmingClear, setConfirmingClear] = useState(false);
+
+  const handleConfirmClear = () => {
+    clearDraft();
+    setSelectedFiles([]);
+    setConfirmingClear(false);
+  };
 
   // Trigger file upload phases after ticket is created
   // We use useCallback to avoid stale closure issues
@@ -222,6 +235,20 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
               onSubmit={form.handleSubmit(handleSubmit)}
               className="space-y-5"
             >
+              {/* T-07: Recovery banner — shown when a draft was restored on mount */}
+              {hasDraft && (
+                <div className="flex items-center justify-between rounded-md border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-800">
+                  <span>Borrador recuperado</span>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingClear(true)}
+                    className="ml-4 font-medium underline underline-offset-2 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                  >
+                    Limpiar
+                  </button>
+                </div>
+              )}
+
               {/* Name + Email row */}
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <FormField
@@ -439,14 +466,50 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
                 <p className="text-sm text-destructive">{serverError}</p>
               )}
 
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full bg-[#1C2438] hover:bg-[#2a3450] text-white transition-colors"
-                disabled={!isFormValid || isPending || isUploading}
-              >
-                {isPending ? "Enviando..." : "Enviar ticket →"}
-              </Button>
+              {/* T-08: Action row — submit + "Limpiar" inline confirm state machine */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="flex-1 bg-[#1C2438] hover:bg-[#2a3450] text-white transition-colors"
+                  disabled={!isFormValid || isPending || isUploading}
+                >
+                  {isPending ? "Enviando..." : "Enviar ticket →"}
+                </Button>
+
+                {/* Idle: show "Limpiar" trigger */}
+                {!confirmingClear ? (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingClear(true)}
+                    className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:whitespace-nowrap"
+                  >
+                    Limpiar
+                  </button>
+                ) : (
+                  /* Confirming: show destructive confirm + cancel */
+                  <span className="flex flex-wrap items-center gap-1.5 text-sm">
+                    <span className="text-muted-foreground">
+                      ¿Limpiar todo? Los archivos también se perderán.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleConfirmClear}
+                      className="font-medium text-destructive underline underline-offset-2 hover:text-destructive/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+                    >
+                      Confirmar
+                    </button>
+                    <span className="text-muted-foreground">·</span>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingClear(false)}
+                      className="font-medium underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      Cancelar
+                    </button>
+                  </span>
+                )}
+              </div>
             </form>
           </Form>
         </div>

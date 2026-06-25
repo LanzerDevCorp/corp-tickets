@@ -119,6 +119,8 @@ export const es = {
     failedUpdateStatus: "No se pudo actualizar el estado",
     failedCloseTicket: "No se pudo cerrar el ticket",
     failedAssignTicket: "No se pudo asignar el ticket",
+    ticketCategory: "Categoría del ticket",
+    failedUpdateCategory: "No se pudo actualizar la categoría",
     internalNote: "Nota interna",
     reply: "Responder",
     addInternalNote: "Agregar nota interna",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { updateTicketStatus, assignTicket } from "@/app/actions/tickets";
+import { updateTicketStatus, assignTicket, updateTicketCategory } from "@/app/actions/tickets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -36,6 +36,7 @@ import { statusLabel, priorityLabel } from "@/lib/i18n/maps";
 type TicketDetailProps = {
   initialTicket: any;
   staffUsers: any[];
+  categories: { id: string; name: string; is_enabled?: boolean }[];
   initialComments: CommentWithAuthor[];
   initialAttachments?: AttachmentItem[];
 };
@@ -57,6 +58,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function TicketDetail({
   initialTicket,
   staffUsers,
+  categories,
   initialComments,
   initialAttachments = [],
 }: TicketDetailProps) {
@@ -104,6 +106,19 @@ export default function TicketDetail({
       setTicket(updated);
     } catch (err: any) {
       setErrorMsg(err.message || t("dashboard.failedCloseTicket"));
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCategoryChange = async (newCategoryId: string) => {
+    try {
+      setIsUpdating(true);
+      setErrorMsg(null);
+      const updated = await updateTicketCategory(ticket.id, newCategoryId);
+      setTicket(updated);
+    } catch (err: any) {
+      setErrorMsg(err.message || t("dashboard.failedUpdateCategory"));
     } finally {
       setIsUpdating(false);
     }
@@ -231,6 +246,27 @@ export default function TicketDetail({
                     <SelectItem value="in_progress">{statusLabel("in_progress")}</SelectItem>
                     <SelectItem value="resolved">{statusLabel("resolved")}</SelectItem>
                     <SelectItem value="closed">{statusLabel("closed")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Category Selector */}
+              <div className="space-y-2">
+                <Label htmlFor="category" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{t("dashboard.ticketCategory")}</Label>
+                <Select
+                  value={ticket.category_id}
+                  onValueChange={handleCategoryChange}
+                  disabled={isUpdating}
+                >
+                  <SelectTrigger id="category" className="bg-white dark:bg-zinc-900">
+                    <SelectValue placeholder={t("common.uncategorized")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

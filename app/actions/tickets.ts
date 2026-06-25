@@ -269,6 +269,32 @@ export async function assignTicket(id: string, assignedTo: string | null) {
   return data;
 }
 
+export async function updateTicketCategory(id: string, categoryId: string) {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const role = getAppRoleFromClaims(claimsData?.claims);
+
+  if (role !== "admin" && role !== "it") {
+    throw new Error(es.errors.notAuthorized);
+  }
+
+  const { data, error } = await supabase
+    .from("tickets")
+    .update({ category_id: categoryId })
+    .eq("id", id)
+    .select(`
+      *,
+      category:categories(name),
+      assignee:users!assigned_to(display_name, email)
+    `)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+
 export async function getCategories() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();

@@ -146,75 +146,77 @@ export default function TicketQueue({
       </CardHeader>
       <CardContent>
         {/* Filters Panel */}
-        <div className="mb-6 flex flex-wrap gap-4 items-center bg-zinc-50/50 p-4 rounded-xl border border-zinc-100 dark:bg-zinc-900/50 dark:border-zinc-900">
+        <div className="mb-6 flex flex-col gap-2 rounded-xl border border-zinc-100 bg-zinc-50/50 p-4 dark:border-zinc-900 dark:bg-zinc-900/50 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
           <div className="flex items-center gap-2 text-zinc-500 text-sm">
             <Filter className="h-4 w-4" />
             <span>{t("common.filters")}</span>
           </div>
 
-          {/* Status Filter */}
-          <MultiSelect
-            values={statusSelection}
-            onValuesChange={(next) =>
-              setStatusSelection((prev) => normalizeStatusSelection(prev, next))
-            }
-          >
-            <MultiSelectTrigger className="min-w-[200px] bg-white dark:bg-zinc-900">
-              <MultiSelectValue placeholder={t("dashboard.status")} />
-            </MultiSelectTrigger>
-            <MultiSelectContent search={false}>
-              <MultiSelectGroup>
-                <MultiSelectItem value="all">
-                  {t("dashboard.allStatuses")}
-                </MultiSelectItem>
-                {(["open", "in_progress", "resolved", "closed"] as const).map((s) => (
-                  <MultiSelectItem
-                    key={s}
-                    value={s}
-                    badgeLabel={statusBadgeLabels[s]}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <span className={`h-2 w-2 rounded-full ${STATUS_DOT_COLORS[s]}`} />
-                      {statusLabel(s)}
-                    </span>
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+            {/* Status Filter */}
+            <MultiSelect
+              values={statusSelection}
+              onValuesChange={(next) =>
+                setStatusSelection((prev) => normalizeStatusSelection(prev, next))
+              }
+            >
+              <MultiSelectTrigger className="min-w-[200px] bg-white dark:bg-zinc-900">
+                <MultiSelectValue placeholder={t("dashboard.status")} />
+              </MultiSelectTrigger>
+              <MultiSelectContent search={false}>
+                <MultiSelectGroup>
+                  <MultiSelectItem value="all">
+                    {t("dashboard.allStatuses")}
                   </MultiSelectItem>
-                ))}
-              </MultiSelectGroup>
-            </MultiSelectContent>
-          </MultiSelect>
+                  {(["open", "in_progress", "resolved", "closed"] as const).map((s) => (
+                    <MultiSelectItem
+                      key={s}
+                      value={s}
+                      badgeLabel={statusBadgeLabels[s]}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <span className={`h-2 w-2 rounded-full ${STATUS_DOT_COLORS[s]}`} />
+                        {statusLabel(s)}
+                      </span>
+                    </MultiSelectItem>
+                  ))}
+                </MultiSelectGroup>
+              </MultiSelectContent>
+            </MultiSelect>
 
-          {/* Priority Filter */}
-          <div className="w-[160px]">
-            <Select value={priority} onValueChange={setPriority}>
-              <SelectTrigger className="bg-white dark:bg-zinc-900">
-                <SelectValue placeholder={t("dashboard.priority")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("dashboard.allPriorities")}</SelectItem>
-                <SelectItem value="low">{priorityLabel("low")}</SelectItem>
-                <SelectItem value="medium">{priorityLabel("medium")}</SelectItem>
-                <SelectItem value="high">{priorityLabel("high")}</SelectItem>
-                <SelectItem value="urgent">{priorityLabel("urgent")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            {/* Priority Filter */}
+            <div className="w-[170px] shrink-0">
+              <Select value={priority} onValueChange={setPriority}>
+                <SelectTrigger className="bg-white dark:bg-zinc-900">
+                  <SelectValue placeholder={t("dashboard.priority")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("dashboard.allPriorities")}</SelectItem>
+                  <SelectItem value="low">{priorityLabel("low")}</SelectItem>
+                  <SelectItem value="medium">{priorityLabel("medium")}</SelectItem>
+                  <SelectItem value="high">{priorityLabel("high")}</SelectItem>
+                  <SelectItem value="urgent">{priorityLabel("urgent")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* Assigned To Filter */}
-          <div className="w-[200px]">
-            <Select value={assignedTo} onValueChange={setAssignedTo}>
-              <SelectTrigger className="bg-white dark:bg-zinc-900">
-                <SelectValue placeholder={t("dashboard.assignee")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("dashboard.allAssignees")}</SelectItem>
-                <SelectItem value="unassigned">{t("common.unassigned")}</SelectItem>
-                {staffUsers.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.display_name || user.email}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Assigned To Filter */}
+            <div className="w-[210px] shrink-0">
+              <Select value={assignedTo} onValueChange={setAssignedTo}>
+                <SelectTrigger className="bg-white dark:bg-zinc-900">
+                  <SelectValue placeholder={t("dashboard.assignee")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("dashboard.allAssignees")}</SelectItem>
+                  <SelectItem value="unassigned">{t("common.unassigned")}</SelectItem>
+                  {staffUsers.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.display_name || user.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Sort Order Toggle */}
@@ -223,7 +225,7 @@ export default function TicketQueue({
             size="icon"
             onClick={() => setSortOrder(prev => prev === "asc" ? "desc" : "asc")}
             title={t("common.toggleSortOrder")}
-            className="ml-auto hover:bg-zinc-100 dark:hover:bg-zinc-900"
+            className="sm:ml-auto hover:bg-zinc-100 dark:hover:bg-zinc-900"
           >
             <ArrowUpDown className="h-4 w-4" />
           </Button>
