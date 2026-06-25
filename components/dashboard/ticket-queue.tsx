@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getTickets } from "@/app/actions/tickets";
+import { getTickets, markTicketAsSeen } from "@/app/actions/tickets";
+import { useTicketQueueRealtime } from "@/hooks/use-ticket-queue-realtime";
+import { NewTicketHighlight } from "@/components/dashboard/ticket-new-animation";
 import {
   Table,
   TableBody,
@@ -44,6 +46,7 @@ type QueueTicket = {
   status: string;
   priority: string;
   created_at: string;
+  first_seen_at: string | null;
   category?: { name: string } | null;
   assignee?: { display_name?: string | null; email?: string | null } | null;
 };
@@ -91,6 +94,28 @@ export default function TicketQueue({
   categories,
   staffUsers,
 }: TicketQueueProps) {
+  // Realtime subscription: invalidates the ticket query on INSERT/UPDATE events.
+  useTicketQueueRealtime();
+
+  // Optimistic "seen" state: tracks tickets the current user has hovered over
+  // before the Realtime UPDATE propagates from markTicketAsSeen.
+  const [seenLocally, setSeenLocally] = useState<Set<string>>(new Set());
+
+  // Optimistic handler: immediately hides the animation on the acting client,
+  // then calls the server action. Rolls back on error.
+  const onSeen = useCallback(async (id: string) => {
+    setSeenLocally((prev) => new Set(prev).add(id));
+    try {
+      await markTicketAsSeen(id);
+    } catch {
+      setSeenLocally((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  }, []);
+
   const [statusSelection, setStatusSelection] = useState<string[]>([...DEFAULT_STATUSES]);
 
   const statusBadgeLabels = useMemo(
@@ -254,13 +279,20 @@ export default function TicketQueue({
                   </TableCell>
                 </TableRow>
               ) : (
-                tickets.map((ticket) => (
+                tickets.map((ticket) => {
+                  const isNew =
+                    ticket.first_seen_at == null && !seenLocally.has(ticket.id);
+                  return (
                   <TableRow
                     key={ticket.id}
-                    className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors"
+                    className="relative hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors"
                   >
                     <TableCell className="font-medium align-top py-3">
-                      <TicketSubjectPreview ticket={ticket} />
+                      <NewTicketHighlight isNew={isNew} />
+                      <TicketSubjectPreview
+                        ticket={ticket}
+                        onSeen={isNew ? () => void onSeen(ticket.id) : undefined}
+                      />
                     </TableCell>
                     <TableCell className="text-zinc-800 dark:text-zinc-200 align-top py-3">
                       <span className="block truncate max-w-[160px]" title={ticket.name}>
@@ -305,7 +337,8 @@ export default function TicketQueue({
                       {formatDate(ticket.created_at)}
                     </TableCell>
                   </TableRow>
-                ))
+                  );
+                })
               )}
             </TableBody>
           </Table>

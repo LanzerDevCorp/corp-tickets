@@ -295,6 +295,27 @@ export async function updateTicketCategory(id: string, categoryId: string) {
   return data;
 }
 
+export async function markTicketAsSeen(ticketId: string): Promise<void> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const role = getAppRoleFromClaims(claimsData?.claims);
+
+  if (role !== "admin" && role !== "it") {
+    throw new Error(es.errors.notAuthorized);
+  }
+
+  // Idempotent: only the first caller wins; zero rows updated is a valid success.
+  const { error } = await supabase
+    .from("tickets")
+    .update({ first_seen_at: new Date().toISOString() })
+    .eq("id", ticketId)
+    .is("first_seen_at", null);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 export async function getCategories() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();

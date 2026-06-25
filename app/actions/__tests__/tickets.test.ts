@@ -44,6 +44,7 @@ import {
   assignTicket,
   getCategories,
   getStaffUsers,
+  markTicketAsSeen,
 } from "../tickets";
 import { provisionClient } from "@/app/actions/client-provision";
 import { createClient } from "@/lib/supabase/server";
@@ -458,6 +459,70 @@ describe("tickets actions", () => {
       const staff = await getStaffUsers();
       expect(staff).toHaveLength(1);
       expect(staff[0].display_name).toBe("Juan");
+    });
+  });
+
+  describe("markTicketAsSeen", () => {
+    it("admin role marks ticket as seen without error and calls update with correct args", async () => {
+      const mock = makeSupabaseMock({
+        claims: { app_role: "admin" },
+        queryResult: { data: null, error: null },
+      });
+      mockCreateClient.mockResolvedValue(mock as any);
+
+      await expect(markTicketAsSeen("ticket-1")).resolves.toBeUndefined();
+
+      const chain = (mock.from as ReturnType<typeof vi.fn>).mock.results[0].value;
+      expect(chain.update).toHaveBeenCalledWith(
+        expect.objectContaining({ first_seen_at: expect.any(String) })
+      );
+      expect(chain.eq).toHaveBeenCalledWith("id", "ticket-1");
+      expect(chain.is).toHaveBeenCalledWith("first_seen_at", null);
+    });
+
+    it("it role can also mark ticket as seen", async () => {
+      const mock = makeSupabaseMock({
+        claims: { app_role: "it" },
+        queryResult: { data: null, error: null },
+      });
+      mockCreateClient.mockResolvedValue(mock as any);
+
+      await expect(markTicketAsSeen("ticket-2")).resolves.toBeUndefined();
+    });
+
+    it("non-staff role throws notAuthorized and performs no DB write", async () => {
+      const mock = makeSupabaseMock({
+        claims: { app_role: "client" },
+        queryResult: { data: null, error: null },
+      });
+      mockCreateClient.mockResolvedValue(mock as any);
+
+      await expect(markTicketAsSeen("ticket-1")).rejects.toThrow("No autorizado");
+
+      // from() should not have been called (no DB write)
+      expect(mock.from).not.toHaveBeenCalled();
+    });
+
+    it("idempotent: zero rows updated (ticket already seen) does not throw", async () => {
+      // PostgREST returns no error when WHERE conditions match 0 rows —
+      // simulated here as { data: null, error: null } (success, 0 rows updated).
+      const mock = makeSupabaseMock({
+        claims: { app_role: "admin" },
+        queryResult: { data: null, error: null },
+      });
+      mockCreateClient.mockResolvedValue(mock as any);
+
+      await expect(markTicketAsSeen("ticket-already-seen")).resolves.toBeUndefined();
+    });
+
+    it("surfaces a DB error as a thrown Error with error.message", async () => {
+      const mock = makeSupabaseMock({
+        claims: { app_role: "it" },
+        queryResult: { data: null, error: { message: "connection refused" } },
+      });
+      mockCreateClient.mockResolvedValue(mock as any);
+
+      await expect(markTicketAsSeen("ticket-1")).rejects.toThrow("connection refused");
     });
   });
 });

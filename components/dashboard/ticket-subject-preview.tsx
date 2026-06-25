@@ -89,8 +89,10 @@ function TicketPreviewCard({ ticket }: { ticket: TicketPreviewData }) {
 
 export function TicketSubjectPreview({
   ticket,
+  onSeen,
 }: {
   ticket: TicketPreviewData;
+  onSeen?: () => void;
 }) {
   const triggerRef = useRef<HTMLAnchorElement>(null);
   const [open, setOpen] = useState(false);
@@ -110,6 +112,7 @@ export function TicketSubjectPreview({
     if (closeTimer.current) clearTimeout(closeTimer.current);
     updatePosition();
     setOpen(true);
+    onSeen?.();
   };
 
   const hidePreview = () => {

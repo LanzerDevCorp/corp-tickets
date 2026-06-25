@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { updateTicketStatus, assignTicket, updateTicketCategory } from "@/app/actions/tickets";
+import { useState, useEffect } from "react";
+import { updateTicketStatus, assignTicket, updateTicketCategory, markTicketAsSeen } from "@/app/actions/tickets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -64,6 +64,14 @@ export default function TicketDetail({
 }: TicketDetailProps) {
   const [ticket, setTicket] = useState(initialTicket);
   const [comments, setComments] = useState<CommentWithAuthor[]>(initialComments);
+
+  // Mark the ticket as seen on mount (and whenever the ticket id changes).
+  // This runs independently of — and in addition to — the existing
+  // open → in_progress auto-transition in getTicketDetail. Both paths are
+  // idempotent via the first_seen_at IS NULL guard on the server action.
+  useEffect(() => {
+    void markTicketAsSeen(initialTicket.id);
+  }, [initialTicket.id]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
