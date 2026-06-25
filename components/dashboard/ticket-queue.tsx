@@ -226,7 +226,7 @@ export default function TicketQueue({
             </div>
 
             {/* Assigned To Filter */}
-            <div className="w-[210px] shrink-0">
+            <div className="w-[210px] shrink-0 mx-[10px]">
               <Select value={assignedTo} onValueChange={setAssignedTo}>
                 <SelectTrigger className="bg-white dark:bg-zinc-900">
                   <SelectValue placeholder={t("dashboard.assignee")} />
