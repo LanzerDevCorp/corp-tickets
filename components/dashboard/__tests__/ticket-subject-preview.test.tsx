@@ -1,9 +1,34 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
+
+// ---------------------------------------------------------------------------
+// Module mocks — declared before component imports so vi.mock hoisting applies.
+// ---------------------------------------------------------------------------
+
+// Prevent supabaseAdmin (a server-only module) from being evaluated in jsdom.
+// ticket-subject-preview.tsx imports updateTicketStatus → app/actions/tickets
+// → lib/supabase/admin, which throws when typeof window !== "undefined".
+vi.mock("@/app/actions/tickets", () => ({
+  updateTicketStatus: vi.fn().mockResolvedValue(undefined),
+  getTickets: vi.fn().mockResolvedValue([]),
+  markTicketAsSeen: vi.fn().mockResolvedValue(undefined),
+}));
+
+// ---------------------------------------------------------------------------
+// Imports (after mocks)
+// ---------------------------------------------------------------------------
+
 import { TicketSubjectPreview } from "../ticket-subject-preview";
+import { updateTicketStatus } from "@/app/actions/tickets";
 
 // TicketSubjectPreview uses createPortal to render the preview card into
 // document.body. jsdom supports this out of the box.
+
+const mockUpdateStatus = vi.mocked(updateTicketStatus);
+
+// ---------------------------------------------------------------------------
+// Fixtures
+// ---------------------------------------------------------------------------
 
 const TEST_TICKET = {
   id: "ticket-preview-1",
@@ -12,11 +37,25 @@ const TEST_TICKET = {
   name: "Diana Prince",
   email: "diana@example.com",
   created_at: "2026-06-25T09:00:00Z",
+  status: "open",
 };
+
+// ---------------------------------------------------------------------------
+// Lifecycle
+// ---------------------------------------------------------------------------
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockUpdateStatus.mockResolvedValue(undefined);
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
+
+// ---------------------------------------------------------------------------
+// Tests — onSeen prop (existing)
+// ---------------------------------------------------------------------------
 
 describe("TicketSubjectPreview — onSeen prop", () => {
   it("calls onSeen when showPreview fires (mouseEnter on the link)", () => {
@@ -55,5 +94,71 @@ describe("TicketSubjectPreview — onSeen prop", () => {
     const link = screen.getByRole("link", { name: TEST_TICKET.subject });
 
     expect(() => fireEvent.focus(link)).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tests — resolve button (new behavior)
+// ---------------------------------------------------------------------------
+
+describe("TicketSubjectPreview — resolve button", () => {
+  it("renders 'Mark as resolved' button when ticket status is open", () => {
+    render(<TicketSubjectPreview ticket={{ ...TEST_TICKET, status: "open" }} />);
+
+    const link = screen.getByRole("link", { name: TEST_TICKET.subject });
+    fireEvent.mouseEnter(link);
+
+    expect(
+      screen.getByRole("button", { name: /mark as resolved/i })
+    ).toBeInTheDocument();
+  });
+
+  it("does not render the resolve button when ticket status is 'resolved'", () => {
+    render(
+      <TicketSubjectPreview ticket={{ ...TEST_TICKET, status: "resolved" }} />
+    );
+
+    const link = screen.getByRole("link", { name: TEST_TICKET.subject });
+    fireEvent.mouseEnter(link);
+
+    expect(
+      screen.queryByRole("button", { name: /mark as resolved/i })
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not render the resolve button when ticket status is 'closed'", () => {
+    render(
+      <TicketSubjectPreview ticket={{ ...TEST_TICKET, status: "closed" }} />
+    );
+
+    const link = screen.getByRole("link", { name: TEST_TICKET.subject });
+    fireEvent.mouseEnter(link);
+
+    expect(
+      screen.queryByRole("button", { name: /mark as resolved/i })
+    ).not.toBeInTheDocument();
+  });
+
+  it("calls updateTicketStatus with 'resolved' and then fires onResolved", async () => {
+    const onResolved = vi.fn();
+
+    render(
+      <TicketSubjectPreview
+        ticket={{ ...TEST_TICKET, status: "open" }}
+        onResolved={onResolved}
+      />
+    );
+
+    const link = screen.getByRole("link", { name: TEST_TICKET.subject });
+    fireEvent.mouseEnter(link);
+
+    const button = screen.getByRole("button", { name: /mark as resolved/i });
+
+    await act(async () => {
+      fireEvent.click(button);
+    });
+
+    expect(mockUpdateStatus).toHaveBeenCalledWith(TEST_TICKET.id, "resolved");
+    await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1));
   });
 });

@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   formatDateTimeLong,
   formatRelativeTime,
 } from "@/lib/format-date";
+import { updateTicketStatus } from "@/app/actions/tickets";
 
 type TicketPreviewData = {
   id: string;
@@ -16,6 +18,7 @@ type TicketPreviewData = {
   name: string;
   email: string;
   created_at: string;
+  status: string;
 };
 
 function getInitials(name: string): string {
@@ -40,7 +43,14 @@ function avatarTone(name: string): string {
   return tones[hash] ?? tones[0];
 }
 
-function TicketPreviewCard({ ticket }: { ticket: TicketPreviewData }) {
+function TicketPreviewCard({
+  ticket,
+  onResolved,
+}: {
+  ticket: TicketPreviewData;
+  onResolved?: () => void;
+}) {
+  const [isPending, startTransition] = useTransition();
   const initials = getInitials(ticket.name) || "?";
 
   return (
@@ -83,6 +93,27 @@ function TicketPreviewCard({ ticket }: { ticket: TicketPreviewData }) {
           {ticket.body}
         </p>
       </div>
+
+      {ticket.status !== "resolved" && ticket.status !== "closed" && (
+        <>
+          <div className="mx-4 border-t border-zinc-100 dark:border-zinc-800" />
+          <div className="flex justify-end px-4 py-2">
+            <button
+              disabled={isPending}
+              onClick={() =>
+                startTransition(async () => {
+                  await updateTicketStatus(ticket.id, "resolved");
+                  onResolved?.();
+                })
+              }
+              className="flex items-center gap-1.5 rounded-md bg-green-600 px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:bg-green-700 disabled:opacity-50"
+            >
+              <Check className="size-3.5" />
+              Mark as resolved
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -90,9 +121,11 @@ function TicketPreviewCard({ ticket }: { ticket: TicketPreviewData }) {
 export function TicketSubjectPreview({
   ticket,
   onSeen,
+  onResolved,
 }: {
   ticket: TicketPreviewData;
   onSeen?: () => void;
+  onResolved?: () => void;
 }) {
   const triggerRef = useRef<HTMLAnchorElement>(null);
   const [open, setOpen] = useState(false);
@@ -156,7 +189,7 @@ export function TicketSubjectPreview({
             onMouseEnter={cancelHide}
             onMouseLeave={hidePreview}
           >
-            <TicketPreviewCard ticket={ticket} />
+            <TicketPreviewCard ticket={ticket} onResolved={onResolved} />
           </div>,
           document.body
         )}

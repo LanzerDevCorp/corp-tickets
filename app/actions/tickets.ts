@@ -7,7 +7,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { provisionClient } from "@/app/actions/client-provision";
 import { ticketSubmitSchema } from "@/lib/schemas/ticket-submit";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify";
-import { notifyNewTicket, notifyTicketCreated, notifyTicketClosed } from "@/lib/notifications/tickets";
+import { notifyNewTicket, notifyTicketCreated, notifyTicketClosed, notifyTicketResolved } from "@/lib/notifications/tickets";
 import { es } from "@/lib/i18n/es";
 
 export type TicketSubmitResult =
@@ -238,6 +238,10 @@ export async function updateTicketStatus(
 
   if (status === "closed") {
     void notifyTicketClosed(id);
+  }
+
+  if (status === "resolved") {
+    void notifyTicketResolved(id);
   }
 
   return data;

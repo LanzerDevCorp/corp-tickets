@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Calendar, AlertCircle } from "lucide-react";
+import { ArrowLeft, User, Calendar, AlertCircle, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import CommentThread from "@/components/dashboard/comment-thread";
 import CommentForm from "@/components/dashboard/comment-form";
@@ -307,6 +307,12 @@ export default function TicketDetail({
                   <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> {t("common.created")}:</span>
                   <span className="font-medium">{formatDateTime(ticket.created_at)}</span>
                 </div>
+                {ticket.resolved_at && (
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5"><CheckCircle className="h-3.5 w-3.5" /> {t("common.resolved")}:</span>
+                    <span className="font-medium">{formatDateTime(ticket.resolved_at)}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> {t("common.assignee")}</span>
                   <span className="font-medium">

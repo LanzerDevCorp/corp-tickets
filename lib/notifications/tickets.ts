@@ -3,6 +3,7 @@ import { render } from "@react-email/components";
 import NewTicketEmail from "@/emails/NewTicketEmail";
 import TicketCreatedEmail from "@/emails/TicketCreatedEmail";
 import TicketClosedEmail from "@/emails/TicketClosedEmail";
+import TicketResolvedEmail from "@/emails/TicketResolvedEmail";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { resend } from "@/lib/resend";
 import { buildTicketAccessUrl } from "@/lib/auth/ticket-access";
@@ -271,5 +272,63 @@ export async function notifyTicketClosed(ticketId: string): Promise<void> {
     }
   } catch (err) {
     console.error("[notifyTicketClosed]", err);
+  }
+}
+
+export async function notifyTicketResolved(ticketId: string): Promise<void> {
+  try {
+    if (!resend) {
+      console.error(
+        "[notifyTicketResolved] Resend client not initialized — RESEND_API_KEY missing"
+      );
+      return;
+    }
+    const from = process.env.RESEND_FROM_EMAIL;
+    if (!from) {
+      console.error("[notifyTicketResolved] RESEND_FROM_EMAIL is not set");
+      return;
+    }
+
+    const { data: ticketRow, error: ticketError } = await supabaseAdmin
+      .from("tickets")
+      .select("name, email, subject")
+      .eq("id", ticketId)
+      .single();
+
+    if (ticketError || !ticketRow) {
+      console.error(
+        "[notifyTicketResolved] Failed to fetch ticket data",
+        ticketError
+      );
+      return;
+    }
+
+    const ticket = ticketRow as {
+      name: string;
+      email: string;
+      subject: string;
+    };
+
+    const trackingUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/track/${ticketId}`;
+
+    const html = await render(
+      createElement(TicketResolvedEmail, {
+        clientName: ticket.name,
+        ticketSubject: ticket.subject,
+        trackingUrl,
+      })
+    );
+
+    const { error: sendError } = await resend.emails.send({
+      from,
+      to: ticket.email,
+      subject: t("email.subjects.ticketResolved", { subject: ticket.subject }),
+      html,
+    });
+    if (sendError) {
+      console.error("[notifyTicketResolved] Resend send error", sendError);
+    }
+  } catch (err) {
+    console.error("[notifyTicketResolved]", err);
   }
 }

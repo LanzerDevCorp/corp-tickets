@@ -27,6 +27,7 @@ export const es = {
     assignee: "Asignado:",
     submittedBy: "Enviado por:",
     toggleSortOrder: "Cambiar orden",
+    resolved: "Resuelto",
   },
   auth: {
     login: "Iniciar sesión",
@@ -275,6 +276,7 @@ export const es = {
       newTicket: 'Nuevo ticket: "{subject}"',
       ticketCreated: 'Ticket recibido: "{subject}"',
       ticketClosed: 'Ticket cerrado: "{subject}"',
+      ticketResolved: 'Ticket resuelto: "{subject}"',
       staffReply: 'Nueva respuesta en tu ticket: "{subject}"',
       clientComment: 'Nuevo comentario del cliente en el ticket: "{subject}"',
     },
@@ -301,6 +303,12 @@ export const es = {
       greeting: "Hola {name},",
       intro:
         "Tu ticket fue cerrado. Este es el motivo que proporcionó nuestro equipo:",
+      viewHistory: "Ver historial del ticket",
+      footer: "Esta es una notificación automática del sistema de tickets.",
+    },
+    ticketResolved: {
+      greeting: "Hola {name},",
+      intro: "Tu ticket ha sido marcado como resuelto por nuestro equipo.",
       viewHistory: "Ver historial del ticket",
       footer: "Esta es una notificación automática del sistema de tickets.",
     },
