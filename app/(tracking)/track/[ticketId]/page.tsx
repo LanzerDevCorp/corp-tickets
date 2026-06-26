@@ -28,7 +28,10 @@ export default async function ClientTrackTicketPage({ params }: PageProps) {
       getTicketAttachments(ticketId).catch(() => []),
     ]);
 
-    await markTicketViewed(ticketId);
+    // Best-effort: view tracking must never block access to the ticket.
+    await markTicketViewed(ticketId).catch((err) =>
+      console.warn("[ClientTrackTicketPage] markTicketViewed failed:", err)
+    );
 
     return (
       <ClientTicketView

@@ -43,3 +43,8 @@ CREATE POLICY "Client can update own ticket views"
     user_id = (SELECT auth.uid())
     AND (SELECT auth.jwt() ->> 'role') = 'client'
   );
+
+-- Local/non-cloud Postgres does not auto-grant on table creation; grant
+-- explicitly so the user-scoped client can read/write through RLS.
+GRANT SELECT, INSERT, UPDATE ON public.ticket_views TO authenticated;
+GRANT ALL ON public.ticket_views TO service_role;
