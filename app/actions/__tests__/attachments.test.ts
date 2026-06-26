@@ -27,6 +27,10 @@ import {
   registerAttachments,
   rollbackTicket,
   getTicketAttachments,
+  createStaffUploadUrls,
+  registerStaffAttachments,
+  softDeleteAttachment,
+  restoreAttachment,
 } from "../attachments";
 import { createClient } from "@/lib/supabase/server";
 
@@ -41,8 +45,10 @@ function makeQueryChain(result: any) {
     insert: vi.fn().mockReturnThis(),
     select: vi.fn().mockReturnThis(),
     delete: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     is: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue(result),
     then: (res: any) => Promise.resolve(result).then(res),
   };
 }
@@ -67,6 +73,21 @@ const VALID_FILES = [
   { storage_path: "tickets/t1/f1-a.pdf", filename: "a.pdf", mime_type: "application/pdf", size_bytes: 1024 },
   { storage_path: "tickets/t1/f2-b.png", filename: "b.png", mime_type: "image/png", size_bytes: 2048 },
 ];
+
+const STAFF_ADMIN_CLAIMS = { app_role: "admin", sub: "admin-1" };
+const STAFF_IT_CLAIMS = { app_role: "it", sub: "it-1" };
+const CLIENT_CLAIMS = { app_role: "client", sub: "client-1", email: "client@test.com" };
+
+const VALID_FILE_METAS = [
+  { filename: "a.pdf", mime_type: "application/pdf", size_bytes: 1024 },
+  { filename: "b.png", mime_type: "image/png", size_bytes: 2048 },
+];
+
+function mockStaffSession(claims: Record<string, unknown>) {
+  mockCreateClient.mockResolvedValue(
+    makeServerClient({ claims }) as any
+  );
+}
 
 // ---------------------------------------------------------------------------
 // registerAttachments
@@ -244,7 +265,7 @@ describe("getTicketAttachments", () => {
     );
 
     const rows = [
-      { id: "att-1", filename: "a.pdf", size_bytes: 1024, storage_path: "tickets/t1/f1-a.pdf", deleted_at: null },
+      { id: "att-1", filename: "a.pdf", size_bytes: 1024, storage_path: "tickets/t1/f1-a.pdf", deleted_at: null, deleted_by: null },
     ];
 
     const attachmentsQueryChain: any = {
@@ -278,7 +299,7 @@ describe("getTicketAttachments", () => {
     );
 
     const rows = [
-      { id: "att-2", filename: "b.pdf", size_bytes: 512, storage_path: "tickets/t1/f2-b.pdf", deleted_at: "2026-01-01T00:00:00Z" },
+      { id: "att-2", filename: "b.pdf", size_bytes: 512, storage_path: "tickets/t1/f2-b.pdf", deleted_at: "2026-01-01T00:00:00Z", deleted_by: null },
     ];
 
     const attachmentsQueryChain: any = {
@@ -309,5 +330,252 @@ describe("getTicketAttachments", () => {
     mockCreateClient.mockResolvedValue(serverClient as any);
 
     await expect(getTicketAttachments("ticket-1")).rejects.toThrow(/autorizado|authorized/i);
+  });
+
+  it("excludes admin-removed attachments for clients but keeps retention-expired ghosts", async () => {
+    mockCreateClient.mockResolvedValue(
+      makeServerClient({ claims: CLIENT_CLAIMS }) as any
+    );
+
+    const rows = [
+      { id: "att-active", filename: "active.pdf", size_bytes: 100, storage_path: "tickets/t1/active.pdf", deleted_at: null, deleted_by: null },
+      { id: "att-expired", filename: "expired.pdf", size_bytes: 100, storage_path: "tickets/t1/expired.pdf", deleted_at: "2026-01-01T00:00:00Z", deleted_by: null },
+      { id: "att-removed", filename: "removed.pdf", size_bytes: 100, storage_path: "tickets/t1/removed.pdf", deleted_at: "2026-02-01T00:00:00Z", deleted_by: "staff-1" },
+    ];
+
+    mockAdminFrom.mockImplementation((table: string) => {
+      if (table === "tickets") {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: { email: "client@test.com" }, error: null }),
+        };
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        then: (res: any) => Promise.resolve({ data: rows, error: null }).then(res),
+      };
+    });
+
+    const mockCreateSignedUrl = vi.fn().mockResolvedValue({
+      data: { signedUrl: "https://signed.url/active" },
+      error: null,
+    });
+    mockStorageFrom.mockReturnValue({ createSignedUrl: mockCreateSignedUrl });
+
+    const result = await getTicketAttachments("ticket-1");
+
+    expect(result).toHaveLength(2);
+    expect(result.find((a) => a.id === "att-removed")).toBeUndefined();
+    expect(result.find((a) => a.id === "att-expired")?.expired).toBe(true);
+    expect(result.find((a) => a.id === "att-active")?.url).toBe("https://signed.url/active");
+  });
+
+  it("marks admin-removed attachments as removedByAdmin for staff", async () => {
+    mockCreateClient.mockResolvedValue(
+      makeServerClient({ claims: STAFF_IT_CLAIMS }) as any
+    );
+
+    const rows = [
+      { id: "att-removed", filename: "removed.pdf", size_bytes: 100, storage_path: "tickets/t1/removed.pdf", deleted_at: "2026-02-01T00:00:00Z", deleted_by: "staff-1" },
+    ];
+
+    const attachmentsQueryChain: any = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      then: (res: any) => Promise.resolve({ data: rows, error: null }).then(res),
+    };
+    mockAdminFrom.mockReturnValue(attachmentsQueryChain);
+    mockStorageFrom.mockReturnValue({ createSignedUrl: vi.fn() });
+
+    const result = await getTicketAttachments("ticket-1");
+
+    expect(result).toHaveLength(1);
+    expect(result[0].removedByAdmin).toBe(true);
+    expect(result[0].url).toBeNull();
+    expect(result[0].expired).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// createStaffUploadUrls
+// ---------------------------------------------------------------------------
+
+describe("createStaffUploadUrls", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("rejects client callers", async () => {
+    mockStaffSession(CLIENT_CLAIMS);
+
+    await expect(createStaffUploadUrls("ticket-1", VALID_FILE_METAS)).rejects.toThrow(/autorizado|authorized/i);
+    expect(mockStorageFrom).not.toHaveBeenCalled();
+  });
+
+  it("returns signed upload URLs for admin", async () => {
+    mockStaffSession(STAFF_ADMIN_CLAIMS);
+
+    const mockCreateSignedUploadUrl = vi.fn().mockResolvedValue({
+      data: { signedUrl: "https://upload.url", token: "tok-1", path: "tickets/ticket-1/uuid-a.pdf" },
+      error: null,
+    });
+    mockStorageFrom.mockReturnValue({ createSignedUploadUrl: mockCreateSignedUploadUrl });
+
+    const result = await createStaffUploadUrls("ticket-1", [VALID_FILE_METAS[0]!]);
+
+    expect(result.error).toBeNull();
+    expect(result.urls).toHaveLength(1);
+    expect(result.urls![0]).toMatchObject({
+      token: "tok-1",
+      filename: "a.pdf",
+      mime_type: "application/pdf",
+      size_bytes: 1024,
+    });
+    expect(result.urls![0]!.path).toMatch(/^tickets\/ticket-1\/.+-a\.pdf$/);
+  });
+
+  it("returns signed upload URLs for IT", async () => {
+    mockStaffSession(STAFF_IT_CLAIMS);
+
+    const mockCreateSignedUploadUrl = vi.fn().mockResolvedValue({
+      data: { signedUrl: "https://upload.url", token: "tok-2", path: "tickets/ticket-1/uuid-b.png" },
+      error: null,
+    });
+    mockStorageFrom.mockReturnValue({ createSignedUploadUrl: mockCreateSignedUploadUrl });
+
+    const result = await createStaffUploadUrls("ticket-1", [VALID_FILE_METAS[1]!]);
+
+    expect(result.error).toBeNull();
+    expect(result.urls).toHaveLength(1);
+  });
+
+  it("returns validation error when more than 5 files are requested", async () => {
+    mockStaffSession(STAFF_ADMIN_CLAIMS);
+
+    const sixFiles = Array.from({ length: 6 }, (_, i) => ({
+      filename: `file${i}.pdf`,
+      mime_type: "application/pdf",
+      size_bytes: 100,
+    }));
+
+    const result = await createStaffUploadUrls("ticket-1", sixFiles);
+
+    expect(result.error).toMatch(/5/);
+    expect(mockStorageFrom).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// registerStaffAttachments
+// ---------------------------------------------------------------------------
+
+describe("registerStaffAttachments", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("rejects client callers", async () => {
+    mockStaffSession(CLIENT_CLAIMS);
+
+    await expect(registerStaffAttachments("ticket-1", VALID_FILES)).rejects.toThrow(/autorizado|authorized/i);
+  });
+
+  it("inserts rows for admin on happy path", async () => {
+    mockStaffSession(STAFF_ADMIN_CLAIMS);
+
+    const chain = makeQueryChain({ error: null });
+    mockAdminFrom.mockReturnValue(chain);
+
+    const result = await registerStaffAttachments("ticket-1", VALID_FILES);
+
+    expect(result.error).toBeNull();
+    expect(mockAdminFrom).toHaveBeenCalledWith("ticket_attachments");
+    expect(chain.insert).toHaveBeenCalled();
+  });
+
+  it("inserts rows for IT on happy path", async () => {
+    mockStaffSession(STAFF_IT_CLAIMS);
+
+    const chain = makeQueryChain({ error: null });
+    mockAdminFrom.mockReturnValue(chain);
+
+    const result = await registerStaffAttachments("ticket-1", VALID_FILES);
+
+    expect(result.error).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// softDeleteAttachment
+// ---------------------------------------------------------------------------
+
+describe("softDeleteAttachment", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("rejects client callers", async () => {
+    mockStaffSession(CLIENT_CLAIMS);
+
+    await expect(softDeleteAttachment("att-1")).rejects.toThrow(/autorizado|authorized/i);
+  });
+
+  it("sets deleted_at and deleted_by for admin", async () => {
+    mockStaffSession(STAFF_ADMIN_CLAIMS);
+
+    const chain = makeQueryChain({ error: null });
+    mockAdminFrom.mockReturnValue(chain);
+
+    const result = await softDeleteAttachment("att-1");
+
+    expect(result.error).toBeNull();
+    expect(mockAdminFrom).toHaveBeenCalledWith("ticket_attachments");
+    expect(chain.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        deleted_by: "admin-1",
+        deleted_at: expect.any(String),
+      })
+    );
+    expect(chain.eq).toHaveBeenCalledWith("id", "att-1");
+  });
+
+  it("sets deleted_at and deleted_by for IT", async () => {
+    mockStaffSession(STAFF_IT_CLAIMS);
+
+    const chain = makeQueryChain({ error: null });
+    mockAdminFrom.mockReturnValue(chain);
+
+    const result = await softDeleteAttachment("att-2");
+
+    expect(result.error).toBeNull();
+    expect(chain.update).toHaveBeenCalledWith(
+      expect.objectContaining({ deleted_by: "it-1" })
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// restoreAttachment
+// ---------------------------------------------------------------------------
+
+describe("restoreAttachment", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("rejects client callers", async () => {
+    mockStaffSession(CLIENT_CLAIMS);
+
+    await expect(restoreAttachment("att-1")).rejects.toThrow(/autorizado|authorized/i);
+  });
+
+  it("clears deleted_at and deleted_by for admin", async () => {
+    mockStaffSession(STAFF_ADMIN_CLAIMS);
+
+    const chain = makeQueryChain({ error: null });
+    mockAdminFrom.mockReturnValue(chain);
+
+    const result = await restoreAttachment("att-1");
+
+    expect(result.error).toBeNull();
+    expect(chain.update).toHaveBeenCalledWith({
+      deleted_at: null,
+      deleted_by: null,
+    });
+    expect(chain.eq).toHaveBeenCalledWith("id", "att-1");
   });
 });

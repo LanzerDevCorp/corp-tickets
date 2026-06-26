@@ -26,7 +26,7 @@ import { ArrowLeft, User, Calendar, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import CommentThread from "@/components/dashboard/comment-thread";
 import CommentForm from "@/components/dashboard/comment-form";
-import AttachmentList from "@/components/dashboard/attachment-list";
+import AttachmentManager from "@/components/dashboard/attachment-manager";
 import { type CommentWithAuthor } from "@/app/actions/comments";
 import { type AttachmentItem } from "@/app/actions/attachments";
 import { formatDateTime } from "@/lib/format-date";
@@ -209,14 +209,15 @@ export default function TicketDetail({
           </Card>
 
           {/* Attachments */}
-          {initialAttachments.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
-                Adjuntos
-              </h3>
-              <AttachmentList attachments={initialAttachments} />
-            </div>
-          )}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
+              Adjuntos
+            </h3>
+            <AttachmentManager
+              ticketId={ticket.id}
+              initialAttachments={initialAttachments}
+            />
+          </div>
 
           {/* Comment thread + form */}
           <div className="space-y-4">
