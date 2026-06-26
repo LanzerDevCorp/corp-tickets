@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getTicketDetail } from "@/app/actions/tickets";
+import { markTicketViewed } from "@/app/actions/client-tickets";
 import { getComments } from "@/app/actions/comments";
 import { getTicketAttachments } from "@/app/actions/attachments";
 import { notFound } from "next/navigation";
@@ -26,6 +27,8 @@ export default async function ClientTrackTicketPage({ params }: PageProps) {
       getComments(ticketId),
       getTicketAttachments(ticketId).catch(() => []),
     ]);
+
+    await markTicketViewed(ticketId);
 
     return (
       <ClientTicketView

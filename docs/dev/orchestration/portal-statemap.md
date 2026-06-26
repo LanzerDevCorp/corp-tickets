@@ -28,10 +28,10 @@ Only TWO synchronization points exist:
 
 | Flow | Owner / Tool | Branch | Status | PR | Blockers |
 |---|---|---|---|---|---|
-| 2 — Client Auth | Claude Code | `feat/portal-client-auth` | `tests-green` | — | all 6 units done; suite 372 green. Exports `AccountPasswordEntry` for Flow 3 integration |
-| 3 — Client Portal | Cursor | `feat/portal-client-portal` | `not-started` | — | — |
-| 4 — Admin Attachments | Antigravity / OpenCode | `feat/admin-attachments` | `not-started` | — | — |
-| Integration | (last to finish) | `chore/portal-integration` | `blocked: needs 2+3` | — | waits on Flow 2 & Flow 3 |
+| 2 — Client Auth | Claude Code | `feat/portal-client-auth` | `merged→integration` | — | all 6 units; exports `AccountPasswordEntry` |
+| 3 — Client Portal | Cursor | `feat/portal-client-portal` | `merged→integration` | #3 | list + badge + `ticket_views`; account-menu stub |
+| 4 — Admin Attachments | Antigravity / OpenCode | `feat/admin-attachments` | `merged→integration` | #4 | upload + soft-delete + restore |
+| Integration | Claude Code | `integration/portal-clientes` | `in-progress` | — | merging 3 flows + wiring stub → `AccountPasswordEntry` |
 
 > Status vocabulary: `not-started` → `in-progress` → `tests-green` → `pr-open` → `merged`.
 
