@@ -29,7 +29,7 @@ Only TWO synchronization points exist:
 | Flow | Owner / Tool | Branch | Status | PR | Blockers |
 |---|---|---|---|---|---|
 | 2 — Client Auth | Claude Code | `feat/portal-client-auth` | `not-started` | — | — |
-| 3 — Client Portal | Cursor | `feat/portal-client-portal` | `tests-green` | — | — |
+| 3 — Client Portal | Cursor | `feat/portal-client-portal` | `pr-open` | #3 | — |
 | 4 — Admin Attachments | Antigravity / OpenCode | `feat/admin-attachments` | `not-started` | — | — |
 | Integration | (last to finish) | `chore/portal-integration` | `blocked: needs 2+3` | — | waits on Flow 2 & Flow 3 |
 
