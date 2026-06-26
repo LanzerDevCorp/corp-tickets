@@ -31,7 +31,7 @@ Only TWO synchronization points exist:
 | 2 — Client Auth | Claude Code | `feat/portal-client-auth` | `merged→integration` | — | all 6 units; exports `AccountPasswordEntry` |
 | 3 — Client Portal | Cursor | `feat/portal-client-portal` | `merged→integration` | #3 | list + badge + `ticket_views`; account-menu stub |
 | 4 — Admin Attachments | Antigravity / OpenCode | `feat/admin-attachments` | `merged→integration` | #4 | upload + soft-delete + restore |
-| Integration | Claude Code | `integration/portal-clientes` | `verify-fixes-applied` | — | 3 flows merged + stub wired + `uploaded_by` badge fix; fresh verify ran → 4 findings fixed (ticket_views GRANT, deleted_by RESTRICT, uploaded_by FK, markTicketViewed best-effort); suite 411 green; re-verify pending |
+| Integration | Claude Code | `integration/portal-clientes` | `pr-open` | **#5** | 3 flows merged + stub wired + `uploaded_by` fix; fresh verify → 4 findings fixed → re-verify READY; suite 411 green. PRs #3/#4 closed (superseded). Base: `dev` |
 
 > Status vocabulary: `not-started` → `in-progress` → `tests-green` → `pr-open` → `merged`.
 
