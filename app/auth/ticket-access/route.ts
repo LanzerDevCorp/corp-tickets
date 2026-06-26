@@ -44,5 +44,7 @@ export async function GET(request: NextRequest) {
     redirect(`/auth/error?error=${encodeURIComponent(sessionError)}`);
   }
 
-  redirect(`/track/${ticketId}`);
+  // Route through the first-access gate: new clients see the set-password
+  // interstitial once; clients who already decided pass straight to the ticket.
+  redirect(`/auth/set-password?next=${encodeURIComponent(`/track/${ticketId}`)}`);
 }
