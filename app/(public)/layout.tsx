@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { t } from "@/lib/i18n/t";
 import { PublicSiteHeader } from "@/components/public/public-site-header";
 
 export const metadata: Metadata = {
@@ -15,7 +14,7 @@ export default function PublicLayout({
 }) {
   return (
     <div lang="es-MX" className="force-light min-h-svh bg-[#F6F7FB] flex flex-col text-foreground">
-      <PublicSiteHeader rightLink={{ href: "/track/access", label: t("public.trackTicket") }} />
+      <PublicSiteHeader rightLink={{ href: "/portal", label: "Acceder" }} />
 
       <main className="flex-1 flex flex-col justify-center px-4 py-12">
         {children}

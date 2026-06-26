@@ -28,7 +28,7 @@ Only TWO synchronization points exist:
 
 | Flow | Owner / Tool | Branch | Status | PR | Blockers |
 |---|---|---|---|---|---|
-| 2 — Client Auth | Claude Code | `feat/portal-client-auth` | `not-started` | — | — |
+| 2 — Client Auth | Claude Code | `feat/portal-client-auth` | `tests-green` | — | all 6 units done; suite 372 green. Exports `AccountPasswordEntry` for Flow 3 integration |
 | 3 — Client Portal | Cursor | `feat/portal-client-portal` | `not-started` | — | — |
 | 4 — Admin Attachments | Antigravity / OpenCode | `feat/admin-attachments` | `not-started` | — | — |
 | Integration | (last to finish) | `chore/portal-integration` | `blocked: needs 2+3` | — | waits on Flow 2 & Flow 3 |

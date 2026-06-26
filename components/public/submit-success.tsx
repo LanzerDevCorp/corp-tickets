@@ -103,6 +103,11 @@ export function SubmitSuccess({ ticketId }: SubmitSuccessProps) {
           </div>
         </div>
 
+        <p className="mt-6 text-xs text-muted-foreground/80 max-w-sm mx-auto">
+          Cuando abras el enlace del correo, podrás crear una contraseña para
+          entrar más rápido la próxima vez.
+        </p>
+
         <p className="mt-8 text-xs text-muted-foreground/70">
           ¿Tienes otro problema?{" "}
           <a
