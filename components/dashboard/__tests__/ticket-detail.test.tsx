@@ -19,7 +19,7 @@ vi.mock("@/components/dashboard/comment-thread", () => ({
 vi.mock("@/components/dashboard/comment-form", () => ({
   default: () => null,
 }));
-vi.mock("@/components/dashboard/attachment-list", () => ({
+vi.mock("@/components/dashboard/attachment-manager", () => ({
   default: () => null,
 }));
 
