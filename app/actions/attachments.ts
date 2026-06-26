@@ -286,7 +286,7 @@ export async function registerStaffAttachments(
   ticketId: string,
   files: AttachmentInput[]
 ): Promise<ActionResult> {
-  await requireStaff();
+  const { actorId } = await requireStaff();
 
   const validation = validateAttachmentFiles(files);
   if (validation.error) {
@@ -299,6 +299,7 @@ export async function registerStaffAttachments(
     filename: f.filename,
     mime_type: f.mime_type as AllowedMime,
     size_bytes: f.size_bytes,
+    uploaded_by: actorId,
   }));
 
   const { error } = await supabaseAdmin.from("ticket_attachments").insert(rows);

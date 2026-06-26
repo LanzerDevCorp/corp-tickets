@@ -276,6 +276,7 @@ describe("client-tickets actions", () => {
               ticket_id: TICKET_ID,
               created_at: "2026-06-03T14:00:00Z",
               deleted_at: null,
+              uploaded_by: STAFF_ID,
             },
           ],
         }) as never
@@ -283,6 +284,44 @@ describe("client-tickets actions", () => {
 
       const result = await getClientTickets();
       expect(result[0]?.hasNewActivity).toBe(true);
+    });
+
+    it("does not show badge for a client-uploaded attachment", async () => {
+      mockCreateClient.mockResolvedValue(
+        makeSupabaseMock({
+          claims: clientClaims(),
+          userEmail: CLIENT_EMAIL,
+          tickets: [
+            {
+              id: TICKET_ID,
+              subject: "Test",
+              status: "open",
+              created_at: "2026-06-01T10:00:00Z",
+              updated_at: "2026-06-01T10:00:00Z",
+              resolved_at: null,
+            },
+          ],
+          ticketViews: [
+            {
+              ticket_id: TICKET_ID,
+              last_viewed_at: "2026-06-02T10:00:00Z",
+            },
+          ],
+          comments: [],
+          attachments: [
+            // Client/anon upload at ticket creation → uploaded_by is null.
+            {
+              ticket_id: TICKET_ID,
+              created_at: "2026-06-03T14:00:00Z",
+              deleted_at: null,
+              uploaded_by: null,
+            },
+          ],
+        }) as never
+      );
+
+      const result = await getClientTickets();
+      expect(result[0]?.hasNewActivity).toBe(false);
     });
 
     it("shows badge for status change (updated_at) after last_viewed_at", async () => {

@@ -13,6 +13,8 @@ type CommentActivityInput = {
 type AttachmentActivityInput = {
   created_at: string;
   deleted_at: string | null;
+  /** Staff actor id, or null for client/anon uploads (e.g. at ticket creation). */
+  uploaded_by: string | null;
 };
 
 function maxTimestamp(timestamps: string[]): string | null {
@@ -37,7 +39,14 @@ export function computeStaffActivityAt(
   }
 
   for (const attachment of attachments) {
-    if (!attachment.deleted_at) {
+    // Only staff-uploaded, still-active attachments count as new activity.
+    // Client/anon uploads (uploaded_by null) and the client's own uploads must
+    // not trigger the badge.
+    if (
+      !attachment.deleted_at &&
+      attachment.uploaded_by &&
+      attachment.uploaded_by !== clientUserId
+    ) {
       candidates.push(attachment.created_at);
     }
   }

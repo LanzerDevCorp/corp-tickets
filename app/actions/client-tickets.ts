@@ -42,6 +42,7 @@ type AttachmentRow = {
   ticket_id: string;
   created_at: string;
   deleted_at: string | null;
+  uploaded_by: string | null;
 };
 
 async function requireClientSession() {
@@ -100,7 +101,7 @@ export async function getClientTickets(): Promise<ClientTicketListItem[]> {
       .eq("is_internal", false),
     supabase
       .from("ticket_attachments")
-      .select("ticket_id, created_at, deleted_at")
+      .select("ticket_id, created_at, deleted_at, uploaded_by")
       .in("ticket_id", ticketIds),
   ]);
 
