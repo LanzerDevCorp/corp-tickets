@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import Link from "next/link";
 import { User } from "lucide-react";
 import { logoutUser } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -42,9 +43,7 @@ export function ClientAccountMenu({ email }: ClientAccountMenuProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem asChild>
-          <a href="#" className="cursor-default opacity-60" aria-disabled="true">
-            Crear contraseña
-          </a>
+          <Link href="/auth/set-password?manage=1">Gestionar contraseña</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem

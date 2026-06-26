@@ -31,7 +31,7 @@ Only TWO synchronization points exist:
 | 2 — Client Auth | Claude Code | `feat/portal-client-auth` | `merged→integration` | — | all 6 units; exports `AccountPasswordEntry` |
 | 3 — Client Portal | Cursor | `feat/portal-client-portal` | `merged→integration` | #3 | list + badge + `ticket_views`; account-menu stub |
 | 4 — Admin Attachments | Antigravity / OpenCode | `feat/admin-attachments` | `merged→integration` | #4 | upload + soft-delete + restore |
-| Integration | Claude Code | `integration/portal-clientes` | `in-progress` | — | merging 3 flows + wiring stub → `AccountPasswordEntry` |
+| Integration | Claude Code | `integration/portal-clientes` | `tests-green` | — | 3 flows merged + stub wired to `/auth/set-password?manage=1`; suite 410 green; 1 known finding (badge counts client-uploaded attachments — needs `uploaded_by`) |
 
 > Status vocabulary: `not-started` → `in-progress` → `tests-green` → `pr-open` → `merged`.
 
