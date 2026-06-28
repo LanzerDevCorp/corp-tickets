@@ -134,7 +134,7 @@ export function TicketSubjectPreview({
           href={`/dashboard/tickets/${ticket.id}`}
           onMouseEnter={() => onSeen?.()}
           onFocus={() => onSeen?.()}
-          className="block max-w-[280px] truncate text-zinc-900 underline-offset-2 transition-colors hover:text-indigo-600 hover:underline dark:text-zinc-100 dark:hover:text-indigo-400"
+          className="inline-block max-w-[280px] truncate text-zinc-900 underline-offset-2 transition-colors hover:text-indigo-600 hover:underline dark:text-zinc-100 dark:hover:text-indigo-400"
         >
           {ticket.subject}
         </Link>

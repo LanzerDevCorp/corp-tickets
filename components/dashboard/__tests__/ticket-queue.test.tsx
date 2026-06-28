@@ -93,11 +93,15 @@ const STAFF_USERS: never[] = [];
 // Helpers
 // ---------------------------------------------------------------------------
 
+type QueueTicket = Omit<typeof UNSEEN_TICKET, "first_seen_at"> & {
+  first_seen_at: string | null;
+};
+
 function makeQueryClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } });
 }
 
-function renderQueue(tickets: typeof UNSEEN_TICKET[], queryClient = makeQueryClient()) {
+function renderQueue(tickets: QueueTicket[], queryClient = makeQueryClient()) {
   return render(
     <QueryClientProvider client={queryClient}>
       <TicketQueue

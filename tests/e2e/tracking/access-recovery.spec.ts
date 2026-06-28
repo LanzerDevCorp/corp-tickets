@@ -21,8 +21,8 @@ test.describe("Track access recovery", () => {
       "/track/access?error_code=session_expired&ref=6087BB67&email=cliente%40ejemplo.com"
     );
 
-    await expect(page.getByDisplayValue("6087BB67")).toBeVisible();
-    await expect(page.getByDisplayValue("cliente@ejemplo.com")).toBeVisible();
+    await expect(page.locator('input[value="6087BB67"]')).toBeVisible();
+    await expect(page.locator('input[value="cliente@ejemplo.com"]')).toBeVisible();
   });
 
   test("muestra copy neutro sin error_code", async ({ page }) => {

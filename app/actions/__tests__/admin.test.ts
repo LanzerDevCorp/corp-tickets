@@ -92,7 +92,7 @@ describe("getUsers", () => {
         ],
       },
       error: null,
-    });
+    } as never);
 
     const result = await getUsers();
     expect(result.error).toBeNull();
@@ -111,7 +111,7 @@ describe("getUsers", () => {
     vi.mocked(supabaseAdmin.auth.admin.listUsers).mockResolvedValue({
       data: { users: [] },
       error: null,
-    });
+    } as never);
 
     const result = await getUsers();
     expect(result.error).toBeNull();
