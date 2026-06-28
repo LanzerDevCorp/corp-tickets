@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 
@@ -37,6 +37,10 @@ function buildChannelMocks() {
   const mockSubscribe = vi.fn();
   const mockOn = vi.fn();
   const mockRemoveChannel = vi.fn();
+  const mockSetAuth = vi.fn().mockResolvedValue(undefined);
+  const mockGetSession = vi.fn().mockResolvedValue({
+    data: { session: { access_token: "test-access-token" } },
+  });
 
   const channelObj = {
     on: mockOn,
@@ -59,6 +63,8 @@ function buildChannelMocks() {
   mockCreateClient.mockReturnValue({
     channel: mockChannel,
     removeChannel: mockRemoveChannel,
+    auth: { getSession: mockGetSession },
+    realtime: { setAuth: mockSetAuth },
   } as any);
 
   return {
@@ -67,6 +73,8 @@ function buildChannelMocks() {
     mockSubscribe,
     mockOn,
     mockRemoveChannel,
+    mockSetAuth,
+    mockGetSession,
     callbacks,
   };
 }
@@ -87,25 +95,38 @@ describe("useTicketQueueRealtime", () => {
     invalidateQueriesSpy = vi.spyOn(queryClient, "invalidateQueries");
   });
 
-  it("creates a channel named 'ticket-queue' and calls subscribe on mount", () => {
+  it("sets the session token on realtime before subscribing", async () => {
+    const { mockSetAuth, mockSubscribe } = buildChannelMocks();
+
+    renderHook(() => useTicketQueueRealtime(), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(mockSubscribe).toHaveBeenCalled());
+    expect(mockSetAuth).toHaveBeenCalledWith("test-access-token");
+  });
+
+  it("creates a channel named 'ticket-queue' and calls subscribe on mount", async () => {
     const { mockChannel, mockSubscribe } = buildChannelMocks();
 
     renderHook(() => useTicketQueueRealtime(), {
       wrapper: makeWrapper(queryClient),
     });
 
-    expect(mockChannel).toHaveBeenCalledWith("ticket-queue");
+    await waitFor(() =>
+      expect(mockChannel).toHaveBeenCalledWith("ticket-queue"),
+    );
     expect(mockSubscribe).toHaveBeenCalled();
   });
 
-  it("INSERT event triggers invalidateQueries with partial key ['tickets']", () => {
+  it("INSERT event triggers invalidateQueries with partial key ['tickets']", async () => {
     const { callbacks } = buildChannelMocks();
 
     renderHook(() => useTicketQueueRealtime(), {
       wrapper: makeWrapper(queryClient),
     });
 
-    expect(callbacks["INSERT"]).toBeDefined();
+    await waitFor(() => expect(callbacks["INSERT"]).toBeDefined());
     callbacks["INSERT"]!();
 
     expect(invalidateQueriesSpy).toHaveBeenCalledWith({
@@ -113,14 +134,14 @@ describe("useTicketQueueRealtime", () => {
     });
   });
 
-  it("UPDATE event triggers invalidateQueries with partial key ['tickets']", () => {
+  it("UPDATE event triggers invalidateQueries with partial key ['tickets']", async () => {
     const { callbacks } = buildChannelMocks();
 
     renderHook(() => useTicketQueueRealtime(), {
       wrapper: makeWrapper(queryClient),
     });
 
-    expect(callbacks["UPDATE"]).toBeDefined();
+    await waitFor(() => expect(callbacks["UPDATE"]).toBeDefined());
     callbacks["UPDATE"]!();
 
     expect(invalidateQueriesSpy).toHaveBeenCalledWith({
@@ -128,13 +149,15 @@ describe("useTicketQueueRealtime", () => {
     });
   });
 
-  it("calls supabase.removeChannel with the channel on unmount", () => {
-    const { channelObj, mockRemoveChannel } = buildChannelMocks();
+  it("calls supabase.removeChannel with the channel on unmount", async () => {
+    const { channelObj, mockRemoveChannel, mockSubscribe } =
+      buildChannelMocks();
 
     const { unmount } = renderHook(() => useTicketQueueRealtime(), {
       wrapper: makeWrapper(queryClient),
     });
 
+    await waitFor(() => expect(mockSubscribe).toHaveBeenCalled());
     unmount();
 
     expect(mockRemoveChannel).toHaveBeenCalledWith(channelObj);
