@@ -31,4 +31,4 @@ export const ticketSubmitSchema = z.object({
 
 export type TicketSubmitData = z.infer<typeof ticketSubmitSchema>;
 
-export { PRIORITY_LABELS } from "@/lib/i18n/maps";
+export { PRIORITY_LABELS } from "@/lib/labels";

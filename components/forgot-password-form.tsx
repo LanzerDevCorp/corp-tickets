@@ -14,7 +14,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { t } from "@/lib/i18n/t";
 
 type State = { error: string | null; submitted?: boolean };
 
@@ -41,14 +40,16 @@ export function ForgotPasswordForm({
       <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">
-              {t("auth.checkEmailTitle")}
-            </CardTitle>
-            <CardDescription>{t("auth.checkEmailDescription")}</CardDescription>
+            <CardTitle className="text-2xl">{"Revisa tu correo"}</CardTitle>
+            <CardDescription>
+              {"Instrucciones de restablecimiento enviadas"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              {t("auth.checkEmailBody")}
+              {
+                "Si te registraste con correo y contraseña, recibirás un correo para restablecer tu contraseña."
+              }
             </p>
           </CardContent>
         </Card>
@@ -60,18 +61,18 @@ export function ForgotPasswordForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">
-            {t("auth.resetPasswordTitle")}
-          </CardTitle>
+          <CardTitle className="text-2xl">{"Restablecer contraseña"}</CardTitle>
           <CardDescription>
-            {t("auth.resetPasswordDescription")}
+            {
+              "Escribe tu correo y te enviaremos un enlace para restablecer tu contraseña"
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form action={formAction}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="email">{t("common.email")}</Label>
+                <Label htmlFor="email">{"Correo electrónico"}</Label>
                 <Input
                   id="email"
                   name="email"
@@ -84,13 +85,15 @@ export function ForgotPasswordForm({
                 <p className="text-sm text-red-500">{state.error}</p>
               )}
               <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? t("common.sending") : t("auth.sendResetEmail")}
+                {isPending
+                  ? "Enviando..."
+                  : "Enviar correo de restablecimiento"}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
-              {t("auth.alreadyHaveAccount")}{" "}
+              {"¿Ya tienes cuenta?"}{" "}
               <Link href="/auth/login" className="underline underline-offset-4">
-                {t("auth.login")}
+                {"Iniciar sesión"}
               </Link>
             </div>
           </form>

@@ -7,7 +7,6 @@ import {
 } from "@/lib/auth/client-session";
 import { buildTicketAccessUrl } from "@/lib/auth/ticket-access";
 import { sendTicketAccessEmail } from "@/lib/notifications/tickets";
-import { es } from "@/lib/i18n/es";
 
 type ProvisionResult = {
   userId: string | null;
@@ -29,7 +28,7 @@ export async function provisionClient(
       userId: null,
       alreadyExisted: false,
       actionLink: null,
-      error: es.errors.invalidEmail,
+      error: "Correo electrónico inválido",
     };
   }
 
@@ -49,7 +48,7 @@ export async function provisionClient(
       userId: null,
       alreadyExisted: false,
       actionLink: null,
-      error: ensured.error ?? es.errors.failedCreateUser,
+      error: ensured.error ?? "No se pudo crear el usuario",
     };
   }
 
@@ -63,7 +62,7 @@ export async function provisionClient(
       userId,
       alreadyExisted,
       actionLink: null,
-      error: err instanceof Error ? err.message : es.errors.failedCreateUser,
+      error: err instanceof Error ? err.message : "No se pudo crear el usuario",
     };
   }
 
@@ -76,7 +75,7 @@ export async function requestMagicLink(
   const trimmed = email.trim();
 
   if (!isValidEmail(trimmed)) {
-    return { error: es.errors.invalidEmail };
+    return { error: "Correo electrónico inválido" };
   }
 
   const { data: ticket, error: lookupError } = await supabaseAdmin
@@ -89,7 +88,9 @@ export async function requestMagicLink(
 
   if (lookupError) {
     console.error("[requestMagicLink] ticket lookup failed", lookupError);
-    return { error: es.errors.magicLinkSendFailed };
+    return {
+      error: "No pudimos enviar el enlace. Intenta de nuevo en unos minutos.",
+    };
   }
 
   if (!ticket) {

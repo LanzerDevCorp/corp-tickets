@@ -4,7 +4,6 @@ import StaffReplyEmail from "@/emails/StaffReplyEmail";
 import ClientCommentEmail from "@/emails/ClientCommentEmail";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { resend } from "@/lib/resend";
-import { t } from "@/lib/i18n/t";
 
 function dedupeEmails(emails: string[]): string[] {
   return [
@@ -70,7 +69,7 @@ export async function notifyPublicComment(
     await resend.emails.send({
       from,
       to,
-      subject: t("email.subjects.staffReply", { subject: ticketSubject }),
+      subject: `Nueva respuesta en tu ticket: "${ticketSubject}"`,
       html,
       ...(rawCc.length ? { cc: rawCc } : {}),
     });
@@ -182,7 +181,7 @@ export async function notifyClientComment(
     await resend.emails.send({
       from,
       to: recipients,
-      subject: t("email.subjects.clientComment", { subject: ticketSubject }),
+      subject: `Nuevo comentario del cliente en el ticket: "${ticketSubject}"`,
       html,
       ...(rawCc.length ? { cc: rawCc } : {}),
     });

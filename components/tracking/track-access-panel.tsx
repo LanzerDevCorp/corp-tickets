@@ -6,7 +6,6 @@ import { requestMagicLink } from "@/app/actions/client-provision";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { t } from "@/lib/i18n/t";
 
 type Props = {
   defaultEmail?: string;
@@ -49,7 +48,7 @@ export function TrackAccessPanel({
     <div className="flex flex-col gap-6">
       <form action={accessAction} className="flex flex-col gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="access-email">{t("common.email")}</Label>
+          <Label htmlFor="access-email">{"Correo electrónico"}</Label>
           <Input
             id="access-email"
             name="email"
@@ -61,20 +60,22 @@ export function TrackAccessPanel({
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="access-ticket-ref">{t("auth.ticketReference")}</Label>
+          <Label htmlFor="access-ticket-ref">{"Número de ticket"}</Label>
           <Input
             id="access-ticket-ref"
             name="ticketRef"
             type="text"
             defaultValue={defaultTicketRef}
-            placeholder={t("auth.ticketReferencePlaceholder")}
+            placeholder={"Ej. 6087BB67"}
             required
             disabled={accessPending}
             className="font-mono uppercase"
             autoComplete="off"
           />
           <p className="text-xs text-muted-foreground">
-            {t("auth.ticketReferenceHint")}
+            {
+              "Es la referencia de 8 caracteres que aparece en la confirmación o en el correo (#6087BB67)."
+            }
           </p>
         </div>
 
@@ -83,7 +84,7 @@ export function TrackAccessPanel({
         )}
 
         <Button type="submit" disabled={accessPending}>
-          {accessPending ? t("common.sending") : t("auth.enterTicket")}
+          {accessPending ? "Enviando..." : "Entrar al ticket"}
         </Button>
       </form>
 
@@ -95,27 +96,29 @@ export function TrackAccessPanel({
             className="w-full"
             onClick={() => setResendOpen(true)}
           >
-            {t("auth.resendLinkSection")}
+            {"¿Prefieres un enlace por correo?"}
           </Button>
         ) : (
           <div className="flex flex-col gap-3">
             <div>
               <p className="text-sm font-medium">
-                {t("auth.resendLinkSection")}
+                {"¿Prefieres un enlace por correo?"}
               </p>
               <p className="text-xs text-muted-foreground">
-                {t("auth.resendLinkDescription")}
+                {
+                  "Te enviaremos un enlace reutilizable al correo con el que enviaste el ticket."
+                }
               </p>
             </div>
 
             {resendState.submitted ? (
               <p className="text-sm text-green-600">
-                {t("auth.magicLinkCheckEmail")}
+                {"Revisa tu correo para obtener un nuevo enlace."}
               </p>
             ) : (
               <form action={resendAction} className="flex flex-col gap-3">
                 <div className="grid gap-2">
-                  <Label htmlFor="resend-email">{t("common.email")}</Label>
+                  <Label htmlFor="resend-email">{"Correo electrónico"}</Label>
                   <Input
                     id="resend-email"
                     name="resendEmail"
@@ -133,9 +136,7 @@ export function TrackAccessPanel({
                   variant="secondary"
                   disabled={resendPending}
                 >
-                  {resendPending
-                    ? t("common.sending")
-                    : t("auth.requestNewLink")}
+                  {resendPending ? "Enviando..." : "Solicitar nuevo enlace"}
                 </Button>
               </form>
             )}

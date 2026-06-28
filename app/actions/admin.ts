@@ -10,7 +10,6 @@ import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import type { Role } from "@/lib/auth/roles";
 import { categoryUpsertSchema } from "@/lib/schemas/category-upsert";
-import { es } from "@/lib/i18n/es";
 import type { User } from "@supabase/supabase-js";
 
 export type AdminActionResult<T = undefined> =
@@ -42,7 +41,7 @@ async function requireAdmin(): Promise<
   const role = getAppRoleFromClaims(claimsData?.claims);
   const sub = claimsData?.claims?.sub as string | undefined;
   if (role !== "admin") {
-    return { error: es.errors.unauthorized, code: "auth" };
+    return { error: "No autorizado", code: "auth" };
   }
   return { error: null, data: { role, sub: sub ?? "" } };
 }
@@ -91,7 +90,7 @@ async function getStaffUserOrError(
   }
 
   if (!isStaffRole(data.role as Role)) {
-    return { error: es.errors.userNotStaff, code: "validation" };
+    return { error: "El usuario no es personal", code: "validation" };
   }
 
   return {
@@ -118,7 +117,10 @@ export async function getUsers(): Promise<AdminActionResult<UserRow[]>> {
     authUsers = await fetchAuthUsersById();
   } catch (err) {
     return {
-      error: err instanceof Error ? err.message : es.errors.failedLoadAuthUsers,
+      error:
+        err instanceof Error
+          ? err.message
+          : "No se pudieron cargar los usuarios de autenticación",
       code: "db",
     };
   }
@@ -152,7 +154,10 @@ export async function reinviteStaffUser(
   }
 
   if (!isPendingStaffInvite(authData.user, userResult.data.role)) {
-    return { error: es.errors.userNotPendingInvite, code: "validation" };
+    return {
+      error: "El usuario no tiene una invitación pendiente",
+      code: "validation",
+    };
   }
 
   const redirectTo = staffInviteRedirectUrl();
@@ -203,7 +208,10 @@ export async function cancelStaffInvite(
   }
 
   if (!isPendingStaffInvite(authData.user, userResult.data.role)) {
-    return { error: es.errors.userNotPendingInvite, code: "validation" };
+    return {
+      error: "El usuario no tiene una invitación pendiente",
+      code: "validation",
+    };
   }
 
   const { error: deleteError } =
@@ -224,7 +232,7 @@ export async function deactivateUser(
   const { sub } = authResult.data;
 
   if (userId === sub) {
-    return { error: es.errors.cannotDeactivateSelf, code: "auth" };
+    return { error: "No puedes desactivar tu propia cuenta", code: "auth" };
   }
 
   const { data: _data, error } = await supabaseAdmin
@@ -288,7 +296,7 @@ export async function createCategory(input: {
   const parsed = categoryUpsertSchema.pick({ name: true }).safeParse(input);
   if (!parsed.success) {
     return {
-      error: parsed.error.issues[0]?.message ?? es.errors.invalidInput,
+      error: parsed.error.issues[0]?.message ?? "Datos inválidos",
       code: "validation",
     };
   }
@@ -302,7 +310,7 @@ export async function createCategory(input: {
   if (error) {
     if ((error as { code?: string }).code === "23505") {
       return {
-        error: es.errors.categoryExists,
+        error: "Ya existe una categoría con este nombre.",
         code: "db",
       };
     }
@@ -325,7 +333,7 @@ export async function updateCategory(
       .safeParse({ name: input.name });
     if (!parsed.success) {
       return {
-        error: parsed.error.issues[0]?.message ?? es.errors.invalidInput,
+        error: parsed.error.issues[0]?.message ?? "Datos inválidos",
         code: "validation",
       };
     }
@@ -345,7 +353,7 @@ export async function updateCategory(
   if (error) {
     if ((error as { code?: string }).code === "23505") {
       return {
-        error: es.errors.categoryExists,
+        error: "Ya existe una categoría con este nombre.",
         code: "db",
       };
     }

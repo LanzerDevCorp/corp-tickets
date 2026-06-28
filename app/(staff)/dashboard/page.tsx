@@ -4,7 +4,6 @@ import {
   getCategories,
   getStaffUsers,
 } from "@/app/actions/tickets";
-import { t } from "@/lib/i18n/t";
 
 export default async function DashboardPage() {
   const [initialTickets, categories, staffUsers] = await Promise.all([
@@ -18,10 +17,10 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between space-y-2">
         <div>
           <h2 className="bg-gradient-to-r from-zinc-900 to-zinc-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent dark:from-zinc-100 dark:to-zinc-400">
-            {t("dashboard.title")}
+            {"Panel"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {t("dashboard.subtitle")}
+            {"Administra tickets de soporte y asignaciones."}
           </p>
         </div>
       </div>

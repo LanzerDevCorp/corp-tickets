@@ -7,8 +7,7 @@ import {
   Button,
   Hr,
 } from "@react-email/components";
-import { es } from "@/lib/i18n/es";
-import { priorityLabel } from "@/lib/i18n/maps";
+import { priorityLabel } from "@/lib/labels";
 
 interface TicketCreatedEmailProps {
   clientName: string;
@@ -65,7 +64,7 @@ export default function TicketCreatedEmail({
               margin: "0 0 16px",
             }}
           >
-            {es.email.ticketCreated.greeting.replace("{name}", clientName)}
+            {`Hola ${clientName},`}
           </Text>
 
           <Text
@@ -76,7 +75,9 @@ export default function TicketCreatedEmail({
               margin: "0 0 16px",
             }}
           >
-            {es.email.ticketCreated.intro}
+            {
+              "Recibimos tu ticket de soporte. Usa el enlace de abajo para ver su estado y responder a nuestro equipo."
+            }
           </Text>
 
           <Heading
@@ -101,7 +102,7 @@ export default function TicketCreatedEmail({
               fontFamily: "monospace",
             }}
           >
-            {es.email.ticketCreated.referenceLabel} #{ticketReference}
+            {"Número de ticket:"} #{ticketReference}
           </Text>
 
           <Text
@@ -112,7 +113,7 @@ export default function TicketCreatedEmail({
               margin: "0 0 24px",
             }}
           >
-            {es.email.ticketCreated.priority}{" "}
+            {"Prioridad:"}{" "}
             <span
               style={{
                 color: pConfig.color,
@@ -122,7 +123,7 @@ export default function TicketCreatedEmail({
               {priorityLabel(priority)}
             </span>
             {"  ·  "}
-            {es.email.ticketCreated.category} {categoryName}
+            {"Categoría:"} {categoryName}
           </Text>
 
           <Button
@@ -139,7 +140,7 @@ export default function TicketCreatedEmail({
               marginBottom: "24px",
             }}
           >
-            {es.email.ticketCreated.trackButton}
+            {"Seguir tu ticket"}
           </Button>
 
           <Hr
@@ -158,7 +159,9 @@ export default function TicketCreatedEmail({
               margin: "0",
             }}
           >
-            {es.email.ticketCreated.footer}
+            {
+              "Guarda tu número de ticket. Si caduca la sesión, podrás volver a entrar con tu correo y ese número en la página de seguimiento."
+            }
           </Text>
         </Container>
       </Body>

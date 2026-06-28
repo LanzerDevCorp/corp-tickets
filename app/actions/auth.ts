@@ -9,7 +9,6 @@ import { redirect } from "next/navigation";
 import { staffInviteRedirectUrl } from "@/lib/auth/staff-invite";
 import { adminInviteSchema } from "@/lib/schemas/admin-invite";
 import { acceptInviteSchema } from "@/lib/schemas/accept-invite";
-import { es } from "@/lib/i18n/es";
 
 type AuthResult = { error: string | null; role?: Role };
 type InviteResult = { error: string | null };
@@ -26,7 +25,7 @@ export async function loginUser(
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { error: es.errors.invalidCredentials };
+    return { error: "Credenciales inválidas" };
   }
 
   const { data } = await supabase.auth.getClaims();
@@ -47,7 +46,7 @@ export async function inviteUser(
 ): Promise<InviteResult> {
   const parsed = adminInviteSchema.safeParse({ email, role });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? es.errors.invalidInput };
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
   const supabase = await createClient();
@@ -55,7 +54,7 @@ export async function inviteUser(
   const callerRole = getAppRoleFromClaims(data?.claims);
 
   if (callerRole !== "admin") {
-    return { error: es.errors.unauthorized };
+    return { error: "No autorizado" };
   }
 
   const redirectTo = staffInviteRedirectUrl();
@@ -95,7 +94,7 @@ export async function completeInviteSetup(
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? es.errors.invalidInput };
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
   const supabase = await createClient();
@@ -105,7 +104,8 @@ export async function completeInviteSetup(
 
   if (!userId) {
     return {
-      error: es.errors.inviteExpired,
+      error:
+        "Tu enlace de invitación expiró o no es válido. Solicita una nueva invitación.",
     };
   }
 

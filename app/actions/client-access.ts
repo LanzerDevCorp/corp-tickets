@@ -11,7 +11,6 @@ import {
   isValidTicketReferenceInput,
   ticketMatchesReference,
 } from "@/lib/tickets/reference";
-import { es } from "@/lib/i18n/es";
 
 type AccessResult = { error: string | null };
 
@@ -45,21 +44,29 @@ export async function accessTicketWithReference(
   const trimmedRef = ticketRef.trim();
 
   if (!isValidEmail(trimmedEmail)) {
-    return { error: es.errors.invalidEmail };
+    return { error: "Correo electrónico inválido" };
   }
 
   if (!isValidTicketReferenceInput(trimmedRef)) {
-    return { error: es.errors.invalidTicketReference };
+    return {
+      error:
+        "El número de ticket debe ser la referencia de 8 caracteres o el ID completo.",
+    };
   }
 
   const ticket = await findTicketByEmailAndReference(trimmedEmail, trimmedRef);
   if (!ticket) {
-    return { error: es.errors.ticketAccessFailed };
+    return {
+      error:
+        "No encontramos un ticket con ese correo y número. Verifica los datos.",
+    };
   }
 
   const ensured = await ensureClientUser(ticket.email);
   if (ensured.error || !ensured.userId) {
-    return { error: es.errors.magicLinkSendFailed };
+    return {
+      error: "No pudimos enviar el enlace. Intenta de nuevo en unos minutos.",
+    };
   }
 
   const supabase = await createClient();
@@ -71,7 +78,9 @@ export async function accessTicketWithReference(
   );
 
   if (sessionError) {
-    return { error: es.errors.magicLinkSendFailed };
+    return {
+      error: "No pudimos enviar el enlace. Intenta de nuevo en unos minutos.",
+    };
   }
 
   redirect(`/track/${ticket.id}`);

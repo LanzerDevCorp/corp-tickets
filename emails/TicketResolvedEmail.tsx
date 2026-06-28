@@ -7,7 +7,6 @@ import {
   Button,
   Hr,
 } from "@react-email/components";
-import { es } from "@/lib/i18n/es";
 
 interface TicketResolvedEmailProps {
   clientName: string;
@@ -46,7 +45,7 @@ export default function TicketResolvedEmail({
               margin: "0 0 16px",
             }}
           >
-            {es.email.ticketResolved.greeting.replace("{name}", clientName)}
+            {`Hola ${clientName},`}
           </Text>
 
           <Heading
@@ -70,7 +69,7 @@ export default function TicketResolvedEmail({
               margin: "0 0 24px",
             }}
           >
-            {es.email.ticketResolved.intro}
+            {"Tu ticket ha sido marcado como resuelto por nuestro equipo."}
           </Text>
 
           <Button
@@ -87,7 +86,7 @@ export default function TicketResolvedEmail({
               marginBottom: "24px",
             }}
           >
-            {es.email.ticketResolved.viewHistory}
+            {"Ver historial del ticket"}
           </Button>
 
           <Hr
@@ -106,7 +105,7 @@ export default function TicketResolvedEmail({
               margin: "0",
             }}
           >
-            {es.email.ticketResolved.footer}
+            {"Esta es una notificación automática del sistema de tickets."}
           </Text>
         </Container>
       </Body>

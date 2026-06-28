@@ -13,7 +13,6 @@ import {
   notifyTicketClosed,
   notifyTicketResolved,
 } from "@/lib/notifications/tickets";
-import { es } from "@/lib/i18n/es";
 
 export type TicketSubmitResult =
   | { error: null; ticketId: string }
@@ -95,7 +94,7 @@ export async function getTickets(filters: {
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   let query = supabase.from("tickets").select(`
@@ -135,7 +134,7 @@ export async function getTicketDetail(id: string) {
   const userId = claims?.sub as string | undefined;
 
   if (!userId) {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   const role = getAppRoleFromClaims(claims);
@@ -144,7 +143,7 @@ export async function getTicketDetail(id: string) {
   if (role === "client") {
     const email = await getAuthenticatedEmail(supabase, claims);
     if (!email) {
-      throw new Error(es.errors.notAuthorized);
+      throw new Error("No autorizado");
     }
 
     const { data: ticket, error } = await supabase
@@ -161,7 +160,7 @@ export async function getTicketDetail(id: string) {
       .single();
 
     if (error || !ticket) {
-      throw new Error(es.errors.ticketNotFoundOrDenied);
+      throw new Error("Ticket no encontrado o acceso denegado");
     }
     return ticket;
   }
@@ -198,7 +197,7 @@ export async function getTicketDetail(id: string) {
       .single();
 
     if (error || !data) {
-      throw new Error(es.errors.ticketNotFound);
+      throw new Error("Ticket no encontrado");
     }
     ticket = data;
   }
@@ -216,11 +215,13 @@ export async function updateTicketStatus(
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   if (status === "closed" && !closureReason) {
-    throw new Error(es.errors.closureReasonRequired);
+    throw new Error(
+      "Se requiere un motivo de cierre cuando el estado es cerrado",
+    );
   }
 
   const updatePayload: any = { status };
@@ -264,7 +265,7 @@ export async function assignTicket(id: string, assignedTo: string | null) {
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   const { data, error } = await supabase
@@ -292,7 +293,7 @@ export async function updateTicketCategory(id: string, categoryId: string) {
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   const { data, error } = await supabase
@@ -320,7 +321,7 @@ export async function markTicketAsSeen(ticketId: string): Promise<void> {
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   // Idempotent: only the first caller wins; zero rows updated is a valid success.
@@ -359,7 +360,7 @@ export async function getStaffUsers() {
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   const { data, error } = await supabase

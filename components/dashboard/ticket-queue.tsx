@@ -34,8 +34,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RefreshCw, Filter, ArrowUpDown } from "lucide-react";
 import { formatDate } from "@/lib/format-date";
 import { TicketSubjectPreview } from "@/components/dashboard/ticket-subject-preview";
-import { t } from "@/lib/i18n/t";
-import { statusLabel, priorityLabel } from "@/lib/i18n/maps";
+import { statusLabel, priorityLabel } from "@/lib/labels";
 
 type QueueTicket = {
   id: string;
@@ -169,7 +168,7 @@ export default function TicketQueue({
     <Card className="border-zinc-200 bg-white/50 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/50">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-xl font-bold tracking-tight">
-          {t("dashboard.supportQueue")}
+          {"Cola de soporte"}
         </CardTitle>
         <Button
           variant="outline"
@@ -181,7 +180,7 @@ export default function TicketQueue({
           <RefreshCw
             className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
           />
-          {t("common.refresh")}
+          {"Actualizar"}
         </Button>
       </CardHeader>
       <CardContent>
@@ -189,7 +188,7 @@ export default function TicketQueue({
         <div className="mb-6 flex flex-col gap-2 rounded-xl border border-zinc-100 bg-zinc-50/50 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 dark:border-zinc-900 dark:bg-zinc-900/50">
           <div className="flex items-center gap-2 text-sm text-zinc-500">
             <Filter className="h-4 w-4" />
-            <span>{t("common.filters")}</span>
+            <span>{"Filtros:"}</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
@@ -203,12 +202,12 @@ export default function TicketQueue({
               }
             >
               <MultiSelectTrigger className="min-w-[200px] bg-white dark:bg-zinc-900">
-                <MultiSelectValue placeholder={t("dashboard.status")} />
+                <MultiSelectValue placeholder={"Estado"} />
               </MultiSelectTrigger>
               <MultiSelectContent search={false}>
                 <MultiSelectGroup>
                   <MultiSelectItem value="all">
-                    {t("dashboard.allStatuses")}
+                    {"Todos los estados"}
                   </MultiSelectItem>
                   {(["open", "in_progress", "resolved", "closed"] as const).map(
                     (s) => (
@@ -234,12 +233,10 @@ export default function TicketQueue({
             <div className="w-[170px] shrink-0">
               <Select value={priority} onValueChange={setPriority}>
                 <SelectTrigger className="bg-white dark:bg-zinc-900">
-                  <SelectValue placeholder={t("dashboard.priority")} />
+                  <SelectValue placeholder={"Prioridad"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">
-                    {t("dashboard.allPriorities")}
-                  </SelectItem>
+                  <SelectItem value="all">{"Todas las prioridades"}</SelectItem>
                   <SelectItem value="low">{priorityLabel("low")}</SelectItem>
                   <SelectItem value="medium">
                     {priorityLabel("medium")}
@@ -256,15 +253,11 @@ export default function TicketQueue({
             <div className="mx-[10px] w-[210px] shrink-0">
               <Select value={assignedTo} onValueChange={setAssignedTo}>
                 <SelectTrigger className="bg-white dark:bg-zinc-900">
-                  <SelectValue placeholder={t("dashboard.assignee")} />
+                  <SelectValue placeholder={"Asignado"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">
-                    {t("dashboard.allAssignees")}
-                  </SelectItem>
-                  <SelectItem value="unassigned">
-                    {t("common.unassigned")}
-                  </SelectItem>
+                  <SelectItem value="all">{"Todos los asignados"}</SelectItem>
+                  <SelectItem value="unassigned">{"Sin asignar"}</SelectItem>
                   {staffUsers.map((user) => (
                     <SelectItem key={user.id} value={user.id}>
                       {user.display_name || user.email}
@@ -282,7 +275,7 @@ export default function TicketQueue({
             onClick={() =>
               setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
             }
-            title={t("common.toggleSortOrder")}
+            title={"Cambiar orden"}
             className="hover:bg-zinc-100 sm:ml-auto dark:hover:bg-zinc-900"
           >
             <ArrowUpDown className="h-4 w-4" />
@@ -295,28 +288,28 @@ export default function TicketQueue({
             <TableHeader className="bg-zinc-50 dark:bg-zinc-900/40">
               <TableRow>
                 <TableHead className="min-w-[220px] font-semibold">
-                  {t("dashboard.subject")}
+                  {"Asunto"}
                 </TableHead>
                 <TableHead className="min-w-[140px] font-semibold">
-                  {t("dashboard.requester")}
+                  {"Solicitante"}
                 </TableHead>
                 <TableHead className="min-w-[180px] font-semibold">
-                  {t("dashboard.email")}
+                  {"Correo"}
                 </TableHead>
                 <TableHead className="w-[120px] font-semibold">
-                  {t("dashboard.category")}
+                  {"Categoría"}
                 </TableHead>
                 <TableHead className="w-[120px] font-semibold">
-                  {t("dashboard.status")}
+                  {"Estado"}
                 </TableHead>
                 <TableHead className="w-[120px] font-semibold">
-                  {t("dashboard.priority")}
+                  {"Prioridad"}
                 </TableHead>
                 <TableHead className="w-[180px] font-semibold">
-                  {t("dashboard.assignedTo")}
+                  {"Asignado a"}
                 </TableHead>
                 <TableHead className="w-[150px] text-right font-semibold">
-                  {t("common.created")}
+                  {"Creado"}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -327,7 +320,7 @@ export default function TicketQueue({
                     colSpan={8}
                     className="h-32 text-center text-zinc-400"
                   >
-                    {t("dashboard.noTickets")}
+                    {"No hay tickets que coincidan con los filtros."}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -366,7 +359,7 @@ export default function TicketQueue({
                         </a>
                       </TableCell>
                       <TableCell className="py-3 align-top text-zinc-600 dark:text-zinc-400">
-                        {ticket.category?.name || t("common.general")}
+                        {ticket.category?.name || "General"}
                       </TableCell>
                       <TableCell className="py-3 align-top">
                         <Badge
@@ -389,7 +382,7 @@ export default function TicketQueue({
                           ticket.assignee.display_name || ticket.assignee.email
                         ) : (
                           <span className="text-zinc-400 italic dark:text-zinc-600">
-                            {t("common.unassigned")}
+                            {"Sin asignar"}
                           </span>
                         )}
                       </TableCell>

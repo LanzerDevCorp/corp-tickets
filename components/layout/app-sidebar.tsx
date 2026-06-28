@@ -15,24 +15,23 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { signOut } from "@/app/(staff)/actions";
-import { t } from "@/lib/i18n/t";
 
 const mainNav = [
   {
-    labelKey: "sidebar.dashboard" as const,
+    label: "Panel",
     href: "/dashboard",
     icon: LayoutDashboard,
   },
 ];
 
 const adminNav = [
-  { labelKey: "sidebar.overview" as const, href: "/admin", icon: Settings2 },
+  { label: "Vista general", href: "/admin", icon: Settings2 },
   {
-    labelKey: "sidebar.categories" as const,
+    label: "Categorías",
     href: "/admin/categories",
     icon: Tag,
   },
-  { labelKey: "sidebar.users" as const, href: "/admin/users", icon: Users },
+  { label: "Usuarios", href: "/admin/users", icon: Users },
 ];
 
 interface AppSidebarProps {
@@ -56,7 +55,7 @@ export function AppSidebar({ userEmail, isAdmin }: AppSidebarProps) {
                   <SidebarMenuButton asChild isActive={pathname === item.href}>
                     <a href={item.href}>
                       <item.icon />
-                      <span>{t(item.labelKey)}</span>
+                      <span>{item.label}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -67,7 +66,7 @@ export function AppSidebar({ userEmail, isAdmin }: AppSidebarProps) {
 
         {isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel>{t("sidebar.admin")}</SidebarGroupLabel>
+            <SidebarGroupLabel>{"Administración"}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminNav.map((item) => (
@@ -78,7 +77,7 @@ export function AppSidebar({ userEmail, isAdmin }: AppSidebarProps) {
                     >
                       <a href={item.href}>
                         <item.icon />
-                        <span>{t(item.labelKey)}</span>
+                        <span>{item.label}</span>
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -102,7 +101,7 @@ export function AppSidebar({ userEmail, isAdmin }: AppSidebarProps) {
             <form action={signOut}>
               <SidebarMenuButton type="submit">
                 <LogOut />
-                <span>{t("sidebar.logOut")}</span>
+                <span>{"Cerrar sesión"}</span>
               </SidebarMenuButton>
             </form>
           </SidebarMenuItem>

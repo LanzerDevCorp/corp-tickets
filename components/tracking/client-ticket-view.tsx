@@ -17,8 +17,7 @@ import { type AttachmentItem } from "@/app/actions/attachments";
 import AttachmentList from "@/components/dashboard/attachment-list";
 import { formatDateTime } from "@/lib/format-date";
 import { formatTicketReference } from "@/lib/tickets/reference";
-import { t } from "@/lib/i18n/t";
-import { statusLabel, priorityLabel } from "@/lib/i18n/maps";
+import { statusLabel, priorityLabel } from "@/lib/labels";
 
 type ClientTicketViewProps = {
   initialTicket: {
@@ -81,7 +80,7 @@ export default function ClientTicketView({
               variant="secondary"
               className="bg-zinc-100 text-[10px] tracking-wider text-zinc-700 uppercase dark:bg-zinc-900 dark:text-zinc-300"
             >
-              {initialTicket.category?.name ?? t("common.general")}
+              {initialTicket.category?.name ?? "General"}
             </Badge>
           </div>
           <CardTitle className="text-2xl font-bold text-zinc-950 dark:text-zinc-50">
@@ -93,11 +92,11 @@ export default function ClientTicketView({
           <CardDescription className="mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
             <span className="flex items-center gap-1.5 text-zinc-500">
               <User className="h-3.5 w-3.5" />
-              {t("common.assigned")}{" "}
+              {"Asignado:"}{" "}
               <strong className="font-medium text-zinc-700 dark:text-zinc-300">
                 {initialTicket.assignee?.display_name ||
                   initialTicket.assignee?.email ||
-                  t("common.pendingAssignment")}
+                  "Asignación pendiente"}
               </strong>
             </span>
             <span className="flex items-center gap-1.5 text-zinc-500">
@@ -109,7 +108,7 @@ export default function ClientTicketView({
         <CardContent className="pt-6">
           <div>
             <h3 className="mb-2 text-sm font-semibold tracking-wider text-zinc-400 uppercase">
-              {t("common.description")}
+              {"Descripción"}
             </h3>
             <p className="leading-relaxed whitespace-pre-line text-zinc-800 dark:text-zinc-200">
               {initialTicket.body}
@@ -119,7 +118,7 @@ export default function ClientTicketView({
           {isClosed && initialTicket.closure_reason && (
             <div className="mt-8 rounded-xl border border-rose-500/20 bg-rose-500/5 p-4">
               <h4 className="mb-1 text-sm font-semibold tracking-wider text-rose-500 uppercase">
-                {t("dashboard.closureReason")}
+                {"Motivo de cierre"}
               </h4>
               <p className="text-sm text-zinc-700 italic dark:text-zinc-300">
                 {initialTicket.closure_reason}
@@ -140,12 +139,14 @@ export default function ClientTicketView({
 
       <div className="space-y-4">
         <h3 className="text-sm font-semibold tracking-wider text-zinc-400 uppercase">
-          {t("common.conversation")}
+          {"Conversación"}
         </h3>
         <CommentThread comments={comments} />
         {isClosed ? (
           <p className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/50">
-            {t("tracking.ticketClosedNotice")}
+            {
+              "Este ticket está cerrado. Puedes revisar la conversación arriba pero no agregar comentarios nuevos."
+            }
           </p>
         ) : (
           <ClientCommentForm

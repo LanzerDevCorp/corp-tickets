@@ -15,7 +15,6 @@ import {
   type CommentSubmitData,
 } from "@/lib/schemas/comment-submit";
 import { cn } from "@/lib/utils";
-import { t } from "@/lib/i18n/t";
 
 // Input type: zod's input (optional fields due to .default()) — this is what the form holds
 type CommentFormInput = z.input<typeof CommentSubmitSchema>;
@@ -55,7 +54,7 @@ export default function CommentForm({ ticketId, onPosted }: CommentFormProps) {
       form.reset();
     } catch (err: any) {
       form.setError("root", {
-        message: err?.message ?? t("dashboard.failedPostComment"),
+        message: err?.message ?? "No se pudo publicar el comentario",
       });
     }
   };
@@ -76,7 +75,7 @@ export default function CommentForm({ ticketId, onPosted }: CommentFormProps) {
             <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
           )}
           <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-            {isInternal ? t("dashboard.internalNote") : t("dashboard.reply")}
+            {isInternal ? "Nota interna" : "Responder"}
           </span>
         </div>
 
@@ -89,7 +88,7 @@ export default function CommentForm({ ticketId, onPosted }: CommentFormProps) {
                 htmlFor={`${formId}-internal`}
                 className="cursor-pointer text-xs text-zinc-500"
               >
-                {t("dashboard.internalNoteToggle")}
+                {"Nota interna"}
               </Label>
               <Switch
                 id={`${formId}-internal`}
@@ -114,8 +113,8 @@ export default function CommentForm({ ticketId, onPosted }: CommentFormProps) {
                 id={`${formId}-body`}
                 placeholder={
                   isInternal
-                    ? t("dashboard.internalNotePlaceholder")
-                    : t("dashboard.replyPlaceholder")
+                    ? "Agrega una nota interna visible solo para el personal..."
+                    : "Escribe una respuesta para el cliente..."
                 }
                 className={cn(
                   "min-h-[100px] resize-y",
@@ -148,10 +147,10 @@ export default function CommentForm({ ticketId, onPosted }: CommentFormProps) {
             )}
           >
             {form.formState.isSubmitting
-              ? t("common.posting")
+              ? "Publicando..."
               : isInternal
-                ? t("dashboard.addInternalNote")
-                : t("dashboard.reply")}
+                ? "Agregar nota interna"
+                : "Responder"}
           </Button>
         </div>
       </form>

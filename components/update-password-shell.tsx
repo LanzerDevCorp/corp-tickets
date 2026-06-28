@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { t } from "@/lib/i18n/t";
 
 type Status = "loading" | "ready" | "invalid";
 
@@ -36,7 +35,7 @@ export function UpdatePasswordShell() {
       .catch((err: unknown) => {
         if (cancelled) return;
         setErrorMessage(
-          err instanceof Error ? err.message : t("errors.genericError"),
+          err instanceof Error ? err.message : "Ocurrió un error",
         );
         setStatus("invalid");
       });
@@ -50,10 +49,8 @@ export function UpdatePasswordShell() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">{t("auth.verifyingLink")}</CardTitle>
-          <CardDescription>
-            {t("auth.verifyingLinkDescription")}
-          </CardDescription>
+          <CardTitle className="text-2xl">{"Verificando enlace…"}</CardTitle>
+          <CardDescription>{"Configurando tu sesión."}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -64,10 +61,12 @@ export function UpdatePasswordShell() {
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">
-            {t("auth.resetLinkInvalid")}
+            {"Enlace de restablecimiento inválido"}
           </CardTitle>
           <CardDescription>
-            {t("auth.resetLinkInvalidDescription")}
+            {
+              "Solicita un nuevo restablecimiento de contraseña desde la página de inicio de sesión."
+            }
             {errorMessage ? (
               <>
                 {" "}
@@ -80,7 +79,9 @@ export function UpdatePasswordShell() {
         </CardHeader>
         <CardContent>
           <Button asChild className="w-full">
-            <Link href="/auth/forgot-password">{t("auth.requestReset")}</Link>
+            <Link href="/auth/forgot-password">
+              {"Solicitar restablecimiento"}
+            </Link>
           </Button>
         </CardContent>
       </Card>

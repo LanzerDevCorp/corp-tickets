@@ -7,7 +7,6 @@ import {
   computeHasNewActivity,
   computeStaffActivityAt,
 } from "@/lib/client-tickets/activity";
-import { es } from "@/lib/i18n/es";
 
 export type ClientTicketListItem = {
   id: string;
@@ -52,17 +51,17 @@ async function requireClientSession() {
   const userId = claims?.sub as string | undefined;
 
   if (!userId) {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   const role = getAppRoleFromClaims(claims);
   if (role !== "client") {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   const email = await getAuthenticatedEmail(supabase, claims);
   if (!email) {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   return { supabase, userId, email };

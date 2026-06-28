@@ -1,5 +1,4 @@
 import { Html, Body, Container, Heading, Text } from "@react-email/components";
-import { es } from "@/lib/i18n/es";
 
 interface StaffReplyEmailProps {
   clientName: string;
@@ -38,7 +37,7 @@ export default function StaffReplyEmail({
               margin: "0 0 16px",
             }}
           >
-            {es.email.staffReply.greeting.replace("{name}", clientName)}
+            {`Hola ${clientName},`}
           </Text>
 
           <Heading
@@ -62,7 +61,7 @@ export default function StaffReplyEmail({
               margin: "0 0 16px",
             }}
           >
-            {es.email.staffReply.intro}
+            {"Un miembro del equipo respondió a tu ticket:"}
           </Text>
 
           <Text
@@ -96,7 +95,7 @@ export default function StaffReplyEmail({
               margin: "0",
             }}
           >
-            {es.email.staffReply.footer}
+            {"Esta es una notificación automática del sistema de tickets."}
           </Text>
         </Container>
       </Body>

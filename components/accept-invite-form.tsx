@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { t } from "@/lib/i18n/t";
 
 export function AcceptInviteForm({
   className,
@@ -30,16 +29,18 @@ export function AcceptInviteForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">
-            {t("auth.acceptInviteTitle")}
-          </CardTitle>
-          <CardDescription>{t("auth.acceptInviteDescription")}</CardDescription>
+          <CardTitle className="text-2xl">{"Completa tu cuenta"}</CardTitle>
+          <CardDescription>
+            {
+              "Configura tu nombre y contraseña para terminar de aceptar la invitación."
+            }
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form action={formAction}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="name">{t("auth.fullName")}</Label>
+                <Label htmlFor="name">{"Nombre completo"}</Label>
                 <Input
                   id="name"
                   name="name"
@@ -51,7 +52,7 @@ export function AcceptInviteForm({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="password">{t("common.password")}</Label>
+                <Label htmlFor="password">{"Contraseña"}</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -68,9 +69,7 @@ export function AcceptInviteForm({
                     className="absolute top-1/2 right-1 -translate-y-1/2 text-muted-foreground"
                     onClick={() => setShowPassword((visible) => !visible)}
                     aria-label={
-                      showPassword
-                        ? t("common.hidePassword")
-                        : t("common.showPassword")
+                      showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
                     }
                   >
                     {showPassword ? <EyeOff /> : <Eye />}
@@ -80,7 +79,7 @@ export function AcceptInviteForm({
 
               <div className="grid gap-2">
                 <Label htmlFor="confirmPassword">
-                  {t("auth.confirmPassword")}
+                  {"Confirmar contraseña"}
                 </Label>
                 <div className="relative">
                   <Input
@@ -101,8 +100,8 @@ export function AcceptInviteForm({
                     }
                     aria-label={
                       showConfirmPassword
-                        ? t("common.hidePassword")
-                        : t("common.showPassword")
+                        ? "Ocultar contraseña"
+                        : "Mostrar contraseña"
                     }
                   >
                     {showConfirmPassword ? <EyeOff /> : <Eye />}
@@ -115,7 +114,7 @@ export function AcceptInviteForm({
               )}
 
               <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? t("common.saving") : t("auth.createAccount")}
+                {isPending ? "Guardando..." : "Crear cuenta"}
               </Button>
             </div>
           </form>

@@ -52,8 +52,7 @@ import {
   type AdminInviteData,
 } from "@/lib/schemas/admin-invite";
 import { formatDate } from "@/lib/format-date";
-import { t } from "@/lib/i18n/t";
-import { roleLabel } from "@/lib/i18n/maps";
+import { roleLabel } from "@/lib/labels";
 
 // ---------------------------------------------------------------------------
 // UsersTable
@@ -69,7 +68,7 @@ export function UsersTable({
   if (users.length === 0) {
     return (
       <p className="py-8 text-center text-muted-foreground">
-        {t("admin.noUsers")}
+        {"No se encontraron usuarios."}
       </p>
     );
   }
@@ -78,12 +77,12 @@ export function UsersTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>{t("admin.name")}</TableHead>
-          <TableHead>{t("common.email")}</TableHead>
-          <TableHead>{t("admin.role")}</TableHead>
-          <TableHead>{t("admin.status")}</TableHead>
-          <TableHead>{t("admin.joined")}</TableHead>
-          <TableHead>{t("common.actions")}</TableHead>
+          <TableHead>{"Nombre"}</TableHead>
+          <TableHead>{"Correo electrónico"}</TableHead>
+          <TableHead>{"Rol"}</TableHead>
+          <TableHead>{"Estado"}</TableHead>
+          <TableHead>{"Registro"}</TableHead>
+          <TableHead>{"Acciones"}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -143,8 +142,8 @@ function getRoleBadgeClass(role: UserRow["role"]) {
 }
 
 function getStatusLabel(isPendingInvite: boolean, isActive: boolean) {
-  if (isPendingInvite) return t("admin.pending");
-  return isActive ? t("admin.active") : t("admin.inactive");
+  if (isPendingInvite) return "Pendiente";
+  return isActive ? "Activo" : "Inactivo";
 }
 
 function getStatusBadgeClass(isPendingInvite: boolean, isActive: boolean) {
@@ -185,7 +184,7 @@ export function InviteUserDialog() {
       result = await inviteUser(parsed.data.email, parsed.data.role);
     } catch (e) {
       toast.error(
-        e instanceof Error ? e.message : t("admin.failedSendInvitation"),
+        e instanceof Error ? e.message : "No se pudo enviar la invitación.",
       );
       return;
     }
@@ -195,7 +194,7 @@ export function InviteUserDialog() {
       return;
     }
 
-    toast.success(t("admin.invitationSent"));
+    toast.success("Invitación enviada.");
     form.reset();
     setOpen(false);
     router.refresh();
@@ -204,13 +203,13 @@ export function InviteUserDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>{t("admin.inviteUser")}</Button>
+        <Button>{"Invitar usuario"}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("admin.inviteUserTitle")}</DialogTitle>
+          <DialogTitle>{"Invitar usuario"}</DialogTitle>
           <DialogDescription>
-            {t("admin.inviteUserDescription")}
+            {"Envía un correo de invitación a un nuevo miembro del personal."}
           </DialogDescription>
         </DialogHeader>
 
@@ -225,7 +224,7 @@ export function InviteUserDialog() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("common.email")}</FormLabel>
+                  <FormLabel>{"Correo electrónico"}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -244,7 +243,7 @@ export function InviteUserDialog() {
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("admin.role")}</FormLabel>
+                  <FormLabel>{"Rol"}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -252,7 +251,7 @@ export function InviteUserDialog() {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={t("admin.selectRole")} />
+                        <SelectValue placeholder={"Seleccionar rol"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -275,9 +274,7 @@ export function InviteUserDialog() {
             form={formId}
             disabled={!form.formState.isValid || form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting
-              ? t("common.sending")
-              : t("admin.sendInvitation")}
+            {form.formState.isSubmitting ? "Enviando..." : "Enviar invitación"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -301,7 +298,7 @@ export function ReinviteButton({ userId }: { userId: string }) {
       toast.error(result.error);
       return;
     }
-    toast.success(t("admin.invitationResent"));
+    toast.success("Invitación reenviada.");
     router.refresh();
   };
 
@@ -312,7 +309,7 @@ export function ReinviteButton({ userId }: { userId: string }) {
       onClick={handleClick}
       disabled={loading}
     >
-      {loading ? t("common.sending") : t("admin.reinvite")}
+      {loading ? "Enviando..." : "Reinvitar"}
     </Button>
   );
 }
@@ -334,7 +331,7 @@ export function CancelInviteButton({ userId }: { userId: string }) {
       toast.error(result.error);
       return;
     }
-    toast.success(t("admin.invitationCancelled"));
+    toast.success("Invitación cancelada.");
     setOpen(false);
     router.refresh();
   };
@@ -343,14 +340,16 @@ export function CancelInviteButton({ userId }: { userId: string }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="destructive" size="sm">
-          {t("admin.cancelInvite")}
+          {"Cancelar invitación"}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("admin.cancelInviteTitle")}</DialogTitle>
+          <DialogTitle>{"Cancelar invitación"}</DialogTitle>
           <DialogDescription>
-            {t("admin.cancelInviteDescription")}
+            {
+              "Esto eliminará la cuenta pendiente. Puedes volver a invitar este correo después."
+            }
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -359,14 +358,14 @@ export function CancelInviteButton({ userId }: { userId: string }) {
             onClick={() => setOpen(false)}
             disabled={loading}
           >
-            {t("admin.keepInvitation")}
+            {"Mantener invitación"}
           </Button>
           <Button
             variant="destructive"
             onClick={handleConfirm}
             disabled={loading}
           >
-            {loading ? t("admin.cancelling") : t("admin.cancelInvitation")}
+            {loading ? "Cancelando..." : "Cancelar invitación"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -397,7 +396,7 @@ export function DeactivateButton({
       toast.error(result.error);
       return;
     }
-    toast.success(t("admin.userDeactivated"));
+    toast.success("Usuario desactivado.");
     setOpen(false);
     router.refresh();
   };
@@ -406,14 +405,16 @@ export function DeactivateButton({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="destructive" size="sm" disabled={isSelf}>
-          {t("admin.deactivate")}
+          {"Desactivar"}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("admin.deactivateTitle")}</DialogTitle>
+          <DialogTitle>{"Desactivar usuario"}</DialogTitle>
           <DialogDescription>
-            {t("admin.deactivateDescription")}
+            {
+              "¿Seguro que deseas desactivar este usuario? Ya no podrá acceder al sistema."
+            }
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -422,14 +423,14 @@ export function DeactivateButton({
             onClick={() => setOpen(false)}
             disabled={loading}
           >
-            {t("common.cancel")}
+            {"Cancelar"}
           </Button>
           <Button
             variant="destructive"
             onClick={handleConfirm}
             disabled={loading}
           >
-            {loading ? t("admin.deactivating") : t("admin.deactivate")}
+            {loading ? "Desactivando..." : "Desactivar"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -453,7 +454,7 @@ export function ReactivateButton({ userId }: { userId: string }) {
       toast.error(result.error);
       return;
     }
-    toast.success(t("admin.userReactivated"));
+    toast.success("Usuario reactivado.");
     router.refresh();
   };
 
@@ -464,7 +465,7 @@ export function ReactivateButton({ userId }: { userId: string }) {
       onClick={handleClick}
       disabled={loading}
     >
-      {loading ? t("admin.reactivating") : t("admin.reactivate")}
+      {loading ? "Reactivando..." : "Reactivar"}
     </Button>
   );
 }

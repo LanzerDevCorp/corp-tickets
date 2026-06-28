@@ -5,7 +5,6 @@ import { getComments } from "@/app/actions/comments";
 import { getTicketAttachments } from "@/app/actions/attachments";
 import { notFound } from "next/navigation";
 import ClientTicketView from "@/components/tracking/client-ticket-view";
-import { es } from "@/lib/i18n/es";
 
 type PageProps = {
   params: Promise<{ ticketId: string }>;
@@ -41,7 +40,7 @@ export default async function ClientTrackTicketPage({ params }: PageProps) {
       />
     );
   } catch (error) {
-    if (error instanceof Error && error.message === es.errors.notAuthorized) {
+    if (error instanceof Error && error.message === "No autorizado") {
       return null;
     }
 

@@ -7,8 +7,7 @@ import {
   Button,
   Hr,
 } from "@react-email/components";
-import { es } from "@/lib/i18n/es";
-import { priorityLabel } from "@/lib/i18n/maps";
+import { priorityLabel } from "@/lib/labels";
 
 interface NewTicketEmailProps {
   ticketId: string;
@@ -69,7 +68,7 @@ export default function NewTicketEmail({
               margin: "0 0 16px",
             }}
           >
-            {es.email.newTicket.intro}
+            {"Se ha enviado un nuevo ticket de soporte."}
           </Text>
 
           <Heading
@@ -93,7 +92,7 @@ export default function NewTicketEmail({
               margin: "0 0 8px",
             }}
           >
-            {es.email.newTicket.priority}{" "}
+            {"Prioridad:"}{" "}
             <span
               style={{
                 color: pConfig.color,
@@ -103,7 +102,7 @@ export default function NewTicketEmail({
               {priorityLabel(priority)}
             </span>
             {"  ·  "}
-            {es.email.newTicket.category} {categoryName}
+            {"Categoría:"} {categoryName}
           </Text>
 
           <Text
@@ -114,7 +113,7 @@ export default function NewTicketEmail({
               margin: "0 0 16px",
             }}
           >
-            {es.email.newTicket.from} {submitterName} &lt;{submitterEmail}&gt;
+            {"De:"} {submitterName} &lt;{submitterEmail}&gt;
           </Text>
 
           <Text
@@ -146,7 +145,7 @@ export default function NewTicketEmail({
               marginBottom: "24px",
             }}
           >
-            {es.email.newTicket.viewDashboard}
+            {"Ver en el panel"}
           </Button>
 
           <Hr
@@ -165,7 +164,7 @@ export default function NewTicketEmail({
               margin: "0",
             }}
           >
-            {es.email.newTicket.footer}
+            {"Esta es una notificación automática del sistema de tickets."}
           </Text>
         </Container>
       </Body>
