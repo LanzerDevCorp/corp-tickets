@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 // ---------------------------------------------------------------------------
 // Module mocks — declared before component imports so vi.mock hoisting applies.
@@ -102,44 +103,51 @@ describe("TicketSubjectPreview — onSeen prop", () => {
 // ---------------------------------------------------------------------------
 
 describe("TicketSubjectPreview — resolve button", () => {
-  it("renders 'Mark as resolved' button when ticket status is open", () => {
+  it("renders 'Mark as resolved' button when ticket status is open", async () => {
+    const user = userEvent.setup();
     render(<TicketSubjectPreview ticket={{ ...TEST_TICKET, status: "open" }} />);
 
     const link = screen.getByRole("link", { name: TEST_TICKET.subject });
-    fireEvent.mouseEnter(link);
+    await user.hover(link);
 
     expect(
-      screen.getByRole("button", { name: /mark as resolved/i })
+      await screen.findByRole("button", { name: /mark as resolved/i })
     ).toBeInTheDocument();
   });
 
-  it("does not render the resolve button when ticket status is 'resolved'", () => {
+  it("does not render the resolve button when ticket status is 'resolved'", async () => {
+    const user = userEvent.setup();
     render(
       <TicketSubjectPreview ticket={{ ...TEST_TICKET, status: "resolved" }} />
     );
 
     const link = screen.getByRole("link", { name: TEST_TICKET.subject });
-    fireEvent.mouseEnter(link);
+    await user.hover(link);
 
+    // Wait for the card to actually open before checking the button is absent.
+    await screen.findByText(/submitted a new ticket/i);
     expect(
       screen.queryByRole("button", { name: /mark as resolved/i })
     ).not.toBeInTheDocument();
   });
 
-  it("does not render the resolve button when ticket status is 'closed'", () => {
+  it("does not render the resolve button when ticket status is 'closed'", async () => {
+    const user = userEvent.setup();
     render(
       <TicketSubjectPreview ticket={{ ...TEST_TICKET, status: "closed" }} />
     );
 
     const link = screen.getByRole("link", { name: TEST_TICKET.subject });
-    fireEvent.mouseEnter(link);
+    await user.hover(link);
 
+    await screen.findByText(/submitted a new ticket/i);
     expect(
       screen.queryByRole("button", { name: /mark as resolved/i })
     ).not.toBeInTheDocument();
   });
 
   it("calls updateTicketStatus with 'resolved' and then fires onResolved", async () => {
+    const user = userEvent.setup();
     const onResolved = vi.fn();
 
     render(
@@ -150,9 +158,11 @@ describe("TicketSubjectPreview — resolve button", () => {
     );
 
     const link = screen.getByRole("link", { name: TEST_TICKET.subject });
-    fireEvent.mouseEnter(link);
+    await user.hover(link);
 
-    const button = screen.getByRole("button", { name: /mark as resolved/i });
+    const button = await screen.findByRole("button", {
+      name: /mark as resolved/i,
+    });
 
     await act(async () => {
       fireEvent.click(button);

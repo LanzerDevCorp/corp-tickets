@@ -61,7 +61,7 @@ export async function orchestrateFileUpload(
     const { error: uploadError } = await supabase.storage
       .from(ATTACHMENT_BUCKET)
       .upload(storagePath, file);
-
+    console.log("AAAAAAAAAAAAA", uploadError)
     if (uploadError) {
       // Rollback ticket on any upload failure
       const { error: rollbackError } = await rollbackTicket(ticketId);

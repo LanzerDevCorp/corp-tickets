@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { createPortal } from "react-dom";
+import { useTransition } from "react";
+import { HoverCard } from "radix-ui";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -127,72 +127,37 @@ export function TicketSubjectPreview({
   onSeen?: () => void;
   onResolved?: () => void;
 }) {
-  const triggerRef = useRef<HTMLAnchorElement>(null);
-  const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const updatePosition = useCallback(() => {
-    const el = triggerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const cardWidth = 352;
-    const left = Math.min(rect.left, window.innerWidth - cardWidth - 16);
-    setPosition({ top: rect.bottom + 8, left: Math.max(16, left) });
-  }, []);
-
-  const showPreview = () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    updatePosition();
-    setOpen(true);
-    onSeen?.();
-  };
-
-  const hidePreview = () => {
-    closeTimer.current = setTimeout(() => setOpen(false), 120);
-  };
-
-  const cancelHide = () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-  };
-
-  useEffect(() => {
-    if (!open) return;
-    const sync = () => updatePosition();
-    window.addEventListener("scroll", sync, true);
-    window.addEventListener("resize", sync);
-    return () => {
-      window.removeEventListener("scroll", sync, true);
-      window.removeEventListener("resize", sync);
-    };
-  }, [open, updatePosition]);
-
   return (
-    <>
-      <Link
-        ref={triggerRef}
-        href={`/dashboard/tickets/${ticket.id}`}
-        onMouseEnter={showPreview}
-        onMouseLeave={hidePreview}
-        onFocus={showPreview}
-        onBlur={hidePreview}
-        className="block max-w-[280px] truncate text-zinc-900 underline-offset-2 transition-colors hover:text-indigo-600 hover:underline dark:text-zinc-100 dark:hover:text-indigo-400"
-      >
-        {ticket.subject}
-      </Link>
-
-      {open &&
-        createPortal(
-          <div
-            className="fixed z-50 w-[min(22rem,calc(100vw-2rem))] animate-in fade-in-0 zoom-in-95 duration-200"
-            style={{ top: position.top, left: position.left }}
-            onMouseEnter={cancelHide}
-            onMouseLeave={hidePreview}
-          >
-            <TicketPreviewCard ticket={ticket} onResolved={onResolved} />
-          </div>,
-          document.body
-        )}
-    </>
+    <HoverCard.Root openDelay={0} closeDelay={120}>
+      <HoverCard.Trigger asChild>
+        <Link
+          href={`/dashboard/tickets/${ticket.id}`}
+          onMouseEnter={() => onSeen?.()}
+          onFocus={() => onSeen?.()}
+          className="block max-w-[280px] truncate text-zinc-900 underline-offset-2 transition-colors hover:text-indigo-600 hover:underline dark:text-zinc-100 dark:hover:text-indigo-400"
+        >
+          {ticket.subject}
+        </Link>
+      </HoverCard.Trigger>
+      <HoverCard.Portal>
+        <HoverCard.Content
+          side="right"
+          sideOffset={8}
+          className={cn(
+            "z-50 w-[min(22rem,calc(100vw-2rem))]",
+            "animate-in fade-in-0 zoom-in-95",
+            "data-[side=bottom]:slide-in-from-top-2",
+            "data-[side=left]:slide-in-from-right-2",
+            "data-[side=right]:slide-in-from-left-2",
+            "data-[side=top]:slide-in-from-bottom-2",
+            "data-[state=closed]:animate-out",
+            "data-[state=closed]:fade-out-0",
+            "data-[state=closed]:zoom-out-95"
+          )}
+        >
+          <TicketPreviewCard ticket={ticket} onResolved={onResolved} />
+        </HoverCard.Content>
+      </HoverCard.Portal>
+    </HoverCard.Root>
   );
 }
