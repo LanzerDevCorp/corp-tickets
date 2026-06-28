@@ -4,11 +4,10 @@ const SITEVERIFY_URL =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
 export type TurnstileVerifyResult =
-  | { success: true }
-  | { success: false; error: string };
+  { success: true } | { success: false; error: string };
 
 export async function verifyTurnstileToken(
-  token: string
+  token: string,
 ): Promise<TurnstileVerifyResult> {
   if (!isTurnstileEnabled()) {
     return { success: true };

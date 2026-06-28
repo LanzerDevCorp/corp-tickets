@@ -12,7 +12,7 @@ export function isStaffRole(role: Role): role is "admin" | "it" {
 /** Staff invited via panel who have not yet confirmed their email. */
 export function isPendingStaffInvite(
   authUser: Pick<User, "invited_at" | "email_confirmed_at"> | undefined,
-  role: Role
+  role: Role,
 ): boolean {
   if (!authUser || !isStaffRole(role)) return false;
   return Boolean(authUser.invited_at) && !authUser.email_confirmed_at;

@@ -87,7 +87,10 @@ export default function AttachmentManager({
           size_bytes: file.size,
         }));
 
-        const { error, urls } = await createStaffUploadUrls(ticketId, fileMetas);
+        const { error, urls } = await createStaffUploadUrls(
+          ticketId,
+          fileMetas,
+        );
         if (error || !urls) {
           setErrorMsg(error ?? "No se pudieron preparar las cargas.");
           return;
@@ -110,7 +113,9 @@ export default function AttachmentManager({
             .uploadToSignedUrl(uploadSpec.path, uploadSpec.token, file);
 
           if (uploadError) {
-            setErrorMsg("No se pudo subir uno o más archivos. Inténtalo de nuevo.");
+            setErrorMsg(
+              "No se pudo subir uno o más archivos. Inténtalo de nuevo.",
+            );
             return;
           }
 
@@ -122,7 +127,10 @@ export default function AttachmentManager({
           });
         }
 
-        const registerResult = await registerStaffAttachments(ticketId, registered);
+        const registerResult = await registerStaffAttachments(
+          ticketId,
+          registered,
+        );
         if (registerResult.error) {
           setErrorMsg(registerResult.error);
           return;
@@ -209,18 +217,20 @@ export default function AttachmentManager({
             return (
               <li
                 key={att.id}
-                className={`flex items-center justify-between rounded-md border px-3 py-2 text-sm ${isGreyed
+                className={`flex items-center justify-between rounded-md border px-3 py-2 text-sm ${
+                  isGreyed
                     ? "border-zinc-200/60 bg-zinc-100/80 text-zinc-400 dark:border-zinc-800/60 dark:bg-zinc-900/30"
                     : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50"
-                  }`}
+                }`}
               >
                 <div className="flex min-w-0 items-center gap-2">
                   <Paperclip className="h-3.5 w-3.5 shrink-0 opacity-60" />
                   <span
-                    className={`truncate font-medium ${isGreyed
+                    className={`truncate font-medium ${
+                      isGreyed
                         ? "text-zinc-400 line-through dark:text-zinc-500"
                         : "text-zinc-800 dark:text-zinc-200"
-                      }`}
+                    }`}
                   >
                     {att.filename}
                   </span>
@@ -232,7 +242,7 @@ export default function AttachmentManager({
                 <div className="ml-2 flex shrink-0 items-center gap-2">
                   {att.removedByAdmin ? (
                     <>
-                      <span className="text-xs italic text-muted-foreground">
+                      <span className="text-xs text-muted-foreground italic">
                         Eliminado
                       </span>
                       <Button
@@ -247,7 +257,7 @@ export default function AttachmentManager({
                       </Button>
                     </>
                   ) : att.expired ? (
-                    <span className="text-xs italic text-muted-foreground">
+                    <span className="text-xs text-muted-foreground italic">
                       Archivo expirado
                     </span>
                   ) : att.url ? (

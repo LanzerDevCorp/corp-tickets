@@ -35,19 +35,28 @@ describe("ticketSubmitSchema", () => {
     });
 
     it("rechaza nombre mayor a 100 caracteres", () => {
-      const res = ticketSubmitSchema.safeParse({ ...VALID, name: "a".repeat(101) });
+      const res = ticketSubmitSchema.safeParse({
+        ...VALID,
+        name: "a".repeat(101),
+      });
       expect(res.success).toBe(false);
     });
   });
 
   describe("email", () => {
     it("rechaza correo sin @", () => {
-      const res = ticketSubmitSchema.safeParse({ ...VALID, email: "noatemail" });
+      const res = ticketSubmitSchema.safeParse({
+        ...VALID,
+        email: "noatemail",
+      });
       expect(res.success).toBe(false);
     });
 
     it("acepta correo con subdominio", () => {
-      const res = ticketSubmitSchema.safeParse({ ...VALID, email: "u@corp.empresa.mx" });
+      const res = ticketSubmitSchema.safeParse({
+        ...VALID,
+        email: "u@corp.empresa.mx",
+      });
       expect(res.success).toBe(true);
     });
   });
@@ -66,27 +75,38 @@ describe("ticketSubmitSchema", () => {
     });
 
     it("rechaza descripción mayor a 5000 caracteres", () => {
-      const res = ticketSubmitSchema.safeParse({ ...VALID, body: "a".repeat(5001) });
+      const res = ticketSubmitSchema.safeParse({
+        ...VALID,
+        body: "a".repeat(5001),
+      });
       expect(res.success).toBe(false);
     });
   });
 
   describe("priority", () => {
     it("rechaza prioridad desconocida", () => {
-      const res = ticketSubmitSchema.safeParse({ ...VALID, priority: "critical" });
+      const res = ticketSubmitSchema.safeParse({
+        ...VALID,
+        priority: "critical",
+      });
       expect(res.success).toBe(false);
     });
 
     it("acepta todas las prioridades válidas", () => {
       for (const p of ["low", "medium", "high", "urgent"]) {
-        expect(ticketSubmitSchema.safeParse({ ...VALID, priority: p }).success).toBe(true);
+        expect(
+          ticketSubmitSchema.safeParse({ ...VALID, priority: p }).success,
+        ).toBe(true);
       }
     });
   });
 
   describe("category_id", () => {
     it("rechaza un ID que no es UUID", () => {
-      const res = ticketSubmitSchema.safeParse({ ...VALID, category_id: "not-a-uuid" });
+      const res = ticketSubmitSchema.safeParse({
+        ...VALID,
+        category_id: "not-a-uuid",
+      });
       expect(res.success).toBe(false);
     });
 
@@ -103,7 +123,10 @@ describe("ticketSubmitSchema", () => {
     it("rechaza token vacío cuando Turnstile está activo", () => {
       if (!isTurnstileEnabled()) return;
 
-      const res = ticketSubmitSchema.safeParse({ ...VALID, turnstile_token: "" });
+      const res = ticketSubmitSchema.safeParse({
+        ...VALID,
+        turnstile_token: "",
+      });
       expect(res.success).toBe(false);
     });
 

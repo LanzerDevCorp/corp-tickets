@@ -35,9 +35,7 @@ describe("supabaseAdmin", () => {
       value: {},
       writable: true,
     });
-    await expect(() => import("../admin")).rejects.toThrow(
-      /server/i
-    );
+    await expect(() => import("../admin")).rejects.toThrow(/server/i);
   });
 
   it("throws when SUPABASE_SERVICE_ROLE_KEY is missing", async () => {
@@ -47,7 +45,7 @@ describe("supabaseAdmin", () => {
     });
     delete process.env.SUPABASE_SERVICE_ROLE_KEY;
     await expect(() => import("../admin")).rejects.toThrow(
-      /SUPABASE_SERVICE_ROLE_KEY/i
+      /SUPABASE_SERVICE_ROLE_KEY/i,
     );
   });
 });

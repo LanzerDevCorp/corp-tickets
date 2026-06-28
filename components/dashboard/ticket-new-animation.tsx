@@ -10,14 +10,21 @@ import { useState, useEffect } from "react";
 // (allow motion) when matchMedia is unavailable (SSR or older browsers).
 function useReducedMotion(): boolean {
   const [reduced, setReduced] = useState<boolean>(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    if (
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function"
+    ) {
       return false;
     }
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   });
 
   useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    if (
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function"
+    )
+      return;
 
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
@@ -31,9 +38,8 @@ function useReducedMotion(): boolean {
 // ---------------------------------------------------------------------------
 // Particle delays (8 particles staggered evenly across the 2.4 s cycle)
 // ---------------------------------------------------------------------------
-const PARTICLE_DELAYS: number[] = Array.from(
-  { length: 8 },
-  (_, i) => parseFloat(((i * 2.4) / 8).toFixed(3)),
+const PARTICLE_DELAYS: number[] = Array.from({ length: 8 }, (_, i) =>
+  parseFloat(((i * 2.4) / 8).toFixed(3)),
 );
 
 // ---------------------------------------------------------------------------

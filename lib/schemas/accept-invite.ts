@@ -8,9 +8,7 @@ export const acceptInviteSchema = z
       .trim()
       .min(2, { message: es.validation.nameMin })
       .max(100, { message: es.validation.nameMax }),
-    password: z
-      .string()
-      .min(8, { message: es.validation.passwordMin }),
+    password: z.string().min(8, { message: es.validation.passwordMin }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {

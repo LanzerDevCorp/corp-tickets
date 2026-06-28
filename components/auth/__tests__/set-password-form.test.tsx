@@ -31,10 +31,10 @@ describe("SetPasswordForm", () => {
 
     await userEvent.type(
       screen.getByLabelText(/contraseña/i),
-      "a-strong-password"
+      "a-strong-password",
     );
     await userEvent.click(
-      screen.getByRole("button", { name: /crear contraseña/i })
+      screen.getByRole("button", { name: /crear contraseña/i }),
     );
 
     await waitFor(() => {
@@ -51,7 +51,7 @@ describe("SetPasswordForm", () => {
 
     await userEvent.type(screen.getByLabelText(/contraseña/i), "short");
     await userEvent.click(
-      screen.getByRole("button", { name: /crear contraseña/i })
+      screen.getByRole("button", { name: /crear contraseña/i }),
     );
 
     await waitFor(() => {
@@ -76,10 +76,10 @@ describe("SetPasswordForm", () => {
     render(<SetPasswordForm hasPassword />);
 
     expect(
-      screen.queryByRole("button", { name: /omitir/i })
+      screen.queryByRole("button", { name: /omitir/i }),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /guardar contraseña/i })
+      screen.getByRole("button", { name: /guardar contraseña/i }),
     ).toBeInTheDocument();
   });
 });

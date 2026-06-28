@@ -5,10 +5,7 @@ import { useTransition } from "react";
 import { HoverCard } from "radix-ui";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  formatDateTimeLong,
-  formatRelativeTime,
-} from "@/lib/format-date";
+import { formatDateTimeLong, formatRelativeTime } from "@/lib/format-date";
 import { updateTicketStatus } from "@/app/actions/tickets";
 
 type TicketPreviewData = {
@@ -58,14 +55,14 @@ function TicketPreviewCard({
       className={cn(
         "rounded-lg border border-zinc-200/80 bg-white shadow-xl",
         "dark:border-zinc-700/80 dark:bg-zinc-900",
-        "border-l-[3px] border-l-[#1C2438] dark:border-l-indigo-400"
+        "border-l-[3px] border-l-[#1C2438] dark:border-l-indigo-400",
       )}
     >
       <div className="flex gap-3 p-4 pb-3">
         <div
           className={cn(
             "flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold tracking-wide",
-            avatarTone(ticket.name)
+            avatarTone(ticket.name),
           )}
           aria-hidden
         >
@@ -81,7 +78,8 @@ function TicketPreviewCard({
             </span>
           </p>
           <p className="text-xs text-zinc-400 dark:text-zinc-500">
-            {formatRelativeTime(ticket.created_at)} ({formatDateTimeLong(ticket.created_at)})
+            {formatRelativeTime(ticket.created_at)} (
+            {formatDateTimeLong(ticket.created_at)})
           </p>
         </div>
       </div>
@@ -89,7 +87,7 @@ function TicketPreviewCard({
       <div className="mx-4 border-t border-zinc-100 dark:border-zinc-800" />
 
       <div className="max-h-56 overflow-y-auto px-4 py-3">
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+        <p className="text-sm leading-relaxed whitespace-pre-wrap text-zinc-600 dark:text-zinc-300">
           {ticket.body}
         </p>
       </div>
@@ -152,7 +150,7 @@ export function TicketSubjectPreview({
             "data-[side=top]:slide-in-from-bottom-2",
             "data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0",
-            "data-[state=closed]:zoom-out-95"
+            "data-[state=closed]:zoom-out-95",
           )}
         >
           <TicketPreviewCard ticket={ticket} onResolved={onResolved} />

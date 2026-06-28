@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // ---------------------------------------------------------------------------
@@ -105,20 +111,22 @@ describe("TicketSubjectPreview — onSeen prop", () => {
 describe("TicketSubjectPreview — resolve button", () => {
   it("renders 'Mark as resolved' button when ticket status is open", async () => {
     const user = userEvent.setup();
-    render(<TicketSubjectPreview ticket={{ ...TEST_TICKET, status: "open" }} />);
+    render(
+      <TicketSubjectPreview ticket={{ ...TEST_TICKET, status: "open" }} />,
+    );
 
     const link = screen.getByRole("link", { name: TEST_TICKET.subject });
     await user.hover(link);
 
     expect(
-      await screen.findByRole("button", { name: /mark as resolved/i })
+      await screen.findByRole("button", { name: /mark as resolved/i }),
     ).toBeInTheDocument();
   });
 
   it("does not render the resolve button when ticket status is 'resolved'", async () => {
     const user = userEvent.setup();
     render(
-      <TicketSubjectPreview ticket={{ ...TEST_TICKET, status: "resolved" }} />
+      <TicketSubjectPreview ticket={{ ...TEST_TICKET, status: "resolved" }} />,
     );
 
     const link = screen.getByRole("link", { name: TEST_TICKET.subject });
@@ -127,14 +135,14 @@ describe("TicketSubjectPreview — resolve button", () => {
     // Wait for the card to actually open before checking the button is absent.
     await screen.findByText(/submitted a new ticket/i);
     expect(
-      screen.queryByRole("button", { name: /mark as resolved/i })
+      screen.queryByRole("button", { name: /mark as resolved/i }),
     ).not.toBeInTheDocument();
   });
 
   it("does not render the resolve button when ticket status is 'closed'", async () => {
     const user = userEvent.setup();
     render(
-      <TicketSubjectPreview ticket={{ ...TEST_TICKET, status: "closed" }} />
+      <TicketSubjectPreview ticket={{ ...TEST_TICKET, status: "closed" }} />,
     );
 
     const link = screen.getByRole("link", { name: TEST_TICKET.subject });
@@ -142,7 +150,7 @@ describe("TicketSubjectPreview — resolve button", () => {
 
     await screen.findByText(/submitted a new ticket/i);
     expect(
-      screen.queryByRole("button", { name: /mark as resolved/i })
+      screen.queryByRole("button", { name: /mark as resolved/i }),
     ).not.toBeInTheDocument();
   });
 
@@ -154,7 +162,7 @@ describe("TicketSubjectPreview — resolve button", () => {
       <TicketSubjectPreview
         ticket={{ ...TEST_TICKET, status: "open" }}
         onResolved={onResolved}
-      />
+      />,
     );
 
     const link = screen.getByRole("link", { name: TEST_TICKET.subject });

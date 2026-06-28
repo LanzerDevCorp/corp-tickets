@@ -39,9 +39,7 @@ import {
   updateCategory,
   type CategoryRow,
 } from "@/app/actions/admin";
-import {
-  categoryUpsertSchema,
-} from "@/lib/schemas/category-upsert";
+import { categoryUpsertSchema } from "@/lib/schemas/category-upsert";
 import { formatDate } from "@/lib/format-date";
 import { t } from "@/lib/i18n/t";
 
@@ -52,7 +50,7 @@ import { t } from "@/lib/i18n/t";
 export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
   if (categories.length === 0) {
     return (
-      <p className="text-muted-foreground py-8 text-center">
+      <p className="py-8 text-center text-muted-foreground">
         {t("admin.noCategoriesYet")}
       </p>
     );
@@ -74,18 +72,16 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
             <TableCell>{cat.name}</TableCell>
             <TableCell>
               {cat.is_enabled ? (
-                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
                   {t("admin.enabled")}
                 </span>
               ) : (
-                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground">
+                <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
                   {t("admin.disabled")}
                 </span>
               )}
             </TableCell>
-            <TableCell>
-              {formatDate(cat.created_at)}
-            </TableCell>
+            <TableCell>{formatDate(cat.created_at)}</TableCell>
             <TableCell>
               <div className="flex items-center gap-2">
                 <CategoryToggleSwitch
@@ -184,7 +180,9 @@ export function NewCategoryDialog() {
             form={formId}
             disabled={!form.formState.isValid || form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? t("admin.creating") : t("admin.createCategory")}
+            {form.formState.isSubmitting
+              ? t("admin.creating")
+              : t("admin.createCategory")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -217,7 +215,9 @@ export function EditCategoryDialog({ category }: { category: CategoryRow }) {
       return;
     }
 
-    const result = await updateCategory(category.id, { name: parsed.data.name });
+    const result = await updateCategory(category.id, {
+      name: parsed.data.name,
+    });
     if (result.error) {
       toast.error(result.error);
       return;
@@ -231,7 +231,11 @@ export function EditCategoryDialog({ category }: { category: CategoryRow }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("admin.editCategoryAria")}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t("admin.editCategoryAria")}
+        >
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
@@ -256,10 +260,7 @@ export function EditCategoryDialog({ category }: { category: CategoryRow }) {
                 <FormItem>
                   <FormLabel>{t("admin.name")}</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      disabled={form.formState.isSubmitting}
-                    />
+                    <Input {...field} disabled={form.formState.isSubmitting} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -274,7 +275,9 @@ export function EditCategoryDialog({ category }: { category: CategoryRow }) {
             form={formId}
             disabled={!form.formState.isValid || form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? t("common.saving") : t("admin.saveChanges")}
+            {form.formState.isSubmitting
+              ? t("common.saving")
+              : t("admin.saveChanges")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -34,8 +34,10 @@ function chainForResult(result: { data: unknown; error: unknown }) {
     chain[m] = vi.fn().mockReturnValue(chain);
   }
   const promise = Promise.resolve(result);
-  chain.then = (onfulfilled: (v: unknown) => unknown, onrejected?: (e: unknown) => unknown) =>
-    promise.then(onfulfilled, onrejected);
+  chain.then = (
+    onfulfilled: (v: unknown) => unknown,
+    onrejected?: (e: unknown) => unknown,
+  ) => promise.then(onfulfilled, onrejected);
   chain.single = vi.fn().mockImplementation(() => promise);
   chain.maybeSingle = vi.fn().mockImplementation(() => promise);
   return chain;
@@ -111,7 +113,7 @@ describe("client-tickets actions", () => {
   describe("getClientTickets", () => {
     it("throws when unauthenticated", async () => {
       mockCreateClient.mockResolvedValue(
-        makeSupabaseMock({ claims: null }) as never
+        makeSupabaseMock({ claims: null }) as never,
       );
 
       await expect(getClientTickets()).rejects.toThrow("No autorizado");
@@ -122,7 +124,7 @@ describe("client-tickets actions", () => {
         makeSupabaseMock({
           claims: { sub: "staff-1", app_role: "it", email: "it@example.com" },
           userEmail: "it@example.com",
-        }) as never
+        }) as never,
       );
 
       await expect(getClientTickets()).rejects.toThrow("No autorizado");
@@ -137,7 +139,7 @@ describe("client-tickets actions", () => {
           ticketViews: [],
           comments: [],
           attachments: [],
-        }) as never
+        }) as never,
       );
 
       await expect(getClientTickets()).resolves.toEqual([]);
@@ -161,7 +163,7 @@ describe("client-tickets actions", () => {
           ticketViews: [],
           comments: [],
           attachments: [],
-        }) as never
+        }) as never,
       );
 
       const result = await getClientTickets();
@@ -205,7 +207,7 @@ describe("client-tickets actions", () => {
             },
           ],
           attachments: [],
-        }) as never
+        }) as never,
       );
 
       const result = await getClientTickets();
@@ -242,7 +244,7 @@ describe("client-tickets actions", () => {
             },
           ],
           attachments: [],
-        }) as never
+        }) as never,
       );
 
       const result = await getClientTickets();
@@ -279,7 +281,7 @@ describe("client-tickets actions", () => {
               uploaded_by: STAFF_ID,
             },
           ],
-        }) as never
+        }) as never,
       );
 
       const result = await getClientTickets();
@@ -317,7 +319,7 @@ describe("client-tickets actions", () => {
               uploaded_by: null,
             },
           ],
-        }) as never
+        }) as never,
       );
 
       const result = await getClientTickets();
@@ -347,7 +349,7 @@ describe("client-tickets actions", () => {
           ],
           comments: [],
           attachments: [],
-        }) as never
+        }) as never,
       );
 
       const result = await getClientTickets();
@@ -377,7 +379,7 @@ describe("client-tickets actions", () => {
           ],
           comments: [],
           attachments: [],
-        }) as never
+        }) as never,
       );
 
       const result = await getClientTickets();
@@ -409,7 +411,7 @@ describe("client-tickets actions", () => {
             },
           ],
           attachments: [],
-        }) as never
+        }) as never,
       );
 
       const result = await getClientTickets();
@@ -420,10 +422,12 @@ describe("client-tickets actions", () => {
   describe("markTicketViewed", () => {
     it("throws when unauthenticated", async () => {
       mockCreateClient.mockResolvedValue(
-        makeSupabaseMock({ claims: null }) as never
+        makeSupabaseMock({ claims: null }) as never,
       );
 
-      await expect(markTicketViewed(TICKET_ID)).rejects.toThrow("No autorizado");
+      await expect(markTicketViewed(TICKET_ID)).rejects.toThrow(
+        "No autorizado",
+      );
     });
 
     it("upserts ticket_views for authenticated client", async () => {
@@ -457,10 +461,12 @@ describe("client-tickets actions", () => {
           claims: clientClaims(),
           userEmail: CLIENT_EMAIL,
           upsertError: { message: "upsert failed" },
-        }) as never
+        }) as never,
       );
 
-      await expect(markTicketViewed(TICKET_ID)).rejects.toThrow("upsert failed");
+      await expect(markTicketViewed(TICKET_ID)).rejects.toThrow(
+        "upsert failed",
+      );
     });
   });
 });

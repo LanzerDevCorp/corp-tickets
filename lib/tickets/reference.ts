@@ -17,7 +17,7 @@ export function isValidTicketReferenceInput(input: string): boolean {
 
 export function ticketMatchesReference(
   ticketId: string,
-  referenceInput: string
+  referenceInput: string,
 ): boolean {
   const ref = normalizeTicketReferenceInput(referenceInput);
   if (!ref) return false;

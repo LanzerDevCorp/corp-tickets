@@ -30,7 +30,9 @@ export function AcceptInviteForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">{t("auth.acceptInviteTitle")}</CardTitle>
+          <CardTitle className="text-2xl">
+            {t("auth.acceptInviteTitle")}
+          </CardTitle>
           <CardDescription>{t("auth.acceptInviteDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -66,7 +68,9 @@ export function AcceptInviteForm({
                     className="absolute top-1/2 right-1 -translate-y-1/2 text-muted-foreground"
                     onClick={() => setShowPassword((visible) => !visible)}
                     aria-label={
-                      showPassword ? t("common.hidePassword") : t("common.showPassword")
+                      showPassword
+                        ? t("common.hidePassword")
+                        : t("common.showPassword")
                     }
                   >
                     {showPassword ? <EyeOff /> : <Eye />}
@@ -75,7 +79,9 @@ export function AcceptInviteForm({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="confirmPassword">{t("auth.confirmPassword")}</Label>
+                <Label htmlFor="confirmPassword">
+                  {t("auth.confirmPassword")}
+                </Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
@@ -90,7 +96,9 @@ export function AcceptInviteForm({
                     variant="ghost"
                     size="icon-sm"
                     className="absolute top-1/2 right-1 -translate-y-1/2 text-muted-foreground"
-                    onClick={() => setShowConfirmPassword((visible) => !visible)}
+                    onClick={() =>
+                      setShowConfirmPassword((visible) => !visible)
+                    }
                     aria-label={
                       showConfirmPassword
                         ? t("common.hidePassword")

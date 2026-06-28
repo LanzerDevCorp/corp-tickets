@@ -7,6 +7,7 @@
 ## Scope
 
 ### In Scope
+
 - Add `resolved_at TIMESTAMPTZ` column to `public.tickets`
 - BEFORE UPDATE trigger: set `resolved_at = now()` on transition TO `resolved`; clear to NULL on transition OUT of `resolved`
 - Backfill existing resolved tickets with `updated_at` as approximate proxy
@@ -15,6 +16,7 @@
 - i18n label in `lib/i18n/es.ts`
 
 ### Out of Scope
+
 - New queue table column (`components/dashboard/ticket-queue.tsx` untouched)
 - Kebab / 3-dot menu changes
 - Application-level writes in `updateTicketStatus` (trigger owns the value across all code paths)
@@ -23,9 +25,11 @@
 ## Capabilities
 
 ### New Capabilities
+
 - `ticket-resolution-tracking`: DB-enforced capture of when a ticket entered `resolved`, plus detail-page display.
 
 ### Modified Capabilities
+
 - None.
 
 ## Approach
@@ -34,18 +38,18 @@ Postgres BEFORE UPDATE trigger, mirroring the established `reset_first_seen_on_r
 
 ## Affected Areas
 
-| Area | Impact | Description |
-|------|--------|-------------|
-| `supabase/migrations/` | New | ADD COLUMN + backfill + trigger fn + trigger + index |
-| `components/dashboard/ticket-detail.tsx` | Modified | Render `resolved_at` when present |
-| `lib/i18n/es.ts` | Modified | New label key (e.g. "Resuelta el") |
+| Area                                     | Impact   | Description                                          |
+| ---------------------------------------- | -------- | ---------------------------------------------------- |
+| `supabase/migrations/`                   | New      | ADD COLUMN + backfill + trigger fn + trigger + index |
+| `components/dashboard/ticket-detail.tsx` | Modified | Render `resolved_at` when present                    |
+| `lib/i18n/es.ts`                         | Modified | New label key (e.g. "Resuelta el")                   |
 
 ## Risks
 
-| Risk | Likelihood | Mitigation |
-|------|------------|------------|
-| Backfill via `updated_at` is approximate for historical rows | High | Accepted; trigger is exact going forward; document in migration comment |
-| Manual types — no generated DB types | Low | `initialTicket: any` already; no type churn |
+| Risk                                                         | Likelihood | Mitigation                                                              |
+| ------------------------------------------------------------ | ---------- | ----------------------------------------------------------------------- |
+| Backfill via `updated_at` is approximate for historical rows | High       | Accepted; trigger is exact going forward; document in migration comment |
+| Manual types — no generated DB types                         | Low        | `initialTicket: any` already; no type churn                             |
 
 ## Rollback Plan
 

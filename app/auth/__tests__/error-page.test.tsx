@@ -19,16 +19,22 @@ import Page from "../error/page";
 
 describe("auth/error page", () => {
   it("redirects to /track/access for otp_expired error code", async () => {
-    const searchParams = Promise.resolve({ error_code: "otp_expired", error: "" });
+    const searchParams = Promise.resolve({
+      error_code: "otp_expired",
+      error: "",
+    });
     await expect(Page({ searchParams })).rejects.toThrow(
-      "REDIRECT:/track/access?error_code=otp_expired"
+      "REDIRECT:/track/access?error_code=otp_expired",
     );
   });
 
   it("redirects to /track/access for session_expired error code", async () => {
-    const searchParams = Promise.resolve({ error_code: "session_expired", error: "" });
+    const searchParams = Promise.resolve({
+      error_code: "session_expired",
+      error: "",
+    });
     await expect(Page({ searchParams })).rejects.toThrow(
-      "REDIRECT:/track/access?error_code=session_expired"
+      "REDIRECT:/track/access?error_code=session_expired",
     );
   });
 
@@ -39,12 +45,15 @@ describe("auth/error page", () => {
       email: "a@b.com",
     });
     await expect(Page({ searchParams })).rejects.toThrow(
-      "REDIRECT:/track/access?error_code=session_expired&ref=6087BB67&email=a%40b.com"
+      "REDIRECT:/track/access?error_code=session_expired&ref=6087BB67&email=a%40b.com",
     );
   });
 
   it("renders generic error message for other error codes", async () => {
-    const searchParams = Promise.resolve({ error_code: "unknown", error: "Something failed" });
+    const searchParams = Promise.resolve({
+      error_code: "unknown",
+      error: "Something failed",
+    });
     const element = await Page({ searchParams });
     render(element);
 

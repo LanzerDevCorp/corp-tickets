@@ -13,7 +13,10 @@ import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useFormDraft, DRAFT_KEY, DEFAULTS } from "./use-form-draft";
-import { ticketSubmitSchema, type TicketSubmitData } from "@/lib/schemas/ticket-submit";
+import {
+  ticketSubmitSchema,
+  type TicketSubmitData,
+} from "@/lib/schemas/ticket-submit";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -121,7 +124,14 @@ describe("Persist (debounced save)", () => {
     expect(stored).not.toHaveProperty("turnstile_token");
     const keys = Object.keys(stored);
     expect(keys).toEqual(
-      expect.arrayContaining(["name", "email", "subject", "body", "priority", "category_id"]),
+      expect.arrayContaining([
+        "name",
+        "email",
+        "subject",
+        "body",
+        "priority",
+        "category_id",
+      ]),
     );
     expect(keys.length).toBe(6);
   });
@@ -151,9 +161,12 @@ describe("Restore on mount", () => {
   it("restores valid draft: sets fields and returns hasDraft=true", async () => {
     const { result } = renderWithForm(validDraft());
 
-    await waitFor(() => {
-      expect(result.current.draft.hasDraft).toBe(true);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.draft.hasDraft).toBe(true);
+      },
+      { timeout: 3000 },
+    );
 
     expect(result.current.form.getValues("name")).toBe("Dana");
     expect(result.current.form.getValues("email")).toBe("dana@example.com");
@@ -196,10 +209,14 @@ describe("Restore on mount", () => {
 // ---------------------------------------------------------------------------
 describe("Stale category guard", () => {
   it("sets category_id to '' when stored UUID is not in categories", async () => {
-    const draft = validDraft({ category_id: "00000000-0000-0000-0000-000000000000" });
+    const draft = validDraft({
+      category_id: "00000000-0000-0000-0000-000000000000",
+    });
     const { result } = renderWithForm(draft);
 
-    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), {
+      timeout: 3000,
+    });
     expect(result.current.form.getValues("category_id")).toBe("");
   });
 
@@ -207,7 +224,9 @@ describe("Stale category guard", () => {
     const draft = validDraft({ category_id: VALID_CATEGORY_B });
     const { result } = renderWithForm(draft);
 
-    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), {
+      timeout: 3000,
+    });
     expect(result.current.form.getValues("category_id")).toBe(VALID_CATEGORY_B);
   });
 });
@@ -220,7 +239,9 @@ describe("Priority restore fidelity", () => {
     const draft = validDraft({ priority: "high" });
     const { result } = renderWithForm(draft);
 
-    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), {
+      timeout: 3000,
+    });
     expect(result.current.form.getValues("priority")).toBe("high");
   });
 
@@ -236,7 +257,9 @@ describe("Priority restore fidelity", () => {
 
     const { result } = renderWithForm(draftWithoutPriority);
 
-    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), {
+      timeout: 3000,
+    });
     expect(result.current.form.getValues("priority")).toBe("medium");
   });
 });
@@ -248,15 +271,20 @@ describe("Auto-clear on successful submission", () => {
   it("removes localStorage key and sets hasDraft=false when isSuccess flips true", async () => {
     const { result, rerender } = renderWithForm(validDraft(), false);
 
-    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), {
+      timeout: 3000,
+    });
 
     act(() => {
       rerender({ success: true });
     });
 
-    await waitFor(() => {
-      expect(result.current.draft.hasDraft).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.draft.hasDraft).toBe(false);
+      },
+      { timeout: 3000 },
+    );
 
     expect(localStorage.getItem(DRAFT_KEY)).toBeNull();
   });
@@ -264,7 +292,9 @@ describe("Auto-clear on successful submission", () => {
   it("preserves draft when isSuccess stays false (submission error)", async () => {
     const { result } = renderWithForm(validDraft(), false);
 
-    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), {
+      timeout: 3000,
+    });
 
     // isSuccess never flips — draft stays
     expect(localStorage.getItem(DRAFT_KEY)).not.toBeNull();
@@ -286,16 +316,14 @@ describe("Watch loop prevention (isRestoring guard)", () => {
     const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
 
     // Render (mount effect fires during `act`)
-    const { result } = renderHook(
-      () => {
-        const form = useForm<TicketSubmitData>({
-          resolver: standardSchemaResolver(ticketSubmitSchema),
-          mode: "onChange",
-          defaultValues: { ...DEFAULTS },
-        });
-        return { form, draft: useFormDraft(form, CATEGORIES, false) };
-      },
-    );
+    const { result } = renderHook(() => {
+      const form = useForm<TicketSubmitData>({
+        resolver: standardSchemaResolver(ticketSubmitSchema),
+        mode: "onChange",
+        defaultValues: { ...DEFAULTS },
+      });
+      return { form, draft: useFormDraft(form, CATEGORIES, false) };
+    });
 
     // Let mount effects and microtasks run; timer stays fake
     await act(async () => {
@@ -304,7 +332,9 @@ describe("Watch loop prevention (isRestoring guard)", () => {
 
     // During restore, isRestoring.current === true so the debounced writer is suppressed.
     // No setItem call should have happened yet (debounce hasn't elapsed).
-    const callsDuringRestore = setItemSpy.mock.calls.filter(([k]) => k === DRAFT_KEY).length;
+    const callsDuringRestore = setItemSpy.mock.calls.filter(
+      ([k]) => k === DRAFT_KEY,
+    ).length;
     expect(callsDuringRestore).toBe(0);
 
     vi.useRealTimers();
@@ -339,9 +369,12 @@ describe("Revalidation after restore (ADR-9)", () => {
       return { form, draft: useFormDraft(form, CATEGORIES, false) };
     });
 
-    await waitFor(() => {
-      expect(result.current.draft.hasDraft).toBe(true);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.draft.hasDraft).toBe(true);
+      },
+      { timeout: 3000 },
+    );
 
     // After hasDraft=true the restore effect ran; trigger must have been called
     expect(triggerCalled).toBe(true);
@@ -360,15 +393,19 @@ describe("Revalidation after restore (ADR-9)", () => {
       return { form, draft: useFormDraft(form, CATEGORIES, false) };
     });
 
-    await waitFor(() => {
-      expect(result.current.draft.hasDraft).toBe(true);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.draft.hasDraft).toBe(true);
+      },
+      { timeout: 3000 },
+    );
 
     // Give trigger a moment to update formState
     await act(async () => {});
 
     // Either formState is invalid OR body has an error
-    const hasBodyError = result.current.form.formState.errors.body !== undefined;
+    const hasBodyError =
+      result.current.form.formState.errors.body !== undefined;
     const formInvalid = !result.current.form.formState.isValid;
     expect(hasBodyError || formInvalid).toBe(true);
   });
@@ -412,15 +449,20 @@ describe("clearDraft", () => {
   it("removes localStorage key, resets form to defaults, and sets hasDraft=false", async () => {
     const { result } = renderWithForm(validDraft());
 
-    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), {
+      timeout: 3000,
+    });
 
     act(() => {
       result.current.draft.clearDraft();
     });
 
-    await waitFor(() => {
-      expect(result.current.draft.hasDraft).toBe(false);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(result.current.draft.hasDraft).toBe(false);
+      },
+      { timeout: 3000 },
+    );
 
     expect(localStorage.getItem(DRAFT_KEY)).toBeNull();
     expect(result.current.form.getValues("name")).toBe("");
@@ -433,14 +475,20 @@ describe("clearDraft", () => {
     const { result } = renderWithForm(validDraft());
 
     // Let mount effects run
-    await act(async () => { vi.runAllTicks(); });
+    await act(async () => {
+      vi.runAllTicks();
+    });
 
     // Advance to let any initial debounce fire
-    await act(async () => { vi.advanceTimersByTime(600); });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
 
     vi.useRealTimers();
 
-    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.draft.hasDraft).toBe(true), {
+      timeout: 3000,
+    });
 
     vi.useFakeTimers();
 
@@ -449,7 +497,9 @@ describe("clearDraft", () => {
     });
 
     // Advance past debounce window
-    await act(async () => { vi.advanceTimersByTime(600); });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
 
     vi.useRealTimers();
 

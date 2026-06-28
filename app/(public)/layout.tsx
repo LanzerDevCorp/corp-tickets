@@ -13,10 +13,13 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div lang="es-MX" className="force-light min-h-svh bg-[#F6F7FB] flex flex-col text-foreground">
+    <div
+      lang="es-MX"
+      className="force-light flex min-h-svh flex-col bg-[#F6F7FB] text-foreground"
+    >
       <PublicSiteHeader rightLink={{ href: "/portal", label: "Acceder" }} />
 
-      <main className="flex-1 flex flex-col justify-center px-4 py-12">
+      <main className="flex flex-1 flex-col justify-center px-4 py-12">
         {children}
       </main>
     </div>

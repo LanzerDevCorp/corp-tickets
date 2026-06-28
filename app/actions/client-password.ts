@@ -44,7 +44,9 @@ async function resolveClient(): Promise<{ userId: string | null }> {
  * first-access interstitial is never shown again. Atomic intent: the stamp only
  * happens after the auth update succeeds.
  */
-export async function setClientPassword(password: string): Promise<ActionResult> {
+export async function setClientPassword(
+  password: string,
+): Promise<ActionResult> {
   if (typeof password !== "string" || password.length < MIN_PASSWORD_LENGTH) {
     return {
       error: `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`,
@@ -58,7 +60,7 @@ export async function setClientPassword(password: string): Promise<ActionResult>
 
   const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
     userId,
-    { password }
+    { password },
   );
   if (updateError) {
     return { error: updateError.message };

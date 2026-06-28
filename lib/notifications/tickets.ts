@@ -30,7 +30,7 @@ function categoryNameFromTicket(ticket: TicketAccessRow): string {
 
 export async function sendTicketAccessEmail(
   ticketId: string,
-  magicLinkUrl?: string
+  magicLinkUrl?: string,
 ): Promise<{ error: string | null }> {
   if (!resend) {
     console.error("[sendTicketAccessEmail] Resend client not initialized");
@@ -50,7 +50,10 @@ export async function sendTicketAccessEmail(
     .single();
 
   if (ticketError || !ticketRow) {
-    console.error("[sendTicketAccessEmail] Failed to fetch ticket", ticketError);
+    console.error(
+      "[sendTicketAccessEmail] Failed to fetch ticket",
+      ticketError,
+    );
     return { error: es.errors.ticketNotFound };
   }
 
@@ -75,7 +78,7 @@ export async function sendTicketAccessEmail(
         priority: ticket.priority as "low" | "medium" | "high" | "urgent",
         categoryName: categoryNameFromTicket(ticket),
         magicLinkUrl: accessUrl,
-      })
+      }),
     );
 
     const { error: sendError } = await resend.emails.send({
@@ -101,7 +104,7 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
   try {
     if (!resend) {
       console.error(
-        "[notifyNewTicket] Resend client not initialized — RESEND_API_KEY missing"
+        "[notifyNewTicket] Resend client not initialized — RESEND_API_KEY missing",
       );
       return;
     }
@@ -121,7 +124,7 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
     if (ticketError || !ticketRow) {
       console.error(
         "[notifyNewTicket] Failed to fetch ticket data",
-        ticketError
+        ticketError,
       );
       return;
     }
@@ -136,7 +139,7 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
     if (staffError) {
       console.error(
         "[notifyNewTicket] Failed to fetch staff users",
-        staffError
+        staffError,
       );
       return;
     }
@@ -175,7 +178,7 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
         categoryName,
         body: ticket.body,
         dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/dashboard`,
-      })
+      }),
     );
 
     // 4. Send
@@ -195,7 +198,7 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
 
 export async function notifyTicketCreated(
   ticketId: string,
-  magicLinkUrl: string
+  magicLinkUrl: string,
 ): Promise<void> {
   if (!magicLinkUrl) {
     console.error("[notifyTicketCreated] magicLinkUrl is empty — skipping");
@@ -212,7 +215,7 @@ export async function notifyTicketClosed(ticketId: string): Promise<void> {
   try {
     if (!resend) {
       console.error(
-        "[notifyTicketClosed] Resend client not initialized — RESEND_API_KEY missing"
+        "[notifyTicketClosed] Resend client not initialized — RESEND_API_KEY missing",
       );
       return;
     }
@@ -231,7 +234,7 @@ export async function notifyTicketClosed(ticketId: string): Promise<void> {
     if (ticketError || !ticketRow) {
       console.error(
         "[notifyTicketClosed] Failed to fetch ticket data",
-        ticketError
+        ticketError,
       );
       return;
     }
@@ -244,9 +247,7 @@ export async function notifyTicketClosed(ticketId: string): Promise<void> {
     };
 
     if (!ticket.closure_reason) {
-      console.error(
-        "[notifyTicketClosed] closure_reason missing — skipping"
-      );
+      console.error("[notifyTicketClosed] closure_reason missing — skipping");
       return;
     }
 
@@ -258,7 +259,7 @@ export async function notifyTicketClosed(ticketId: string): Promise<void> {
         ticketSubject: ticket.subject,
         closureReason: ticket.closure_reason,
         trackingUrl,
-      })
+      }),
     );
 
     const { error: sendError } = await resend.emails.send({
@@ -279,7 +280,7 @@ export async function notifyTicketResolved(ticketId: string): Promise<void> {
   try {
     if (!resend) {
       console.error(
-        "[notifyTicketResolved] Resend client not initialized — RESEND_API_KEY missing"
+        "[notifyTicketResolved] Resend client not initialized — RESEND_API_KEY missing",
       );
       return;
     }
@@ -298,7 +299,7 @@ export async function notifyTicketResolved(ticketId: string): Promise<void> {
     if (ticketError || !ticketRow) {
       console.error(
         "[notifyTicketResolved] Failed to fetch ticket data",
-        ticketError
+        ticketError,
       );
       return;
     }
@@ -316,7 +317,7 @@ export async function notifyTicketResolved(ticketId: string): Promise<void> {
         clientName: ticket.name,
         ticketSubject: ticket.subject,
         trackingUrl,
-      })
+      }),
     );
 
     const { error: sendError } = await resend.emails.send({

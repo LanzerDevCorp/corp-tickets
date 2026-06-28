@@ -33,12 +33,14 @@ describe("AttachmentManager", () => {
   });
 
   it("renders upload control", () => {
-    render(
-      <AttachmentManager ticketId="ticket-1" initialAttachments={[]} />
-    );
+    render(<AttachmentManager ticketId="ticket-1" initialAttachments={[]} />);
 
-    expect(screen.getByRole("button", { name: /subir archivos/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/seleccionar archivos adjuntos/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /subir archivos/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/seleccionar archivos adjuntos/i),
+    ).toBeInTheDocument();
   });
 
   it("renders Eliminar on active attachments", () => {
@@ -54,14 +56,16 @@ describe("AttachmentManager", () => {
             expired: false,
           },
         ]}
-      />
+      />,
     );
 
     expect(screen.getByText("reporte.pdf")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /eliminar/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /eliminar/i }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /descargar/i })).toHaveAttribute(
       "href",
-      "https://signed.url/reporte.pdf"
+      "https://signed.url/reporte.pdf",
     );
   });
 
@@ -92,7 +96,7 @@ describe("AttachmentManager", () => {
             removedByAdmin: true,
           },
         ]}
-      />
+      />,
     );
 
     expect(screen.getByText("borrado.pdf")).toBeInTheDocument();
@@ -122,7 +126,7 @@ describe("AttachmentManager", () => {
             expired: false,
           },
         ]}
-      />
+      />,
     );
 
     await user.click(screen.getByRole("button", { name: /eliminar/i }));

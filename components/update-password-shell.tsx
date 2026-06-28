@@ -35,7 +35,9 @@ export function UpdatePasswordShell() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setErrorMessage(err instanceof Error ? err.message : t("errors.genericError"));
+        setErrorMessage(
+          err instanceof Error ? err.message : t("errors.genericError"),
+        );
         setStatus("invalid");
       });
 
@@ -49,7 +51,9 @@ export function UpdatePasswordShell() {
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">{t("auth.verifyingLink")}</CardTitle>
-          <CardDescription>{t("auth.verifyingLinkDescription")}</CardDescription>
+          <CardDescription>
+            {t("auth.verifyingLinkDescription")}
+          </CardDescription>
         </CardHeader>
       </Card>
     );
@@ -59,13 +63,15 @@ export function UpdatePasswordShell() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">{t("auth.resetLinkInvalid")}</CardTitle>
+          <CardTitle className="text-2xl">
+            {t("auth.resetLinkInvalid")}
+          </CardTitle>
           <CardDescription>
             {t("auth.resetLinkInvalidDescription")}
             {errorMessage ? (
               <>
                 {" "}
-                <span className="block mt-2 text-xs text-muted-foreground">
+                <span className="mt-2 block text-xs text-muted-foreground">
                   ({errorMessage})
                 </span>
               </>

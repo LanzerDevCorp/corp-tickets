@@ -36,7 +36,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
     env: Object.fromEntries(
-      Object.entries(process.env).filter(([, v]) => v !== undefined)
+      Object.entries(process.env).filter(([, v]) => v !== undefined),
     ) as Record<string, string>,
   },
 });

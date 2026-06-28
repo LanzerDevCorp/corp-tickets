@@ -54,8 +54,14 @@ function makeAdminChain(resolvedValue: unknown) {
   chain.single = terminal;
   // Make it awaitable for non-single queries
   const mockPromise = Promise.resolve(resolvedValue);
-  (chain as Record<string, unknown>).then = (onfulfilled: unknown, onrejected: unknown) =>
-    (mockPromise as Promise<unknown>).then(onfulfilled as never, onrejected as never);
+  (chain as Record<string, unknown>).then = (
+    onfulfilled: unknown,
+    onrejected: unknown,
+  ) =>
+    (mockPromise as Promise<unknown>).then(
+      onfulfilled as never,
+      onrejected as never,
+    );
   return chain;
 }
 
@@ -79,7 +85,7 @@ describe("getUsers", () => {
           },
         ],
         error: null,
-      }) as never
+      }) as never,
     );
     vi.mocked(supabaseAdmin.auth.admin.listUsers).mockResolvedValue({
       data: {
@@ -106,7 +112,7 @@ describe("getUsers", () => {
   it("returns empty array when no users exist", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
     mockSupabaseAdmin.from.mockReturnValue(
-      makeAdminChain({ data: null, error: null }) as never
+      makeAdminChain({ data: null, error: null }) as never,
     );
     vi.mocked(supabaseAdmin.auth.admin.listUsers).mockResolvedValue({
       data: { users: [] },
@@ -131,7 +137,7 @@ describe("getUsers", () => {
   it("returns db error when supabase returns error", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
     mockSupabaseAdmin.from.mockReturnValue(
-      makeAdminChain({ data: null, error: { message: "DB error" } }) as never
+      makeAdminChain({ data: null, error: { message: "DB error" } }) as never,
     );
 
     const result = await getUsers();
@@ -151,7 +157,7 @@ describe("reinviteStaffUser", () => {
       makeAdminChain({
         data: { id: "u1", email: "it@corp.com", role: "it" },
         error: null,
-      }) as never
+      }) as never,
     );
     vi.mocked(supabaseAdmin.auth.admin.getUserById).mockResolvedValue({
       data: {
@@ -176,7 +182,7 @@ describe("reinviteStaffUser", () => {
     expect(result.error).toBeNull();
     expect(supabaseAdmin.auth.admin.inviteUserByEmail).toHaveBeenCalledWith(
       "it@corp.com",
-      { redirectTo: expect.stringContaining("/auth/accept-invite") }
+      { redirectTo: expect.stringContaining("/auth/accept-invite") },
     );
   });
 
@@ -186,7 +192,7 @@ describe("reinviteStaffUser", () => {
       makeAdminChain({
         data: { id: "u1", email: "it@corp.com", role: "it" },
         error: null,
-      }) as never
+      }) as never,
     );
     vi.mocked(supabaseAdmin.auth.admin.getUserById).mockResolvedValue({
       data: {
@@ -213,7 +219,7 @@ describe("cancelStaffInvite", () => {
       makeAdminChain({
         data: { id: "u1", email: "admin@corp.com", role: "admin" },
         error: null,
-      }) as never
+      }) as never,
     );
     vi.mocked(supabaseAdmin.auth.admin.getUserById).mockResolvedValue({
       data: {
@@ -242,9 +248,11 @@ describe("deactivateUser", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("sets is_active=false on target user", async () => {
-    mockCreateClient.mockResolvedValue(makeAuthMock("admin", "caller-uuid") as never);
+    mockCreateClient.mockResolvedValue(
+      makeAuthMock("admin", "caller-uuid") as never,
+    );
     mockSupabaseAdmin.from.mockReturnValue(
-      makeAdminChain({ data: { id: "target-uuid" }, error: null }) as never
+      makeAdminChain({ data: { id: "target-uuid" }, error: null }) as never,
     );
 
     const result = await deactivateUser("target-uuid");
@@ -252,7 +260,9 @@ describe("deactivateUser", () => {
   });
 
   it("returns error when userId matches caller sub (cannot deactivate self)", async () => {
-    mockCreateClient.mockResolvedValue(makeAuthMock("admin", "self-uuid") as never);
+    mockCreateClient.mockResolvedValue(
+      makeAuthMock("admin", "self-uuid") as never,
+    );
 
     const result = await deactivateUser("self-uuid");
     expect(result.error).toBeTruthy();
@@ -262,7 +272,9 @@ describe("deactivateUser", () => {
   });
 
   it("returns auth error when caller is not admin", async () => {
-    mockCreateClient.mockResolvedValue(makeAuthMock("it", "caller-uuid") as never);
+    mockCreateClient.mockResolvedValue(
+      makeAuthMock("it", "caller-uuid") as never,
+    );
 
     const result = await deactivateUser("target-uuid");
     expect(result.error).toBeTruthy();
@@ -270,9 +282,14 @@ describe("deactivateUser", () => {
   });
 
   it("returns db error when supabase update fails", async () => {
-    mockCreateClient.mockResolvedValue(makeAuthMock("admin", "caller-uuid") as never);
+    mockCreateClient.mockResolvedValue(
+      makeAuthMock("admin", "caller-uuid") as never,
+    );
     mockSupabaseAdmin.from.mockReturnValue(
-      makeAdminChain({ data: null, error: { message: "Update failed" } }) as never
+      makeAdminChain({
+        data: null,
+        error: { message: "Update failed" },
+      }) as never,
     );
 
     const result = await deactivateUser("target-uuid");
@@ -291,7 +308,7 @@ describe("reactivateUser", () => {
   it("sets is_active=true on target user", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
     mockSupabaseAdmin.from.mockReturnValue(
-      makeAdminChain({ data: { id: "target-uuid" }, error: null }) as never
+      makeAdminChain({ data: { id: "target-uuid" }, error: null }) as never,
     );
 
     const result = await reactivateUser("target-uuid");
@@ -309,7 +326,10 @@ describe("reactivateUser", () => {
   it("returns db error when supabase update fails", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
     mockSupabaseAdmin.from.mockReturnValue(
-      makeAdminChain({ data: null, error: { message: "Update error" } }) as never
+      makeAdminChain({
+        data: null,
+        error: { message: "Update error" },
+      }) as never,
     );
 
     const result = await reactivateUser("target-uuid");
@@ -328,7 +348,17 @@ describe("getCategories (admin)", () => {
   it("returns all categories including disabled ones when caller is admin", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
     mockSupabaseAdmin.from.mockReturnValue(
-      makeAdminChain({ data: [{ id: "c1", name: "Hardware", is_enabled: false, created_at: "2026-01-01" }], error: null }) as never
+      makeAdminChain({
+        data: [
+          {
+            id: "c1",
+            name: "Hardware",
+            is_enabled: false,
+            created_at: "2026-01-01",
+          },
+        ],
+        error: null,
+      }) as never,
     );
 
     const result = await getCategories();
@@ -342,7 +372,7 @@ describe("getCategories (admin)", () => {
   it("returns empty array when no categories exist", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
     mockSupabaseAdmin.from.mockReturnValue(
-      makeAdminChain({ data: null, error: null }) as never
+      makeAdminChain({ data: null, error: null }) as never,
     );
 
     const result = await getCategories();
@@ -363,7 +393,7 @@ describe("getCategories (admin)", () => {
   it("returns db error when supabase returns error", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
     mockSupabaseAdmin.from.mockReturnValue(
-      makeAdminChain({ data: null, error: { message: "DB error" } }) as never
+      makeAdminChain({ data: null, error: { message: "DB error" } }) as never,
     );
 
     const result = await getCategories();
@@ -381,7 +411,15 @@ describe("createCategory", () => {
 
   it("inserts category with is_enabled=true and returns row when name is valid", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
-    const chain = makeAdminChain({ data: { id: "c1", name: "Hardware", is_enabled: true, created_at: "2026-01-01" }, error: null });
+    const chain = makeAdminChain({
+      data: {
+        id: "c1",
+        name: "Hardware",
+        is_enabled: true,
+        created_at: "2026-01-01",
+      },
+      error: null,
+    });
     mockSupabaseAdmin.from.mockReturnValue(chain as never);
 
     const result = await createCategory({ name: "Hardware" });
@@ -414,7 +452,10 @@ describe("createCategory", () => {
 
   it("returns db error with friendly message on pg 23505 (unique violation)", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
-    const chain = makeAdminChain({ data: null, error: { message: "duplicate key", code: "23505" } });
+    const chain = makeAdminChain({
+      data: null,
+      error: { message: "duplicate key", code: "23505" },
+    });
     mockSupabaseAdmin.from.mockReturnValue(chain as never);
 
     const result = await createCategory({ name: "Hardware" });
@@ -440,7 +481,15 @@ describe("updateCategory", () => {
 
   it("updates name when only name is provided", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
-    const chain = makeAdminChain({ data: { id: "c1", name: "New Name", is_enabled: true, created_at: "2026-01-01" }, error: null });
+    const chain = makeAdminChain({
+      data: {
+        id: "c1",
+        name: "New Name",
+        is_enabled: true,
+        created_at: "2026-01-01",
+      },
+      error: null,
+    });
     mockSupabaseAdmin.from.mockReturnValue(chain as never);
 
     const result = await updateCategory("c1", { name: "New Name" });
@@ -452,7 +501,15 @@ describe("updateCategory", () => {
 
   it("updates is_enabled when only is_enabled is provided", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
-    const chain = makeAdminChain({ data: { id: "c1", name: "Hardware", is_enabled: false, created_at: "2026-01-01" }, error: null });
+    const chain = makeAdminChain({
+      data: {
+        id: "c1",
+        name: "Hardware",
+        is_enabled: false,
+        created_at: "2026-01-01",
+      },
+      error: null,
+    });
     mockSupabaseAdmin.from.mockReturnValue(chain as never);
 
     const result = await updateCategory("c1", { is_enabled: false });
@@ -464,10 +521,21 @@ describe("updateCategory", () => {
 
   it("updates both name and is_enabled when both are provided", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
-    const chain = makeAdminChain({ data: { id: "c1", name: "Renamed", is_enabled: false, created_at: "2026-01-01" }, error: null });
+    const chain = makeAdminChain({
+      data: {
+        id: "c1",
+        name: "Renamed",
+        is_enabled: false,
+        created_at: "2026-01-01",
+      },
+      error: null,
+    });
     mockSupabaseAdmin.from.mockReturnValue(chain as never);
 
-    const result = await updateCategory("c1", { name: "Renamed", is_enabled: false });
+    const result = await updateCategory("c1", {
+      name: "Renamed",
+      is_enabled: false,
+    });
     expect(result.error).toBeNull();
     if (result.error === null) {
       expect(result.data.name).toBe("Renamed");
@@ -486,7 +554,10 @@ describe("updateCategory", () => {
 
   it("returns db error on unique constraint violation (23505) when renaming", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
-    const chain = makeAdminChain({ data: null, error: { message: "duplicate key", code: "23505" } });
+    const chain = makeAdminChain({
+      data: null,
+      error: { message: "duplicate key", code: "23505" },
+    });
     mockSupabaseAdmin.from.mockReturnValue(chain as never);
 
     const result = await updateCategory("c1", { name: "Existing" });
@@ -498,7 +569,10 @@ describe("updateCategory", () => {
 
   it("returns db error when supabase returns error", async () => {
     mockCreateClient.mockResolvedValue(makeAuthMock("admin") as never);
-    const chain = makeAdminChain({ data: null, error: { message: "Not found" } });
+    const chain = makeAdminChain({
+      data: null,
+      error: { message: "Not found" },
+    });
     mockSupabaseAdmin.from.mockReturnValue(chain as never);
 
     const result = await updateCategory("c1", { is_enabled: true });

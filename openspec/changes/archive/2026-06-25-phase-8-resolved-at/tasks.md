@@ -2,14 +2,14 @@
 
 ## Review Workload Forecast
 
-| Field | Value |
-|-------|-------|
-| Estimated changed lines | 150–200 |
-| 400-line budget risk | Low |
-| Chained PRs recommended | No |
-| Suggested split | Single PR |
-| Delivery strategy | exception-ok |
-| Chain strategy | size-exception |
+| Field                   | Value          |
+| ----------------------- | -------------- |
+| Estimated changed lines | 150–200        |
+| 400-line budget risk    | Low            |
+| Chained PRs recommended | No             |
+| Suggested split         | Single PR      |
+| Delivery strategy       | exception-ok   |
+| Chain strategy          | size-exception |
 
 Decision needed before apply: No
 Chained PRs recommended: No
@@ -18,9 +18,9 @@ Chain strategy: size-exception
 
 ### Suggested Work Units
 
-| Unit | Goal | Likely PR | Notes |
-|------|------|-----------|-------|
-| 1 | All DB + UI + tests | PR 1 | Single idempotent migration; component + DB integration tests included |
+| Unit | Goal                | Likely PR | Notes                                                                  |
+| ---- | ------------------- | --------- | ---------------------------------------------------------------------- |
+| 1    | All DB + UI + tests | PR 1      | Single idempotent migration; component + DB integration tests included |
 
 ---
 
@@ -43,5 +43,5 @@ Chain strategy: size-exception
 
 - [x] 4.1 Run `pnpm test` — confirm `ticket-detail-resolved-at.test.tsx` GREEN (both scenarios pass).
 - [x] 4.2 With `supabase start` running, execute `__tests__/db/resolved-at.integration.test.ts` — confirm all four trigger/backfill scenarios GREEN. NOTE: automated test requires `SUPABASE_TEST_ANON_KEY` + `SUPABASE_TEST_SERVICE_ROLE_KEY`; trigger behavior verified manually via `supabase db query` (all four scenarios confirmed GREEN on local DB).
-- [x] 4.3 Manual smoke: open a ticket in `/dashboard/tickets/[id]`, transition it to `resolved`, verify "Resuelto" row appears with a human-readable timestamp; transition back to `open`, verify row disappears. *(Reconciled at archive time: all spec requirements verified PASS; task requires running app which is out of scope for apply phase; covered by unit tests)*
+- [x] 4.3 Manual smoke: open a ticket in `/dashboard/tickets/[id]`, transition it to `resolved`, verify "Resuelto" row appears with a human-readable timestamp; transition back to `open`, verify row disappears. _(Reconciled at archive time: all spec requirements verified PASS; task requires running app which is out of scope for apply phase; covered by unit tests)_
 - [x] 4.4 Confirm queue table at `/dashboard/tickets` shows no `resolved_at` column and kebab menu is unchanged (spec exclusion requirement).

@@ -76,7 +76,7 @@ async function fetchAuthUsersById(): Promise<Map<string, User>> {
 }
 
 async function getStaffUserOrError(
-  userId: string
+  userId: string,
 ): Promise<
   AdminActionResult<{ id: string; email: string; role: "admin" | "it" }>
 > {
@@ -136,7 +136,7 @@ export async function getUsers(): Promise<AdminActionResult<UserRow[]>> {
 }
 
 export async function reinviteStaffUser(
-  userId: string
+  userId: string,
 ): Promise<AdminActionResult> {
   const authResult = await requireAdmin();
   if (authResult.error !== null) return authResult;
@@ -156,10 +156,10 @@ export async function reinviteStaffUser(
   }
 
   const redirectTo = staffInviteRedirectUrl();
-  const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
-    userResult.data.email,
-    { redirectTo }
-  );
+  const { error: inviteError } =
+    await supabaseAdmin.auth.admin.inviteUserByEmail(userResult.data.email, {
+      redirectTo,
+    });
 
   if (inviteError) {
     return { error: inviteError.message, code: "db" };
@@ -167,7 +167,7 @@ export async function reinviteStaffUser(
 
   const { error: metaError } = await supabaseAdmin.auth.admin.updateUserById(
     userId,
-    { app_metadata: { role: userResult.data.role } }
+    { app_metadata: { role: userResult.data.role } },
   );
 
   if (metaError) {
@@ -187,7 +187,7 @@ export async function reinviteStaffUser(
 }
 
 export async function cancelStaffInvite(
-  userId: string
+  userId: string,
 ): Promise<AdminActionResult> {
   const authResult = await requireAdmin();
   if (authResult.error !== null) return authResult;
@@ -206,9 +206,8 @@ export async function cancelStaffInvite(
     return { error: es.errors.userNotPendingInvite, code: "validation" };
   }
 
-  const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(
-    userId
-  );
+  const { error: deleteError } =
+    await supabaseAdmin.auth.admin.deleteUser(userId);
 
   if (deleteError) {
     return { error: deleteError.message, code: "db" };
@@ -218,7 +217,7 @@ export async function cancelStaffInvite(
 }
 
 export async function deactivateUser(
-  userId: string
+  userId: string,
 ): Promise<AdminActionResult> {
   const authResult = await requireAdmin();
   if (authResult.error !== null) return authResult;
@@ -243,7 +242,7 @@ export async function deactivateUser(
 }
 
 export async function reactivateUser(
-  userId: string
+  userId: string,
 ): Promise<AdminActionResult> {
   const authResult = await requireAdmin();
   if (authResult.error !== null) return authResult;
@@ -315,7 +314,7 @@ export async function createCategory(input: {
 
 export async function updateCategory(
   categoryId: string,
-  input: { name?: string; is_enabled?: boolean }
+  input: { name?: string; is_enabled?: boolean },
 ): Promise<AdminActionResult<CategoryRow>> {
   const authResult = await requireAdmin();
   if (authResult.error !== null) return authResult;

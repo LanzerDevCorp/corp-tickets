@@ -13,13 +13,19 @@ describe("ticket access signatures", () => {
 
   it("signs and verifies matching ticket/email pairs", () => {
     const sig = signTicketAccess("ticket-1", "Client@Example.com");
-    expect(verifyTicketAccess("ticket-1", "client@example.com", sig)).toBe(true);
+    expect(verifyTicketAccess("ticket-1", "client@example.com", sig)).toBe(
+      true,
+    );
   });
 
   it("rejects invalid signatures", () => {
     const sig = signTicketAccess("ticket-1", "client@example.com");
-    expect(verifyTicketAccess("ticket-1", "other@example.com", sig)).toBe(false);
-    expect(verifyTicketAccess("ticket-2", "client@example.com", sig)).toBe(false);
+    expect(verifyTicketAccess("ticket-1", "other@example.com", sig)).toBe(
+      false,
+    );
+    expect(verifyTicketAccess("ticket-2", "client@example.com", sig)).toBe(
+      false,
+    );
   });
 
   it("builds reusable ticket access URLs", () => {

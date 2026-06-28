@@ -18,12 +18,20 @@ import { signOut } from "@/app/(staff)/actions";
 import { t } from "@/lib/i18n/t";
 
 const mainNav = [
-  { labelKey: "sidebar.dashboard" as const, href: "/dashboard", icon: LayoutDashboard },
+  {
+    labelKey: "sidebar.dashboard" as const,
+    href: "/dashboard",
+    icon: LayoutDashboard,
+  },
 ];
 
 const adminNav = [
   { labelKey: "sidebar.overview" as const, href: "/admin", icon: Settings2 },
-  { labelKey: "sidebar.categories" as const, href: "/admin/categories", icon: Tag },
+  {
+    labelKey: "sidebar.categories" as const,
+    href: "/admin/categories",
+    icon: Tag,
+  },
   { labelKey: "sidebar.users" as const, href: "/admin/users", icon: Users },
 ];
 
@@ -64,7 +72,10 @@ export function AppSidebar({ userEmail, isAdmin }: AppSidebarProps) {
               <SidebarMenu>
                 {adminNav.map((item) => (
                   <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={pathname === item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.href}
+                    >
                       <a href={item.href}>
                         <item.icon />
                         <span>{t(item.labelKey)}</span>
@@ -82,7 +93,9 @@ export function AppSidebar({ userEmail, isAdmin }: AppSidebarProps) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton disabled>
-              <span className="truncate text-xs text-muted-foreground">{userEmail}</span>
+              <span className="truncate text-xs text-muted-foreground">
+                {userEmail}
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>

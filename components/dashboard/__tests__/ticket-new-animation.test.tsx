@@ -15,8 +15,7 @@ function mockMatchMedia(prefersReduced: boolean) {
     writable: true,
     configurable: true,
     value: vi.fn().mockImplementation((query: string) => ({
-      matches:
-        prefersReduced && query === "(prefers-reduced-motion: reduce)",
+      matches: prefersReduced && query === "(prefers-reduced-motion: reduce)",
       media: query,
       onchange: null,
       addListener: vi.fn(),

@@ -28,7 +28,7 @@ export type CommentWithAuthor = {
  * The same function serves both roles — no branching needed.
  */
 export async function getComments(
-  ticketId: string
+  ticketId: string,
 ): Promise<CommentWithAuthor[]> {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -82,7 +82,7 @@ export async function addComment(input: {
 
   if (!parsed.success) {
     throw new Error(
-      parsed.error.issues[0]?.message ?? es.validation.invalidCommentData
+      parsed.error.issues[0]?.message ?? es.validation.invalidCommentData,
     );
   }
 

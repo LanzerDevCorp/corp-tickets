@@ -17,13 +17,15 @@ describe("LogoutButton", () => {
   it("renders a logout button", () => {
     render(<LogoutButton />);
     expect(
-      screen.getByRole("button", { name: /cerrar sesión/i })
+      screen.getByRole("button", { name: /cerrar sesión/i }),
     ).toBeInTheDocument();
   });
 
   it("calls logoutUser when clicked", async () => {
     render(<LogoutButton />);
-    await userEvent.click(screen.getByRole("button", { name: /cerrar sesión/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /cerrar sesión/i }),
+    );
     expect(mockLogoutUser).toHaveBeenCalled();
   });
 

@@ -94,9 +94,12 @@ describe("Recovery banner", () => {
   it("appears when localStorage has a valid draft on mount", async () => {
     renderForm(VALID_DRAFT);
 
-    await waitFor(() => {
-      expect(screen.getByText("Borrador recuperado")).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Borrador recuperado")).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it("is absent when no draft exists in localStorage", async () => {
@@ -113,19 +116,28 @@ describe("Recovery banner", () => {
     const user = userEvent.setup();
     renderForm(VALID_DRAFT);
 
-    await waitFor(() => {
-      expect(screen.getByText("Borrador recuperado")).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Borrador recuperado")).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
     // The banner has a "Limpiar" button
-    const bannerLimpiar = screen.getAllByRole("button", { name: /limpiar/i })[0];
+    const bannerLimpiar = screen.getAllByRole("button", {
+      name: /limpiar/i,
+    })[0];
     await user.click(bannerLimpiar);
 
     // Confirm state must appear
     await waitFor(() => {
       expect(screen.getByText(/limpiar todo/i)).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /confirmar/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /cancelar/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /confirmar/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /cancelar/i }),
+      ).toBeInTheDocument();
     });
   });
 });
@@ -144,8 +156,12 @@ describe("'Limpiar' action row button", () => {
     await user.click(limpiarBtn);
 
     expect(screen.getByText(/limpiar todo/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /confirmar/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /cancelar/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /confirmar/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /cancelar/i }),
+    ).toBeInTheDocument();
   });
 
   it("confirmation message mentions attachments", async () => {
@@ -156,7 +172,9 @@ describe("'Limpiar' action row button", () => {
 
     await user.click(screen.getByRole("button", { name: /^limpiar$/i }));
 
-    expect(screen.getByText(/archivos también se perderán/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/archivos también se perderán/i),
+    ).toBeInTheDocument();
   });
 });
 
@@ -168,16 +186,21 @@ describe("Cancel clear", () => {
     const user = userEvent.setup();
     renderForm(VALID_DRAFT);
 
-    await waitFor(() => {
-      expect(screen.getByText("Borrador recuperado")).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Borrador recuperado")).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
     // Two "Limpiar" buttons exist: one in the banner, one in the action row.
     // Use getAllByRole and pick the action-row one (last in DOM order).
     const limpiarBtns = screen.getAllByRole("button", { name: /^limpiar$/i });
     await user.click(limpiarBtns[limpiarBtns.length - 1]);
 
-    expect(screen.getByRole("button", { name: /confirmar/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /confirmar/i }),
+    ).toBeInTheDocument();
 
     // Click cancel
     await user.click(screen.getByRole("button", { name: /cancelar/i }));
@@ -186,7 +209,9 @@ describe("Cancel clear", () => {
     await waitFor(() => {
       expect(screen.queryByText(/limpiar todo/i)).not.toBeInTheDocument();
       // At least one "Limpiar" button visible (action row, possibly banner too)
-      expect(screen.getAllByRole("button", { name: /^limpiar$/i }).length).toBeGreaterThan(0);
+      expect(
+        screen.getAllByRole("button", { name: /^limpiar$/i }).length,
+      ).toBeGreaterThan(0);
     });
 
     // Banner still visible (draft not cleared)
@@ -203,18 +228,26 @@ describe("Confirm clear", () => {
     const user = userEvent.setup();
     renderForm(VALID_DRAFT);
 
-    await waitFor(() => {
-      expect(screen.getByText("Borrador recuperado")).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Borrador recuperado")).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
     // Use the action-row "Limpiar" (last of the two buttons)
     const limpiarBtns = screen.getAllByRole("button", { name: /^limpiar$/i });
     await user.click(limpiarBtns[limpiarBtns.length - 1]);
     await user.click(screen.getByRole("button", { name: /confirmar/i }));
 
-    await waitFor(() => {
-      expect(screen.queryByText("Borrador recuperado")).not.toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(
+          screen.queryByText("Borrador recuperado"),
+        ).not.toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
     expect(localStorage.getItem(DRAFT_KEY)).toBeNull();
   });
@@ -223,15 +256,23 @@ describe("Confirm clear", () => {
     const user = userEvent.setup();
     renderForm(VALID_DRAFT);
 
-    await waitFor(() => {
-      expect(screen.getByText("Borrador recuperado")).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Borrador recuperado")).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
     // Verify draft values are loaded
-    await waitFor(() => {
-      const nameInput = screen.getByPlaceholderText("Tu nombre completo") as HTMLInputElement;
-      expect(nameInput.value).toBe("Test User");
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        const nameInput = screen.getByPlaceholderText(
+          "Tu nombre completo",
+        ) as HTMLInputElement;
+        expect(nameInput.value).toBe("Test User");
+      },
+      { timeout: 3000 },
+    );
 
     // Confirm clear via action-row "Limpiar"
     const limpiarBtns = screen.getAllByRole("button", { name: /^limpiar$/i });
@@ -239,9 +280,14 @@ describe("Confirm clear", () => {
     await user.click(screen.getByRole("button", { name: /confirmar/i }));
 
     // Name field should be reset to ""
-    await waitFor(() => {
-      const nameInput = screen.getByPlaceholderText("Tu nombre completo") as HTMLInputElement;
-      expect(nameInput.value).toBe("");
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        const nameInput = screen.getByPlaceholderText(
+          "Tu nombre completo",
+        ) as HTMLInputElement;
+        expect(nameInput.value).toBe("");
+      },
+      { timeout: 3000 },
+    );
   });
 });

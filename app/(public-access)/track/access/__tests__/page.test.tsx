@@ -18,12 +18,8 @@ describe("TrackAccessPage", () => {
     render(element);
 
     expect(screen.getByText(/consultar tu ticket/i)).toBeInTheDocument();
-    expect(
-      screen.queryByText(/tu sesión expiró/i)
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByText(/enlace expirado/i)
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/tu sesión expiró/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/enlace expirado/i)).not.toBeInTheDocument();
   });
 
   it("shows session_expired copy when error_code=session_expired", async () => {

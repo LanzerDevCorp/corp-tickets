@@ -1,10 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { updateTicketStatus, assignTicket, updateTicketCategory, markTicketAsSeen } from "@/app/actions/tickets";
+import {
+  updateTicketStatus,
+  assignTicket,
+  updateTicketCategory,
+  markTicketAsSeen,
+} from "@/app/actions/tickets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -22,7 +33,13 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Calendar, AlertCircle, CheckCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  User,
+  Calendar,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import Link from "next/link";
 import CommentThread from "@/components/dashboard/comment-thread";
 import CommentForm from "@/components/dashboard/comment-form";
@@ -43,7 +60,8 @@ type TicketDetailProps = {
 
 const PRIORITY_COLORS: Record<string, string> = {
   low: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  medium: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20 dark:text-yellow-500",
+  medium:
+    "bg-yellow-500/10 text-yellow-600 border-yellow-500/20 dark:text-yellow-500",
   high: "bg-orange-500/10 text-orange-500 border-orange-500/20",
   urgent: "bg-red-500/10 text-red-500 border-red-500/20 animate-pulse",
 };
@@ -63,7 +81,8 @@ export default function TicketDetail({
   initialAttachments = [],
 }: TicketDetailProps) {
   const [ticket, setTicket] = useState(initialTicket);
-  const [comments, setComments] = useState<CommentWithAuthor[]>(initialComments);
+  const [comments, setComments] =
+    useState<CommentWithAuthor[]>(initialComments);
 
   // Mark the ticket as seen on mount (and whenever the ticket id changes).
   // This runs independently of — and in addition to — the existing
@@ -110,7 +129,11 @@ export default function TicketDetail({
       setIsUpdating(true);
       setDialogError(null);
       setIsDialogOpen(false);
-      const updated = await updateTicketStatus(ticket.id, "closed", closureReason);
+      const updated = await updateTicketStatus(
+        ticket.id,
+        "closed",
+        closureReason,
+      );
       setTicket(updated);
     } catch (err: any) {
       setErrorMsg(err.message || t("dashboard.failedCloseTicket"));
@@ -147,7 +170,7 @@ export default function TicketDetail({
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
+    <div className="mx-auto max-w-6xl space-y-6">
       {/* Back button */}
       <div className="flex items-center gap-4">
         <Button variant="outline" size="sm" asChild className="gap-2">
@@ -157,52 +180,72 @@ export default function TicketDetail({
           </Link>
         </Button>
         {isUpdating && (
-          <span className="text-sm text-zinc-400 animate-pulse">{t("dashboard.savingChanges")}</span>
+          <span className="animate-pulse text-sm text-zinc-400">
+            {t("dashboard.savingChanges")}
+          </span>
         )}
       </div>
 
       {errorMsg && (
-        <div className="flex items-center gap-2 p-4 text-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+        <div className="flex items-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 text-rose-500">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <p className="text-sm">{errorMsg}</p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main Content Area */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6 lg:col-span-2">
           <Card className="border-zinc-200 bg-white/50 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/50">
             <CardHeader className="border-b border-zinc-100 pb-6 dark:border-zinc-900">
-              <div className="flex flex-wrap gap-2 mb-3">
-                <Badge variant="outline" className={`${STATUS_COLORS[ticket.status]} uppercase tracking-wider text-[10px] px-2.5 py-0.5`}>
+              <div className="mb-3 flex flex-wrap gap-2">
+                <Badge
+                  variant="outline"
+                  className={`${STATUS_COLORS[ticket.status]} px-2.5 py-0.5 text-[10px] tracking-wider uppercase`}
+                >
                   {statusLabel(ticket.status)}
                 </Badge>
-                <Badge variant="outline" className={`${PRIORITY_COLORS[ticket.priority]} uppercase tracking-wider text-[10px] px-2.5 py-0.5`}>
+                <Badge
+                  variant="outline"
+                  className={`${PRIORITY_COLORS[ticket.priority]} px-2.5 py-0.5 text-[10px] tracking-wider uppercase`}
+                >
                   {priorityLabel(ticket.priority)}
                 </Badge>
-                <Badge variant="secondary" className="bg-zinc-100 text-zinc-700 uppercase tracking-wider text-[10px] dark:bg-zinc-900 dark:text-zinc-300">
+                <Badge
+                  variant="secondary"
+                  className="bg-zinc-100 text-[10px] tracking-wider text-zinc-700 uppercase dark:bg-zinc-900 dark:text-zinc-300"
+                >
                   {ticket.category?.name || t("common.general")}
                 </Badge>
               </div>
               <CardTitle className="text-2xl font-bold text-zinc-950 dark:text-zinc-50">
                 {ticket.subject}
               </CardTitle>
-              <CardDescription className="flex items-center gap-2 mt-2">
-                <span>{t("common.submittedBy")} <strong>{ticket.name}</strong> ({ticket.email})</span>
+              <CardDescription className="mt-2 flex items-center gap-2">
+                <span>
+                  {t("common.submittedBy")} <strong>{ticket.name}</strong> (
+                  {ticket.email})
+                </span>
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="prose prose-zinc max-w-none dark:prose-invert">
-                <h3 className="text-sm font-semibold text-zinc-400 mb-2 uppercase tracking-wider">{t("common.description")}</h3>
-                <p className="text-zinc-800 dark:text-zinc-200 whitespace-pre-line leading-relaxed">
+              <div className="prose prose-zinc dark:prose-invert max-w-none">
+                <h3 className="mb-2 text-sm font-semibold tracking-wider text-zinc-400 uppercase">
+                  {t("common.description")}
+                </h3>
+                <p className="leading-relaxed whitespace-pre-line text-zinc-800 dark:text-zinc-200">
                   {ticket.body || ticket.description}
                 </p>
               </div>
 
               {ticket.status === "closed" && ticket.closure_reason && (
-                <div className="mt-8 p-4 rounded-xl border border-rose-500/20 bg-rose-500/5">
-                  <h4 className="text-sm font-semibold text-rose-500 uppercase tracking-wider mb-1">{t("dashboard.closureReason")}</h4>
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300 italic">{ticket.closure_reason}</p>
+                <div className="mt-8 rounded-xl border border-rose-500/20 bg-rose-500/5 p-4">
+                  <h4 className="mb-1 text-sm font-semibold tracking-wider text-rose-500 uppercase">
+                    {t("dashboard.closureReason")}
+                  </h4>
+                  <p className="text-sm text-zinc-700 italic dark:text-zinc-300">
+                    {ticket.closure_reason}
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -210,7 +253,7 @@ export default function TicketDetail({
 
           {/* Attachments */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
+            <h3 className="text-sm font-semibold tracking-wider text-zinc-400 uppercase">
               Adjuntos
             </h3>
             <AttachmentManager
@@ -221,7 +264,7 @@ export default function TicketDetail({
 
           {/* Comment thread + form */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
+            <h3 className="text-sm font-semibold tracking-wider text-zinc-400 uppercase">
               {t("common.comments")}
             </h3>
             <CommentThread comments={comments} />
@@ -236,38 +279,62 @@ export default function TicketDetail({
         <div className="space-y-6">
           <Card className="border-zinc-200 bg-white/50 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/50">
             <CardHeader>
-              <CardTitle className="text-lg font-bold">{t("common.actions")}</CardTitle>
+              <CardTitle className="text-lg font-bold">
+                {t("common.actions")}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Status Selector */}
               <div className="space-y-2">
-                <Label htmlFor="status" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{t("dashboard.ticketStatus")}</Label>
+                <Label
+                  htmlFor="status"
+                  className="text-xs font-semibold tracking-wider text-zinc-400 uppercase"
+                >
+                  {t("dashboard.ticketStatus")}
+                </Label>
                 <Select
                   value={ticket.status}
                   onValueChange={handleStatusChange}
                   disabled={isUpdating}
                 >
-                  <SelectTrigger id="status" className="bg-white dark:bg-zinc-900">
+                  <SelectTrigger
+                    id="status"
+                    className="bg-white dark:bg-zinc-900"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="open">{statusLabel("open")}</SelectItem>
-                    <SelectItem value="in_progress">{statusLabel("in_progress")}</SelectItem>
-                    <SelectItem value="resolved">{statusLabel("resolved")}</SelectItem>
-                    <SelectItem value="closed">{statusLabel("closed")}</SelectItem>
+                    <SelectItem value="in_progress">
+                      {statusLabel("in_progress")}
+                    </SelectItem>
+                    <SelectItem value="resolved">
+                      {statusLabel("resolved")}
+                    </SelectItem>
+                    <SelectItem value="closed">
+                      {statusLabel("closed")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Category Selector */}
               <div className="space-y-2">
-                <Label htmlFor="category" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{t("dashboard.ticketCategory")}</Label>
+                <Label
+                  htmlFor="category"
+                  className="text-xs font-semibold tracking-wider text-zinc-400 uppercase"
+                >
+                  {t("dashboard.ticketCategory")}
+                </Label>
                 <Select
                   value={ticket.category_id}
                   onValueChange={handleCategoryChange}
                   disabled={isUpdating}
                 >
-                  <SelectTrigger id="category" className="bg-white dark:bg-zinc-900">
+                  <SelectTrigger
+                    id="category"
+                    className="bg-white dark:bg-zinc-900"
+                  >
                     <SelectValue placeholder={t("common.uncategorized")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -282,17 +349,27 @@ export default function TicketDetail({
 
               {/* Assignee Selector */}
               <div className="space-y-2">
-                <Label htmlFor="assignee" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{t("dashboard.assignedStaff")}</Label>
+                <Label
+                  htmlFor="assignee"
+                  className="text-xs font-semibold tracking-wider text-zinc-400 uppercase"
+                >
+                  {t("dashboard.assignedStaff")}
+                </Label>
                 <Select
                   value={ticket.assigned_to || "unassigned"}
                   onValueChange={handleAssigneeChange}
                   disabled={isUpdating}
                 >
-                  <SelectTrigger id="assignee" className="bg-white dark:bg-zinc-900">
+                  <SelectTrigger
+                    id="assignee"
+                    className="bg-white dark:bg-zinc-900"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">{t("common.unassigned")}</SelectItem>
+                    <SelectItem value="unassigned">
+                      {t("common.unassigned")}
+                    </SelectItem>
                     {staffUsers.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.display_name || user.email}
@@ -303,21 +380,34 @@ export default function TicketDetail({
               </div>
 
               {/* Sidebar Info Summary */}
-              <div className="pt-4 border-t border-zinc-100 space-y-3 text-xs text-zinc-500 dark:border-zinc-900">
+              <div className="space-y-3 border-t border-zinc-100 pt-4 text-xs text-zinc-500 dark:border-zinc-900">
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> {t("common.created")}:</span>
-                  <span className="font-medium">{formatDateTime(ticket.created_at)}</span>
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5" /> {t("common.created")}:
+                  </span>
+                  <span className="font-medium">
+                    {formatDateTime(ticket.created_at)}
+                  </span>
                 </div>
                 {ticket.resolved_at && (
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5"><CheckCircle className="h-3.5 w-3.5" /> {t("common.resolved")}:</span>
-                    <span className="font-medium">{formatDateTime(ticket.resolved_at)}</span>
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle className="h-3.5 w-3.5" />{" "}
+                      {t("common.resolved")}:
+                    </span>
+                    <span className="font-medium">
+                      {formatDateTime(ticket.resolved_at)}
+                    </span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> {t("common.assignee")}</span>
+                  <span className="flex items-center gap-1.5">
+                    <User className="h-3.5 w-3.5" /> {t("common.assignee")}
+                  </span>
                   <span className="font-medium">
-                    {ticket.assignee?.display_name || ticket.assignee?.email || t("common.unassigned")}
+                    {ticket.assignee?.display_name ||
+                      ticket.assignee?.email ||
+                      t("common.unassigned")}
                   </span>
                 </div>
               </div>
@@ -353,7 +443,11 @@ export default function TicketDetail({
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isUpdating}>
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              disabled={isUpdating}
+            >
               {t("common.cancel")}
             </Button>
             <Button onClick={submitClosure} disabled={isUpdating}>

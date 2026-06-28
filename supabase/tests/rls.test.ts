@@ -100,7 +100,7 @@ describe.skipIf(!runIntegration)("RLS Policies — 001_auth_phase", () => {
     const clientA = await clientAs("clienta@test.local", "TestPass1!");
     const { data } = await clientA.from("tickets").select("*");
     const clientBTickets = data?.filter(
-      (t) => t.email === "clientb@test.local"
+      (t) => t.email === "clientb@test.local",
     );
     expect(clientBTickets).toHaveLength(0);
   });
@@ -189,7 +189,13 @@ describe.skipIf(!runIntegration)("RLS Policies — comments", () => {
     // Ticket owned by clientA
     const { data: ticketA } = await admin
       .from("tickets")
-      .insert({ email: "comments-clienta@test.local", subject: "ClientA ticket", name: "ClientA", body: "test body for comments", category_id: cat.id })
+      .insert({
+        email: "comments-clienta@test.local",
+        subject: "ClientA ticket",
+        name: "ClientA",
+        body: "test body for comments",
+        category_id: cat.id,
+      })
       .select()
       .single();
     ownedTicketId = ticketA.id;
@@ -198,7 +204,13 @@ describe.skipIf(!runIntegration)("RLS Policies — comments", () => {
     // Ticket owned by clientB (not clientA)
     const { data: ticketB } = await admin
       .from("tickets")
-      .insert({ email: "comments-clientb@test.local", subject: "ClientB ticket", name: "ClientB", body: "test body for comments", category_id: cat.id })
+      .insert({
+        email: "comments-clientb@test.local",
+        subject: "ClientB ticket",
+        name: "ClientB",
+        body: "test body for comments",
+        category_id: cat.id,
+      })
       .select()
       .single();
     otherTicketId = ticketB.id;
@@ -211,7 +223,10 @@ describe.skipIf(!runIntegration)("RLS Policies — comments", () => {
   }
 
   it("Staff can INSERT a public comment", async () => {
-    const staffClient = await clientAs("comments-admin@test.local", "TestPass1!");
+    const staffClient = await clientAs(
+      "comments-admin@test.local",
+      "TestPass1!",
+    );
     const { error } = await staffClient.from("comments").insert({
       ticket_id: ticketId,
       author_id: adminUserId,
@@ -222,7 +237,10 @@ describe.skipIf(!runIntegration)("RLS Policies — comments", () => {
   });
 
   it("Staff can INSERT an internal comment", async () => {
-    const staffClient = await clientAs("comments-admin@test.local", "TestPass1!");
+    const staffClient = await clientAs(
+      "comments-admin@test.local",
+      "TestPass1!",
+    );
     const { error } = await staffClient.from("comments").insert({
       ticket_id: ticketId,
       author_id: adminUserId,
@@ -233,7 +251,10 @@ describe.skipIf(!runIntegration)("RLS Policies — comments", () => {
   });
 
   it("Staff can SELECT all comments (public and internal)", async () => {
-    const staffClient = await clientAs("comments-admin@test.local", "TestPass1!");
+    const staffClient = await clientAs(
+      "comments-admin@test.local",
+      "TestPass1!",
+    );
     const { data, error } = await staffClient
       .from("comments")
       .select("*")
@@ -296,7 +317,10 @@ describe.skipIf(!runIntegration)("RLS Policies — comments", () => {
   });
 
   it("INSERT without author_id fails NOT NULL constraint", async () => {
-    const staffClient = await clientAs("comments-admin@test.local", "TestPass1!");
+    const staffClient = await clientAs(
+      "comments-admin@test.local",
+      "TestPass1!",
+    );
     const { error } = await staffClient.from("comments").insert({
       ticket_id: ticketId,
       body: "Missing author_id",
@@ -318,7 +342,10 @@ describe.skipIf(!runIntegration)("RLS Policies — comments", () => {
       .select()
       .single();
 
-    const staffClient = await clientAs("comments-admin@test.local", "TestPass1!");
+    const staffClient = await clientAs(
+      "comments-admin@test.local",
+      "TestPass1!",
+    );
     const { data: updated, error } = await staffClient
       .from("comments")
       .update({ body: "Attempted edit" })
@@ -343,7 +370,10 @@ describe.skipIf(!runIntegration)("RLS Policies — comments", () => {
       .select()
       .single();
 
-    const staffClient = await clientAs("comments-admin@test.local", "TestPass1!");
+    const staffClient = await clientAs(
+      "comments-admin@test.local",
+      "TestPass1!",
+    );
     const { data: deleted, error } = await staffClient
       .from("comments")
       .delete()

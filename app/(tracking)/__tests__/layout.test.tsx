@@ -69,7 +69,7 @@ describe("TrackingLayout", () => {
     } as never);
 
     await expect(
-      TrackingLayout({ children: <div>child</div> })
+      TrackingLayout({ children: <div>child</div> }),
     ).rejects.toThrow("REDIRECT:/dashboard");
   });
 
@@ -77,7 +77,13 @@ describe("TrackingLayout", () => {
     mockCreateClient.mockResolvedValue({
       auth: {
         getClaims: vi.fn().mockResolvedValue({
-          data: { claims: { app_role: "client", sub: "client-1", email: "client@example.com" } },
+          data: {
+            claims: {
+              app_role: "client",
+              sub: "client-1",
+              email: "client@example.com",
+            },
+          },
         }),
       },
     } as never);

@@ -61,7 +61,8 @@ describe.skipIf(!runIntegration)(
         email: TEST_ADMIN_EMAIL,
         password: TEST_ADMIN_PASSWORD,
       });
-      if (signInErr) throw new Error(`Staff sign-in failed: ${signInErr.message}`);
+      if (signInErr)
+        throw new Error(`Staff sign-in failed: ${signInErr.message}`);
 
       // Seed a category (required FK)
       const { data: cat, error: catErr } = await staffClient
@@ -85,17 +86,22 @@ describe.skipIf(!runIntegration)(
         })
         .select()
         .single();
-      if (ticketErr) throw new Error(`Seed ticket failed: ${ticketErr.message}`);
+      if (ticketErr)
+        throw new Error(`Seed ticket failed: ${ticketErr.message}`);
       ticketId = ticket.id;
     });
 
     afterAll(async () => {
       // Clean up in dependency order: ticket → category → user
-      if (ticketId) await staffClient.from("tickets").delete().eq("id", ticketId);
-      if (categoryId) await staffClient.from("categories").delete().eq("id", categoryId);
+      if (ticketId)
+        await staffClient.from("tickets").delete().eq("id", ticketId);
+      if (categoryId)
+        await staffClient.from("categories").delete().eq("id", categoryId);
       if (TEST_ADMIN_EMAIL) {
         const { data: users } = await serviceAdmin.auth.admin.listUsers();
-        const testUser = users?.users?.find((u) => u.email === TEST_ADMIN_EMAIL);
+        const testUser = users?.users?.find(
+          (u) => u.email === TEST_ADMIN_EMAIL,
+        );
         if (testUser) await serviceAdmin.auth.admin.deleteUser(testUser.id);
       }
     });
@@ -150,7 +156,10 @@ describe.skipIf(!runIntegration)(
       // Transition: open → closed (requires closure_reason per schema constraint)
       await staffClient
         .from("tickets")
-        .update({ status: "closed", closure_reason: "Test closure for trigger test" })
+        .update({
+          status: "closed",
+          closure_reason: "Test closure for trigger test",
+        })
         .eq("id", ticketId);
 
       const { data, error } = await staffClient
@@ -164,5 +173,5 @@ describe.skipIf(!runIntegration)(
       expect(data!.resolved_at).not.toBeNull();
       expect(Number.isNaN(new Date(data!.resolved_at).getTime())).toBe(false);
     });
-  }
+  },
 );

@@ -139,7 +139,7 @@ export async function getClientTickets(): Promise<ClientTicketListItem[]> {
       ticket,
       commentsByTicket.get(ticket.id) ?? [],
       attachmentsByTicket.get(ticket.id) ?? [],
-      userId
+      userId,
     );
     const lastViewedAt = viewsByTicket.get(ticket.id) ?? null;
 
@@ -162,7 +162,7 @@ export async function markTicketViewed(ticketId: string): Promise<void> {
       ticket_id: ticketId,
       last_viewed_at: new Date().toISOString(),
     },
-    { onConflict: "user_id,ticket_id" }
+    { onConflict: "user_id,ticket_id" },
   );
 
   if (error) {

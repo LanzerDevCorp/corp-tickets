@@ -68,7 +68,9 @@ export default function ClientCommentForm({
     const bodyCheck = CommentSubmitSchema.shape.body.safeParse(data.body);
     if (!bodyCheck.success) {
       form.setError("body", {
-        message: bodyCheck.error.issues[0]?.message ?? t("validation.invalidCommentData"),
+        message:
+          bodyCheck.error.issues[0]?.message ??
+          t("validation.invalidCommentData"),
       });
       return;
     }
@@ -143,7 +145,9 @@ export default function ClientCommentForm({
         />
 
         {(ccParseError || rootError) && (
-          <p className="mb-2 text-xs text-rose-500">{ccParseError ?? rootError}</p>
+          <p className="mb-2 text-xs text-rose-500">
+            {ccParseError ?? rootError}
+          </p>
         )}
 
         <div className="flex justify-end">
@@ -151,12 +155,12 @@ export default function ClientCommentForm({
             type="submit"
             form={formId}
             disabled={
-              disabled ||
-              !form.formState.isValid ||
-              form.formState.isSubmitting
+              disabled || !form.formState.isValid || form.formState.isSubmitting
             }
           >
-            {form.formState.isSubmitting ? t("common.posting") : t("tracking.postComment")}
+            {form.formState.isSubmitting
+              ? t("common.posting")
+              : t("tracking.postComment")}
           </Button>
         </div>
       </form>

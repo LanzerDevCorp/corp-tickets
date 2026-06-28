@@ -20,7 +20,7 @@ type State = { error: string | null; submitted?: boolean };
 
 async function resetPasswordAction(
   _prev: State,
-  formData: FormData
+  formData: FormData,
 ): Promise<State> {
   const email = formData.get("email") as string;
   await resetPassword(email);
@@ -41,11 +41,15 @@ export function ForgotPasswordForm({
       <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">{t("auth.checkEmailTitle")}</CardTitle>
+            <CardTitle className="text-2xl">
+              {t("auth.checkEmailTitle")}
+            </CardTitle>
             <CardDescription>{t("auth.checkEmailDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">{t("auth.checkEmailBody")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("auth.checkEmailBody")}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -56,8 +60,12 @@ export function ForgotPasswordForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">{t("auth.resetPasswordTitle")}</CardTitle>
-          <CardDescription>{t("auth.resetPasswordDescription")}</CardDescription>
+          <CardTitle className="text-2xl">
+            {t("auth.resetPasswordTitle")}
+          </CardTitle>
+          <CardDescription>
+            {t("auth.resetPasswordDescription")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form action={formAction}>

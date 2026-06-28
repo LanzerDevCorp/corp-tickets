@@ -24,17 +24,17 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 
 function interpolate(
   template: string,
-  params?: Record<string, string | number>
+  params?: Record<string, string | number>,
 ): string {
   if (!params) return template;
   return template.replace(/\{(\w+)\}/g, (_, key: string) =>
-    params[key] !== undefined ? String(params[key]) : `{${key}}`
+    params[key] !== undefined ? String(params[key]) : `{${key}}`,
   );
 }
 
 export function t(
   path: TranslationPath,
-  params?: Record<string, string | number>
+  params?: Record<string, string | number>,
 ): string {
   const value = getNestedValue(es as Record<string, unknown>, path);
   if (typeof value === "string") {

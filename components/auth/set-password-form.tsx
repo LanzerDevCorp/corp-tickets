@@ -83,13 +83,19 @@ export function SetPasswordForm({ next, hasPassword = false }: Props) {
               onChange={(event) => setPassword(event.target.value)}
               disabled={pending !== null}
             />
-            <p className="text-xs text-muted-foreground">Mínimo 8 caracteres.</p>
+            <p className="text-xs text-muted-foreground">
+              Mínimo 8 caracteres.
+            </p>
           </div>
 
           {error && <p className="text-sm text-red-500">{error}</p>}
 
           <div className="flex flex-col gap-3">
-            <Button type="submit" className="w-full" disabled={pending !== null}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={pending !== null}
+            >
               {pending === "save"
                 ? "Guardando…"
                 : hasPassword

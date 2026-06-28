@@ -19,7 +19,11 @@ const mockCreateClient = vi.mocked(createClient);
 
 function makeWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 }
 
@@ -44,7 +48,7 @@ function buildChannelMocks() {
     (_type: string, filter: { event: string }, cb: () => void) => {
       callbacks[filter.event] = cb;
       return channelObj;
-    }
+    },
   );
 
   // .subscribe() returns the channel so it can be passed to removeChannel.
@@ -57,7 +61,14 @@ function buildChannelMocks() {
     removeChannel: mockRemoveChannel,
   } as any);
 
-  return { channelObj, mockChannel, mockSubscribe, mockOn, mockRemoveChannel, callbacks };
+  return {
+    channelObj,
+    mockChannel,
+    mockSubscribe,
+    mockOn,
+    mockRemoveChannel,
+    callbacks,
+  };
 }
 
 // --------------------------------------------------------------------------
@@ -70,7 +81,9 @@ describe("useTicketQueueRealtime", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
     invalidateQueriesSpy = vi.spyOn(queryClient, "invalidateQueries");
   });
 
@@ -95,7 +108,9 @@ describe("useTicketQueueRealtime", () => {
     expect(callbacks["INSERT"]).toBeDefined();
     callbacks["INSERT"]!();
 
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: ["tickets"] });
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+      queryKey: ["tickets"],
+    });
   });
 
   it("UPDATE event triggers invalidateQueries with partial key ['tickets']", () => {
@@ -108,7 +123,9 @@ describe("useTicketQueueRealtime", () => {
     expect(callbacks["UPDATE"]).toBeDefined();
     callbacks["UPDATE"]!();
 
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: ["tickets"] });
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+      queryKey: ["tickets"],
+    });
   });
 
   it("calls supabase.removeChannel with the channel on unmount", () => {

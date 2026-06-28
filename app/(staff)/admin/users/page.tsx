@@ -21,11 +21,13 @@ async function UsersContent() {
 export default function UsersPage() {
   return (
     <main className="flex min-h-svh flex-col p-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t("admin.users")}</h1>
         <InviteUserDialog />
       </div>
-      <Suspense fallback={<p className="text-muted-foreground">{t("admin.loading")}</p>}>
+      <Suspense
+        fallback={<p className="text-muted-foreground">{t("admin.loading")}</p>}
+      >
         <UsersContent />
       </Suspense>
     </main>

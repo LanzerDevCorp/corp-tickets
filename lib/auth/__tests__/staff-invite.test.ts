@@ -17,8 +17,8 @@ describe("isPendingStaffInvite", () => {
     expect(
       isPendingStaffInvite(
         { invited_at: "2026-01-01T00:00:00Z", email_confirmed_at: undefined },
-        "admin"
-      )
+        "admin",
+      ),
     ).toBe(true);
   });
 
@@ -29,8 +29,8 @@ describe("isPendingStaffInvite", () => {
           invited_at: "2026-01-01T00:00:00Z",
           email_confirmed_at: "2026-01-02T00:00:00Z",
         },
-        "it"
-      )
+        "it",
+      ),
     ).toBe(false);
   });
 
@@ -38,8 +38,8 @@ describe("isPendingStaffInvite", () => {
     expect(
       isPendingStaffInvite(
         { invited_at: undefined, email_confirmed_at: undefined },
-        "client"
-      )
+        "client",
+      ),
     ).toBe(false);
   });
 

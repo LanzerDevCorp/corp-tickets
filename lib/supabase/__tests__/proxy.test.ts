@@ -86,7 +86,10 @@ describe("updateSession — unauthenticated user", () => {
 describe("updateSession — client role", () => {
   it("redirects client to /403 when accessing staff-only /dashboard", async () => {
     mockCreateServerClient.mockReturnValue(
-      makeSupabaseMock({ app_role: "client", email: "client@test.com" }) as never
+      makeSupabaseMock({
+        app_role: "client",
+        email: "client@test.com",
+      }) as never,
     );
 
     const req = makeRequest("/dashboard");
@@ -100,7 +103,7 @@ describe("updateSession — client role", () => {
 describe("updateSession — admin role", () => {
   it("allows admin to access /dashboard", async () => {
     mockCreateServerClient.mockReturnValue(
-      makeSupabaseMock({ app_role: "admin", email: "admin@corp.com" }) as never
+      makeSupabaseMock({ app_role: "admin", email: "admin@corp.com" }) as never,
     );
 
     const req = makeRequest("/dashboard");
@@ -113,7 +116,7 @@ describe("updateSession — admin role", () => {
 describe("updateSession — authenticated user on /auth/login", () => {
   it("redirects authenticated admin away from /auth/login to role default", async () => {
     mockCreateServerClient.mockReturnValue(
-      makeSupabaseMock({ app_role: "admin", email: "admin@corp.com" }) as never
+      makeSupabaseMock({ app_role: "admin", email: "admin@corp.com" }) as never,
     );
 
     const req = makeRequest("/auth/login");
@@ -125,7 +128,7 @@ describe("updateSession — authenticated user on /auth/login", () => {
 
   it("allows authenticated client to access /auth/login", async () => {
     mockCreateServerClient.mockReturnValue(
-      makeSupabaseMock({ role: "client", email: "client@corp.com" }) as never
+      makeSupabaseMock({ role: "client", email: "client@corp.com" }) as never,
     );
 
     const req = makeRequest("/auth/login");

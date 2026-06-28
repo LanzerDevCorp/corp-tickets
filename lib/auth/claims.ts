@@ -11,15 +11,11 @@ function parseRole(value: unknown): Role | undefined {
 
 /** Application RBAC role from JWT claims (not the Postgres session role). */
 export function getAppRoleFromClaims(
-  claims: Record<string, unknown> | null | undefined
+  claims: Record<string, unknown> | null | undefined,
 ): Role {
   if (!claims) return "client";
 
   const appMetadata = claims.app_metadata as { role?: unknown } | undefined;
 
-  return (
-    parseRole(claims.app_role) ??
-    parseRole(appMetadata?.role) ??
-    "client"
-  );
+  return parseRole(claims.app_role) ?? parseRole(appMetadata?.role) ?? "client";
 }

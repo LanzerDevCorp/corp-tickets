@@ -18,6 +18,7 @@ A **Client Portal** with three coordinated capabilities:
 ## User Stories
 
 ### Flow 2 — Client Auth
+
 1. As a client who just submitted a ticket, I want to be told (post-submit) that I can set a password for faster future access, so that I understand the option exists without being forced into it.
 2. As a client, I want to set my password only after clicking the magic link sent to my email, so that nobody who merely typed my email into the public form can hijack my account.
 3. As a first-time authenticated client without a password, I want to see a "create password" screen with a clear "skip" option, so that I can opt in or defer without friction.
@@ -29,6 +30,7 @@ A **Client Portal** with three coordinated capabilities:
 9. As a visitor on the public landing page, I want a link to `/portal`, so that I can find the client login.
 
 ### Flow 3 — Client Portal
+
 10. As an unauthenticated visitor to `/track`, I want to be redirected to `/portal`, so that there is one clear front door.
 11. As an authenticated client, I want to see a list of all my tickets (subject, status, created date), so that I can track everything in one place.
 12. As an authenticated client, I want a "new activity" badge on tickets where staff acted since I last looked, so that I know which tickets need my attention.
@@ -37,6 +39,7 @@ A **Client Portal** with three coordinated capabilities:
 15. As an authenticated client with no tickets, I want a clear empty state with a link to the public form, so that I can create my first ticket.
 
 ### Flow 4 — Admin Attachments
+
 16. As a staff member (admin or IT), I want to upload one or more attachments to an existing ticket from the dashboard, so that I can share files with the client.
 17. As a staff member, I want uploaded attachments to be visible to the client on their ticket view, so that sharing actually reaches them.
 18. As a staff member, I want to soft-delete an attachment, so that I can remove a file that was a mistake or no longer relevant.
@@ -47,6 +50,7 @@ A **Client Portal** with three coordinated capabilities:
 ## Implementation Decisions
 
 ### Auth & sessions (Flow 2)
+
 - **A-secure model**: the set-password flow is gated by inbox possession. The public ticket form stays open and unverified, but a real client session is only established by clicking the magic link already sent on ticket creation (`notifyTicketCreated`). No second email. Reuses `establishClientSession()`.
 - The post-ticket screen is **informational only** — it does NOT establish a session. It points the client to their email.
 - **First-access interstitial**: on the first authenticated access where the client has not yet decided, route to `/auth/set-password` (create or skip). Password setting itself uses the existing `supabase.auth.updateUser({ password })` against the live session.
@@ -56,6 +60,7 @@ A **Client Portal** with three coordinated capabilities:
 - Staff (admin/it) landing on `/portal` or `/track` are redirected to `/dashboard` (existing pattern).
 
 ### Portal & list (Flow 3)
+
 - `/track` becomes conditional: no session → redirect to `/portal`; session present (regardless of auth method) → render the ticket list. **One rule: authenticated → list.** Magic-link sessions are full sessions; no artificial per-ticket scoping (RLS already scopes by email, and the inbox owner owns all those tickets).
 - New **`ticket_views`** relation: `(user_id, ticket_id, last_viewed_at)`, written when a client opens `/track/[ticketId]`.
 - **New-activity badge** computed server-side: a ticket shows the badge if any client-visible staff event (public comment, attachment, status change, `resolved_at` change) has a timestamp later than the client's `last_viewed_at` for that ticket, excluding events authored by the client (`author_id`).
@@ -63,6 +68,7 @@ A **Client Portal** with three coordinated capabilities:
 - To minimize cross-flow file contention, the list read should live in a NEW server-action module (e.g., `client-tickets`) rather than extending `app/actions/tickets.ts`.
 
 ### Attachments (Flow 4)
+
 - Staff upload reuses the validation constants (`ALLOWED_MIME`, `MAX_FILES`, `MAX_TOTAL_BYTES`) from `lib/storage/attachments.ts` and registers rows via the service-role path (`registerAttachments` pattern). Storage path convention `tickets/{ticketId}/`.
 - **Soft-delete** reuses the existing `deleted_at` column but must distinguish admin removal from retention expiry. Add a minimal signal (e.g., `deleted_by` or a `deletion_reason`) so the two intents render differently.
 - **Client visibility**: admin-removed attachments are filtered OUT of the client response in `getTicketAttachments`. Retention-expired attachments keep their current "expired ghost" behavior for the client. Staff always see soft-deleted rows greyed.
@@ -72,6 +78,7 @@ A **Client Portal** with three coordinated capabilities:
 - **No email notification** on staff upload — the new-activity badge (Flow 3) is the sole signal. (Diverges deliberately from the public-comment notification pattern to reduce email noise.)
 
 ### Schema changes summary
+
 - `public.users`: password-decision signal column(s) (Flow 2).
 - `ticket_views` table (Flow 3).
 - `ticket_attachments`: admin-deletion signal column, e.g. `deleted_by` (Flow 4).
@@ -89,6 +96,7 @@ A good test here asserts **external behavior at the highest available seam**, no
 - Strict TDD is active (`npm test`): write the behavior test first at the server-action seam, then implement.
 
 ## Out of Scope
+
 - Migrating the new hardcoded Spanish strings into the i18n system (`t()`/`es.*`) — deferred task, tracked separately.
 - Internal (`is_internal`) attachments.
 - Dedicated password-reset email flow.
@@ -102,6 +110,7 @@ A good test here asserts **external behavior at the highest available seam**, no
 Goal: run the plan across multiple agentic tools (Claude Code, Cursor, Antigravity, OpenCode) concurrently. Parallelism is bounded by (a) flow dependencies and (b) shared-file contention.
 
 ### Dependency graph
+
 ```
 Flow 4 (Admin Attachments) ───────────────► fully independent, merge anytime
 Flow 2 (Client Auth) ──┐
@@ -114,25 +123,29 @@ Flow 3 (Client Portal)─┘   (Flow 3 core does NOT need Flow 2 — it runs on 
 - **Flow 2 → integration** is the only true ordering constraint, and it is a small final wiring step.
 
 ### The hard rule HELPS parallelism
+
 Because new UI strings are hardcoded (no `lib/i18n/es.ts` edits), the single biggest shared-file bottleneck is removed. Each agent edits only its own components.
 
 ### Suggested partition (3 concurrent agents + 1 integration pass)
-| Agent / Tool | Scope | Owns (no overlap) |
-|---|---|---|
-| A — Claude Code (Strict TDD, complex auth) | Flow 2 | `/portal`, `/auth/set-password`, post-ticket CTA, password-decision action + migration on `public.users` |
-| B — Cursor (UI-heavy iteration) | Flow 3 | `/track` (list + conditional routing), `client-tickets` action, `ticket_views` migration, `markTicketViewed`; account-menu link stubbed |
-| C — Antigravity / OpenCode (contained, independent) | Flow 4 | attachments action(s), dashboard attachment manager, `ticket_attachments` migration |
-| Integration (any) | Wire Flow 2 entry point into Flow 3 account menu | thin |
+
+| Agent / Tool                                        | Scope                                            | Owns (no overlap)                                                                                                                       |
+| --------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| A — Claude Code (Strict TDD, complex auth)          | Flow 2                                           | `/portal`, `/auth/set-password`, post-ticket CTA, password-decision action + migration on `public.users`                                |
+| B — Cursor (UI-heavy iteration)                     | Flow 3                                           | `/track` (list + conditional routing), `client-tickets` action, `ticket_views` migration, `markTicketViewed`; account-menu link stubbed |
+| C — Antigravity / OpenCode (contained, independent) | Flow 4                                           | attachments action(s), dashboard attachment manager, `ticket_attachments` migration                                                     |
+| Integration (any)                                   | Wire Flow 2 entry point into Flow 3 account menu | thin                                                                                                                                    |
 
 ### Conflict-avoidance rules
+
 - Each agent works on its **own branch / git worktree** off `dev`; merge via PRs (exception-ok; chain if a flow exceeds the 400-line budget).
 - **Do not extend `app/actions/tickets.ts`** for the list — put the client list read in a new module so Flow 2 (which may touch the submit action's post-ticket CTA) and Flow 3 don't collide there.
 - **Migrations**: each flow ships its own migration file with a coordinated, non-colliding timestamp (assign distinct timestamps up front so ordering is deterministic).
-- **`getTicketAttachments`** is owned by Flow 4. Flow 3's ticket view only *reads* its output — no edits to that action from Flow 3.
+- **`getTicketAttachments`** is owned by Flow 4. Flow 3's ticket view only _reads_ its output — no edits to that action from Flow 3.
 - Route trees are disjoint (`/portal`+`/auth/*` vs `/track/*` vs `/dashboard/*`) → safe.
 - No new dependencies expected → `pnpm-lock.yaml` / `package-lock.json` should not conflict; if a flow must add a dep, serialize that lockfile change.
 
 ### Realistic concurrency verdict
+
 - **3-way parallel is achievable** for the bulk of the work (Flows 2, 3-core, 4).
 - Only **two synchronization points** exist: (1) the final integration commit wiring Flow 2 → Flow 3's account menu; (2) deterministic migration-timestamp assignment.
 - Speedup ceiling ≈ the longest single flow (Flow 2 is the heaviest due to auth/security surface) plus the small integration pass — not the sum of all three.

@@ -21,7 +21,7 @@ function isValidEmail(email: string): boolean {
 
 async function findTicketByEmailAndReference(
   email: string,
-  ticketRef: string
+  ticketRef: string,
 ): Promise<{ id: string; email: string } | null> {
   const { data, error } = await supabaseAdmin
     .from("tickets")
@@ -39,7 +39,7 @@ async function findTicketByEmailAndReference(
 
 export async function accessTicketWithReference(
   email: string,
-  ticketRef: string
+  ticketRef: string,
 ): Promise<AccessResult> {
   const trimmedEmail = email.trim();
   const trimmedRef = ticketRef.trim();
@@ -67,7 +67,7 @@ export async function accessTicketWithReference(
   const sessionError = await establishClientSession(
     supabase,
     ticket.email,
-    redirectTo
+    redirectTo,
   );
 
   if (sessionError) {

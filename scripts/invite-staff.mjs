@@ -28,7 +28,7 @@ const deleteIfExists = flags.has("--delete-if-exists");
 
 if (!email) {
   console.error(
-    "Usage: node --env-file=.env scripts/invite-staff.mjs <email> [admin|it] [--delete-if-exists]"
+    "Usage: node --env-file=.env scripts/invite-staff.mjs <email> [admin|it] [--delete-if-exists]",
   );
   process.exit(1);
 }
@@ -43,13 +43,15 @@ const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
 
 if (!url || !serviceKey) {
-  console.error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.");
+  console.error(
+    "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.",
+  );
   process.exit(1);
 }
 
 if (!siteUrl) {
   console.error(
-    "Missing NEXT_PUBLIC_SITE_URL. Set it to your app URL (e.g. https://corp-tickets.com.app)."
+    "Missing NEXT_PUBLIC_SITE_URL. Set it to your app URL (e.g. https://corp-tickets.com.app).",
   );
   process.exit(1);
 }
@@ -61,10 +63,13 @@ const admin = createClient(url, serviceKey, {
 async function findUserByEmail(targetEmail) {
   let page = 1;
   while (true) {
-    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+    const { data, error } = await admin.auth.admin.listUsers({
+      page,
+      perPage: 1000,
+    });
     if (error) throw error;
     const match = data.users.find(
-      (u) => u.email?.toLowerCase() === targetEmail.toLowerCase()
+      (u) => u.email?.toLowerCase() === targetEmail.toLowerCase(),
     );
     if (match) return match;
     if (data.users.length < 1000) return null;
@@ -79,7 +84,7 @@ async function main() {
     if (!deleteIfExists) {
       console.error(
         `User ${email} already exists (id: ${existing.id}).\n` +
-          "Delete them in Supabase Dashboard or pass --delete-if-exists."
+          "Delete them in Supabase Dashboard or pass --delete-if-exists.",
       );
       process.exit(1);
     }
@@ -95,9 +100,12 @@ async function main() {
   });
   if (error) throw error;
 
-  const { error: metaError } = await admin.auth.admin.updateUserById(data.user.id, {
-    app_metadata: { role },
-  });
+  const { error: metaError } = await admin.auth.admin.updateUserById(
+    data.user.id,
+    {
+      app_metadata: { role },
+    },
+  );
   if (metaError) throw metaError;
 
   const { error: roleError } = await admin

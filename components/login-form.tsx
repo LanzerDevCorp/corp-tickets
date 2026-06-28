@@ -21,7 +21,9 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const [state, formAction, isPending] = useActionState(loginUser, { error: null });
+  const [state, formAction, isPending] = useActionState(loginUser, {
+    error: null,
+  });
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -69,7 +71,9 @@ export function LoginForm({
                     className="absolute top-1/2 right-1 -translate-y-1/2 text-muted-foreground"
                     onClick={() => setShowPassword((visible) => !visible)}
                     aria-label={
-                      showPassword ? t("common.hidePassword") : t("common.showPassword")
+                      showPassword
+                        ? t("common.hidePassword")
+                        : t("common.showPassword")
                     }
                   >
                     {showPassword ? <EyeOff /> : <Eye />}

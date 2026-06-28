@@ -57,7 +57,9 @@ function makeServerClient(options: { claims?: any; queryResult?: any }) {
   const queryChain: any = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
-    single: vi.fn().mockResolvedValue(options.queryResult ?? { data: null, error: null }),
+    single: vi
+      .fn()
+      .mockResolvedValue(options.queryResult ?? { data: null, error: null }),
   };
   return {
     auth: {
@@ -70,13 +72,27 @@ function makeServerClient(options: { claims?: any; queryResult?: any }) {
 }
 
 const VALID_FILES = [
-  { storage_path: "tickets/t1/f1-a.pdf", filename: "a.pdf", mime_type: "application/pdf", size_bytes: 1024 },
-  { storage_path: "tickets/t1/f2-b.png", filename: "b.png", mime_type: "image/png", size_bytes: 2048 },
+  {
+    storage_path: "tickets/t1/f1-a.pdf",
+    filename: "a.pdf",
+    mime_type: "application/pdf",
+    size_bytes: 1024,
+  },
+  {
+    storage_path: "tickets/t1/f2-b.png",
+    filename: "b.png",
+    mime_type: "image/png",
+    size_bytes: 2048,
+  },
 ];
 
 const STAFF_ADMIN_CLAIMS = { app_role: "admin", sub: "admin-1" };
 const STAFF_IT_CLAIMS = { app_role: "it", sub: "it-1" };
-const CLIENT_CLAIMS = { app_role: "client", sub: "client-1", email: "client@test.com" };
+const CLIENT_CLAIMS = {
+  app_role: "client",
+  sub: "client-1",
+  email: "client@test.com",
+};
 
 const VALID_FILE_METAS = [
   { filename: "a.pdf", mime_type: "application/pdf", size_bytes: 1024 },
@@ -84,9 +100,7 @@ const VALID_FILE_METAS = [
 ];
 
 function mockStaffSession(claims: Record<string, unknown>) {
-  mockCreateClient.mockResolvedValue(
-    makeServerClient({ claims }) as any
-  );
+  mockCreateClient.mockResolvedValue(makeServerClient({ claims }) as any);
 }
 
 // ---------------------------------------------------------------------------
@@ -114,8 +128,18 @@ describe("registerAttachments", () => {
   it("returns error when total size exceeds 50 MiB", async () => {
     const MB_26 = 26 * 1024 * 1024;
     const twoLargeFiles = [
-      { storage_path: "tickets/t1/f1-a.pdf", filename: "a.pdf", mime_type: "application/pdf", size_bytes: MB_26 },
-      { storage_path: "tickets/t1/f2-b.pdf", filename: "b.pdf", mime_type: "application/pdf", size_bytes: MB_26 },
+      {
+        storage_path: "tickets/t1/f1-a.pdf",
+        filename: "a.pdf",
+        mime_type: "application/pdf",
+        size_bytes: MB_26,
+      },
+      {
+        storage_path: "tickets/t1/f2-b.pdf",
+        filename: "b.pdf",
+        mime_type: "application/pdf",
+        size_bytes: MB_26,
+      },
     ];
 
     const result = await registerAttachments("ticket-1", twoLargeFiles);
@@ -127,7 +151,12 @@ describe("registerAttachments", () => {
 
   it("returns error when a file has a disallowed MIME type", async () => {
     const badFiles = [
-      { storage_path: "tickets/t1/f1-evil.exe", filename: "evil.exe", mime_type: "application/octet-stream", size_bytes: 100 },
+      {
+        storage_path: "tickets/t1/f1-evil.exe",
+        filename: "evil.exe",
+        mime_type: "application/octet-stream",
+        size_bytes: 100,
+      },
     ];
 
     const result = await registerAttachments("ticket-1", badFiles);
@@ -149,7 +178,7 @@ describe("registerAttachments", () => {
       expect.arrayContaining([
         expect.objectContaining({ ticket_id: "ticket-1", filename: "a.pdf" }),
         expect.objectContaining({ ticket_id: "ticket-1", filename: "b.png" }),
-      ])
+      ]),
     );
   });
 
@@ -223,7 +252,9 @@ describe("rollbackTicket", () => {
   });
 
   it("returns storage list error if listing fails", async () => {
-    const mockList = vi.fn().mockResolvedValue({ data: null, error: { message: "list error" } });
+    const mockList = vi
+      .fn()
+      .mockResolvedValue({ data: null, error: { message: "list error" } });
     const mockRemove = vi.fn();
     mockStorageFrom.mockReturnValue({ list: mockList, remove: mockRemove });
 
@@ -239,7 +270,9 @@ describe("rollbackTicket", () => {
       data: [{ name: "f1-a.pdf" }],
       error: null,
     });
-    const mockRemove = vi.fn().mockResolvedValue({ error: { message: "storage error" } });
+    const mockRemove = vi
+      .fn()
+      .mockResolvedValue({ error: { message: "storage error" } });
     mockStorageFrom.mockReturnValue({ list: mockList, remove: mockRemove });
 
     const result = await rollbackTicket("ticket-rollback");
@@ -261,18 +294,26 @@ describe("getTicketAttachments", () => {
     mockCreateClient.mockResolvedValue(
       makeServerClient({
         claims: { app_role: "it", sub: "staff-1" },
-      }) as any
+      }) as any,
     );
 
     const rows = [
-      { id: "att-1", filename: "a.pdf", size_bytes: 1024, storage_path: "tickets/t1/f1-a.pdf", deleted_at: null, deleted_by: null },
+      {
+        id: "att-1",
+        filename: "a.pdf",
+        size_bytes: 1024,
+        storage_path: "tickets/t1/f1-a.pdf",
+        deleted_at: null,
+        deleted_by: null,
+      },
     ];
 
     const attachmentsQueryChain: any = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       is: vi.fn().mockReturnThis(),
-      then: (res: any) => Promise.resolve({ data: rows, error: null }).then(res),
+      then: (res: any) =>
+        Promise.resolve({ data: rows, error: null }).then(res),
     };
     mockAdminFrom.mockReturnValue(attachmentsQueryChain);
 
@@ -295,18 +336,26 @@ describe("getTicketAttachments", () => {
     mockCreateClient.mockResolvedValue(
       makeServerClient({
         claims: { app_role: "it", sub: "staff-1" },
-      }) as any
+      }) as any,
     );
 
     const rows = [
-      { id: "att-2", filename: "b.pdf", size_bytes: 512, storage_path: "tickets/t1/f2-b.pdf", deleted_at: "2026-01-01T00:00:00Z", deleted_by: null },
+      {
+        id: "att-2",
+        filename: "b.pdf",
+        size_bytes: 512,
+        storage_path: "tickets/t1/f2-b.pdf",
+        deleted_at: "2026-01-01T00:00:00Z",
+        deleted_by: null,
+      },
     ];
 
     const attachmentsQueryChain: any = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       is: vi.fn().mockReturnThis(),
-      then: (res: any) => Promise.resolve({ data: rows, error: null }).then(res),
+      then: (res: any) =>
+        Promise.resolve({ data: rows, error: null }).then(res),
     };
     mockAdminFrom.mockReturnValue(attachmentsQueryChain);
     mockStorageFrom.mockReturnValue({ createSignedUrl: vi.fn() });
@@ -329,18 +378,41 @@ describe("getTicketAttachments", () => {
     });
     mockCreateClient.mockResolvedValue(serverClient as any);
 
-    await expect(getTicketAttachments("ticket-1")).rejects.toThrow(/autorizado|authorized/i);
+    await expect(getTicketAttachments("ticket-1")).rejects.toThrow(
+      /autorizado|authorized/i,
+    );
   });
 
   it("excludes admin-removed attachments for clients but keeps retention-expired ghosts", async () => {
     mockCreateClient.mockResolvedValue(
-      makeServerClient({ claims: CLIENT_CLAIMS }) as any
+      makeServerClient({ claims: CLIENT_CLAIMS }) as any,
     );
 
     const rows = [
-      { id: "att-active", filename: "active.pdf", size_bytes: 100, storage_path: "tickets/t1/active.pdf", deleted_at: null, deleted_by: null },
-      { id: "att-expired", filename: "expired.pdf", size_bytes: 100, storage_path: "tickets/t1/expired.pdf", deleted_at: "2026-01-01T00:00:00Z", deleted_by: null },
-      { id: "att-removed", filename: "removed.pdf", size_bytes: 100, storage_path: "tickets/t1/removed.pdf", deleted_at: "2026-02-01T00:00:00Z", deleted_by: "staff-1" },
+      {
+        id: "att-active",
+        filename: "active.pdf",
+        size_bytes: 100,
+        storage_path: "tickets/t1/active.pdf",
+        deleted_at: null,
+        deleted_by: null,
+      },
+      {
+        id: "att-expired",
+        filename: "expired.pdf",
+        size_bytes: 100,
+        storage_path: "tickets/t1/expired.pdf",
+        deleted_at: "2026-01-01T00:00:00Z",
+        deleted_by: null,
+      },
+      {
+        id: "att-removed",
+        filename: "removed.pdf",
+        size_bytes: 100,
+        storage_path: "tickets/t1/removed.pdf",
+        deleted_at: "2026-02-01T00:00:00Z",
+        deleted_by: "staff-1",
+      },
     ];
 
     mockAdminFrom.mockImplementation((table: string) => {
@@ -348,13 +420,17 @@ describe("getTicketAttachments", () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({ data: { email: "client@test.com" }, error: null }),
+          single: vi.fn().mockResolvedValue({
+            data: { email: "client@test.com" },
+            error: null,
+          }),
         };
       }
       return {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        then: (res: any) => Promise.resolve({ data: rows, error: null }).then(res),
+        then: (res: any) =>
+          Promise.resolve({ data: rows, error: null }).then(res),
       };
     });
 
@@ -369,22 +445,32 @@ describe("getTicketAttachments", () => {
     expect(result).toHaveLength(2);
     expect(result.find((a) => a.id === "att-removed")).toBeUndefined();
     expect(result.find((a) => a.id === "att-expired")?.expired).toBe(true);
-    expect(result.find((a) => a.id === "att-active")?.url).toBe("https://signed.url/active");
+    expect(result.find((a) => a.id === "att-active")?.url).toBe(
+      "https://signed.url/active",
+    );
   });
 
   it("marks admin-removed attachments as removedByAdmin for staff", async () => {
     mockCreateClient.mockResolvedValue(
-      makeServerClient({ claims: STAFF_IT_CLAIMS }) as any
+      makeServerClient({ claims: STAFF_IT_CLAIMS }) as any,
     );
 
     const rows = [
-      { id: "att-removed", filename: "removed.pdf", size_bytes: 100, storage_path: "tickets/t1/removed.pdf", deleted_at: "2026-02-01T00:00:00Z", deleted_by: "staff-1" },
+      {
+        id: "att-removed",
+        filename: "removed.pdf",
+        size_bytes: 100,
+        storage_path: "tickets/t1/removed.pdf",
+        deleted_at: "2026-02-01T00:00:00Z",
+        deleted_by: "staff-1",
+      },
     ];
 
     const attachmentsQueryChain: any = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      then: (res: any) => Promise.resolve({ data: rows, error: null }).then(res),
+      then: (res: any) =>
+        Promise.resolve({ data: rows, error: null }).then(res),
     };
     mockAdminFrom.mockReturnValue(attachmentsQueryChain);
     mockStorageFrom.mockReturnValue({ createSignedUrl: vi.fn() });
@@ -408,7 +494,9 @@ describe("createStaffUploadUrls", () => {
   it("rejects client callers", async () => {
     mockStaffSession(CLIENT_CLAIMS);
 
-    await expect(createStaffUploadUrls("ticket-1", VALID_FILE_METAS)).rejects.toThrow(/autorizado|authorized/i);
+    await expect(
+      createStaffUploadUrls("ticket-1", VALID_FILE_METAS),
+    ).rejects.toThrow(/autorizado|authorized/i);
     expect(mockStorageFrom).not.toHaveBeenCalled();
   });
 
@@ -416,12 +504,20 @@ describe("createStaffUploadUrls", () => {
     mockStaffSession(STAFF_ADMIN_CLAIMS);
 
     const mockCreateSignedUploadUrl = vi.fn().mockResolvedValue({
-      data: { signedUrl: "https://upload.url", token: "tok-1", path: "tickets/ticket-1/uuid-a.pdf" },
+      data: {
+        signedUrl: "https://upload.url",
+        token: "tok-1",
+        path: "tickets/ticket-1/uuid-a.pdf",
+      },
       error: null,
     });
-    mockStorageFrom.mockReturnValue({ createSignedUploadUrl: mockCreateSignedUploadUrl });
+    mockStorageFrom.mockReturnValue({
+      createSignedUploadUrl: mockCreateSignedUploadUrl,
+    });
 
-    const result = await createStaffUploadUrls("ticket-1", [VALID_FILE_METAS[0]!]);
+    const result = await createStaffUploadUrls("ticket-1", [
+      VALID_FILE_METAS[0]!,
+    ]);
 
     expect(result.error).toBeNull();
     expect(result.urls).toHaveLength(1);
@@ -438,12 +534,20 @@ describe("createStaffUploadUrls", () => {
     mockStaffSession(STAFF_IT_CLAIMS);
 
     const mockCreateSignedUploadUrl = vi.fn().mockResolvedValue({
-      data: { signedUrl: "https://upload.url", token: "tok-2", path: "tickets/ticket-1/uuid-b.png" },
+      data: {
+        signedUrl: "https://upload.url",
+        token: "tok-2",
+        path: "tickets/ticket-1/uuid-b.png",
+      },
       error: null,
     });
-    mockStorageFrom.mockReturnValue({ createSignedUploadUrl: mockCreateSignedUploadUrl });
+    mockStorageFrom.mockReturnValue({
+      createSignedUploadUrl: mockCreateSignedUploadUrl,
+    });
 
-    const result = await createStaffUploadUrls("ticket-1", [VALID_FILE_METAS[1]!]);
+    const result = await createStaffUploadUrls("ticket-1", [
+      VALID_FILE_METAS[1]!,
+    ]);
 
     expect(result.error).toBeNull();
     expect(result.urls).toHaveLength(1);
@@ -475,7 +579,9 @@ describe("registerStaffAttachments", () => {
   it("rejects client callers", async () => {
     mockStaffSession(CLIENT_CLAIMS);
 
-    await expect(registerStaffAttachments("ticket-1", VALID_FILES)).rejects.toThrow(/autorizado|authorized/i);
+    await expect(
+      registerStaffAttachments("ticket-1", VALID_FILES),
+    ).rejects.toThrow(/autorizado|authorized/i);
   });
 
   it("inserts rows for admin on happy path", async () => {
@@ -513,7 +619,9 @@ describe("softDeleteAttachment", () => {
   it("rejects client callers", async () => {
     mockStaffSession(CLIENT_CLAIMS);
 
-    await expect(softDeleteAttachment("att-1")).rejects.toThrow(/autorizado|authorized/i);
+    await expect(softDeleteAttachment("att-1")).rejects.toThrow(
+      /autorizado|authorized/i,
+    );
   });
 
   it("sets deleted_at and deleted_by for admin", async () => {
@@ -530,7 +638,7 @@ describe("softDeleteAttachment", () => {
       expect.objectContaining({
         deleted_by: "admin-1",
         deleted_at: expect.any(String),
-      })
+      }),
     );
     expect(chain.eq).toHaveBeenCalledWith("id", "att-1");
   });
@@ -545,7 +653,7 @@ describe("softDeleteAttachment", () => {
 
     expect(result.error).toBeNull();
     expect(chain.update).toHaveBeenCalledWith(
-      expect.objectContaining({ deleted_by: "it-1" })
+      expect.objectContaining({ deleted_by: "it-1" }),
     );
   });
 });
@@ -560,7 +668,9 @@ describe("restoreAttachment", () => {
   it("rejects client callers", async () => {
     mockStaffSession(CLIENT_CLAIMS);
 
-    await expect(restoreAttachment("att-1")).rejects.toThrow(/autorizado|authorized/i);
+    await expect(restoreAttachment("att-1")).rejects.toThrow(
+      /autorizado|authorized/i,
+    );
   });
 
   it("clears deleted_at and deleted_by for admin", async () => {

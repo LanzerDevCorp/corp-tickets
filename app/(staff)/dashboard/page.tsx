@@ -1,5 +1,9 @@
 import TicketQueue from "@/components/dashboard/ticket-queue";
-import { getTickets, getCategories, getStaffUsers } from "@/app/actions/tickets";
+import {
+  getTickets,
+  getCategories,
+  getStaffUsers,
+} from "@/app/actions/tickets";
 import { t } from "@/lib/i18n/t";
 
 export default async function DashboardPage() {
@@ -13,10 +17,12 @@ export default async function DashboardPage() {
     <main className="flex-1 space-y-6 p-8">
       <div className="flex items-center justify-between space-y-2">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-zinc-900 to-zinc-600 bg-clip-text text-transparent dark:from-zinc-100 dark:to-zinc-400">
+          <h2 className="bg-gradient-to-r from-zinc-900 to-zinc-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent dark:from-zinc-100 dark:to-zinc-400">
             {t("dashboard.title")}
           </h2>
-          <p className="text-muted-foreground text-sm">{t("dashboard.subtitle")}</p>
+          <p className="text-sm text-muted-foreground">
+            {t("dashboard.subtitle")}
+          </p>
         </div>
       </div>
       <TicketQueue

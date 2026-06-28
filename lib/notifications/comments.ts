@@ -8,9 +8,7 @@ import { t } from "@/lib/i18n/t";
 
 function dedupeEmails(emails: string[]): string[] {
   return [
-    ...new Set(
-      emails.map((e) => e.trim().toLowerCase()).filter(Boolean)
-    ),
+    ...new Set(emails.map((e) => e.trim().toLowerCase()).filter(Boolean)),
   ];
 }
 
@@ -18,11 +16,13 @@ function dedupeEmails(emails: string[]): string[] {
 // Sends an email to the ticket submitter (client) informing them of the staff reply.
 export async function notifyPublicComment(
   commentId: string,
-  ticketId: string
+  ticketId: string,
 ): Promise<void> {
   try {
     if (!resend) {
-      console.error("[notifyPublicComment] Resend client not initialized — RESEND_API_KEY missing");
+      console.error(
+        "[notifyPublicComment] Resend client not initialized — RESEND_API_KEY missing",
+      );
       return;
     }
     const from = process.env.RESEND_FROM_EMAIL;
@@ -39,11 +39,18 @@ export async function notifyPublicComment(
       .single();
 
     if (error || !row || !row.tickets) {
-      console.error("[notifyPublicComment] Failed to fetch comment/ticket data", error);
+      console.error(
+        "[notifyPublicComment] Failed to fetch comment/ticket data",
+        error,
+      );
       return;
     }
 
-    const ticket = row.tickets as unknown as { email: string; name: string; subject: string };
+    const ticket = row.tickets as unknown as {
+      email: string;
+      name: string;
+      subject: string;
+    };
     const to = ticket.email;
     const ticketSubject = ticket.subject;
     const clientName = ticket.name;
@@ -53,11 +60,11 @@ export async function notifyPublicComment(
         clientName,
         ticketSubject,
         commentBody: row.body as string,
-      })
+      }),
     );
 
     const rawCc = dedupeEmails((row.cc_emails as string[]) ?? []).filter(
-      (e) => e !== to.toLowerCase()
+      (e) => e !== to.toLowerCase(),
     );
 
     await resend.emails.send({
@@ -76,11 +83,13 @@ export async function notifyPublicComment(
 // Sends an email to the assigned IT staff member, or all IT+admin users if unassigned.
 export async function notifyClientComment(
   commentId: string,
-  ticketId: string
+  ticketId: string,
 ): Promise<void> {
   try {
     if (!resend) {
-      console.error("[notifyClientComment] Resend client not initialized — RESEND_API_KEY missing");
+      console.error(
+        "[notifyClientComment] Resend client not initialized — RESEND_API_KEY missing",
+      );
       return;
     }
     const from = process.env.RESEND_FROM_EMAIL;
@@ -96,7 +105,10 @@ export async function notifyClientComment(
       .single();
 
     if (ticketError || !ticketRow) {
-      console.error("[notifyClientComment] Failed to fetch ticket data", ticketError);
+      console.error(
+        "[notifyClientComment] Failed to fetch ticket data",
+        ticketError,
+      );
       return;
     }
 
@@ -118,7 +130,10 @@ export async function notifyClientComment(
         .in("role", ["admin", "it"]);
 
       if (staffError) {
-        console.error("[notifyClientComment] Failed to fetch staff users", staffError);
+        console.error(
+          "[notifyClientComment] Failed to fetch staff users",
+          staffError,
+        );
         return;
       }
 
@@ -140,7 +155,10 @@ export async function notifyClientComment(
       .single();
 
     if (commentError || !commentRow) {
-      console.error("[notifyClientComment] Failed to fetch comment data", commentError);
+      console.error(
+        "[notifyClientComment] Failed to fetch comment data",
+        commentError,
+      );
       return;
     }
 
@@ -153,12 +171,12 @@ export async function notifyClientComment(
         clientName,
         ticketSubject,
         commentBody: comment.body,
-      })
+      }),
     );
 
     const recipientSet = new Set(recipients.map((e) => e.toLowerCase()));
     const rawCc = dedupeEmails(comment.cc_emails ?? []).filter(
-      (e) => !recipientSet.has(e)
+      (e) => !recipientSet.has(e),
     );
 
     await resend.emails.send({

@@ -29,7 +29,7 @@ export type AllowedMime = (typeof ALLOWED_MIME)[number];
 export function buildStoragePath(
   ticketId: string,
   fileId: string,
-  filename: string
+  filename: string,
 ): string {
   return `tickets/${ticketId}/${fileId}-${filename}`;
 }

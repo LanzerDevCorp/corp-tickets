@@ -21,7 +21,7 @@ export function MagicLinkRequestForm({ defaultEmail }: Props) {
       if (result.error) return { error: result.error };
       return { error: null, submitted: true };
     },
-    { error: null, submitted: false }
+    { error: null, submitted: false },
   );
 
   if (state.submitted) {

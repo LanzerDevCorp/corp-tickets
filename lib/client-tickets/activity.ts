@@ -20,7 +20,7 @@ type AttachmentActivityInput = {
 function maxTimestamp(timestamps: string[]): string | null {
   if (timestamps.length === 0) return null;
   return timestamps.reduce((latest, current) =>
-    current > latest ? current : latest
+    current > latest ? current : latest,
   );
 }
 
@@ -28,7 +28,7 @@ export function computeStaffActivityAt(
   ticket: TicketActivityInput,
   comments: CommentActivityInput[],
   attachments: AttachmentActivityInput[],
-  clientUserId: string
+  clientUserId: string,
 ): string | null {
   const candidates: string[] = [];
 
@@ -64,7 +64,7 @@ export function computeStaffActivityAt(
 
 export function computeHasNewActivity(
   lastViewedAt: string | null,
-  staffActivityAt: string | null
+  staffActivityAt: string | null,
 ): boolean {
   if (!staffActivityAt) return false;
   if (!lastViewedAt) return true;

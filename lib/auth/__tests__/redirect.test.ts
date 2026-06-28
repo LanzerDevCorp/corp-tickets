@@ -25,7 +25,9 @@ describe("isSafeRedirect", () => {
 describe("getPostLoginRedirect", () => {
   it("staff with safe next returns next", () => {
     expect(getPostLoginRedirect("admin", "/tickets")).toBe("/tickets");
-    expect(getPostLoginRedirect("it", "/dashboard/settings")).toBe("/dashboard/settings");
+    expect(getPostLoginRedirect("it", "/dashboard/settings")).toBe(
+      "/dashboard/settings",
+    );
   });
 
   it("client with no next returns /track", () => {
@@ -39,7 +41,9 @@ describe("getPostLoginRedirect", () => {
   });
 
   it("rejects external next and falls back to role default", () => {
-    expect(getPostLoginRedirect("admin", "https://evil.com")).toBe("/dashboard");
+    expect(getPostLoginRedirect("admin", "https://evil.com")).toBe(
+      "/dashboard",
+    );
     expect(getPostLoginRedirect("client", "https://evil.com")).toBe("/track");
   });
 

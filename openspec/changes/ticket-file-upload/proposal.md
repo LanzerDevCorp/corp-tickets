@@ -7,6 +7,7 @@ Clients submitting a support ticket have no way to attach evidence (screenshots,
 ## Scope
 
 ### In Scope
+
 - File upload UI on the public ticket form (drag & drop + preview, per-file size, remove button, total MB progress bar) below the body textarea
 - Allowed types: PDF, JPG, PNG, WEBP, ZIP; max 5 files, 50MB total
 - `ticket_attachments` DB table + private Supabase storage bucket
@@ -17,6 +18,7 @@ Clients submitting a support ticket have no way to attach evidence (screenshots,
 - Cron job: after 2 months, delete files from storage and set `deleted_at` (history preserved)
 
 ### Out of Scope
+
 - File upload on comments / replies
 - Inline image rendering / thumbnails / previews of uploaded content
 - Virus/malware scanning
@@ -26,14 +28,17 @@ Clients submitting a support ticket have no way to attach evidence (screenshots,
 ## Capabilities
 
 ### New Capabilities
+
 - `ticket-attachments`: upload, storage, signed-URL retrieval, access control, and lifecycle (2-month expiry) of files attached to tickets.
 
 ### Modified Capabilities
+
 - None (existing `submitTicket` flow is extended via new client-side step + new actions, not a spec-level requirement change to ticket submission itself).
 
 ## Approach
 
 Two-phase, client-driven upload to keep large files off the Next.js server:
+
 1. Server action `submitTicket` creates the ticket, returns `ticketId`.
 2. Client detects pending files, uploads them directly to the private bucket (browser Supabase client) under `tickets/{ticketId}/{filename}`.
 3. On success: client calls a server action to register rows in `ticket_attachments`.
@@ -43,24 +48,24 @@ Reads always go through a server action that mints short-lived signed URLs; the 
 
 ## Affected Areas
 
-| Area | Impact | Description |
-|------|--------|-------------|
-| `components/public/public-ticket-form.tsx` | Modified | Add drag & drop zone, file state, upload orchestration, loading/error states |
-| `app/actions/tickets.ts` | Modified | Add `registerAttachments` and `rollbackTicket` server actions; signed-URL action |
-| `supabase/migrations/*` | New | `ticket_attachments` table + RLS policies |
-| `supabase/config.toml` | Modified | Enable private storage bucket for ticket attachments |
-| `lib/supabase/*` | Modified | Helpers for browser upload + server signed-URL generation |
-| Tracking page | Modified | List + download client's own attachments via signed URLs |
-| Cron / scheduled job | New | 2-month expiry: delete storage objects, set `deleted_at` |
+| Area                                       | Impact   | Description                                                                      |
+| ------------------------------------------ | -------- | -------------------------------------------------------------------------------- |
+| `components/public/public-ticket-form.tsx` | Modified | Add drag & drop zone, file state, upload orchestration, loading/error states     |
+| `app/actions/tickets.ts`                   | Modified | Add `registerAttachments` and `rollbackTicket` server actions; signed-URL action |
+| `supabase/migrations/*`                    | New      | `ticket_attachments` table + RLS policies                                        |
+| `supabase/config.toml`                     | Modified | Enable private storage bucket for ticket attachments                             |
+| `lib/supabase/*`                           | Modified | Helpers for browser upload + server signed-URL generation                        |
+| Tracking page                              | Modified | List + download client's own attachments via signed URLs                         |
+| Cron / scheduled job                       | New      | 2-month expiry: delete storage objects, set `deleted_at`                         |
 
 ## Risks
 
-| Risk | Likelihood | Mitigation |
-|------|------------|------------|
-| Upload succeeds but DB registration fails (orphan files) | Med | Rollback action deletes ticket; cron later sweeps orphaned storage paths |
-| Ticket created but upload fails (orphan ticket) | Med | Rollback server action deletes the ticket; "Retry without files" path |
-| Client-side limits bypassed | Med | Re-validate type/count/size in storage policy + register action |
-| Signed URL leakage | Low | Short expiry, server-side generation only, private bucket |
+| Risk                                                     | Likelihood | Mitigation                                                               |
+| -------------------------------------------------------- | ---------- | ------------------------------------------------------------------------ |
+| Upload succeeds but DB registration fails (orphan files) | Med        | Rollback action deletes ticket; cron later sweeps orphaned storage paths |
+| Ticket created but upload fails (orphan ticket)          | Med        | Rollback server action deletes the ticket; "Retry without files" path    |
+| Client-side limits bypassed                              | Med        | Re-validate type/count/size in storage policy + register action          |
+| Signed URL leakage                                       | Low        | Short expiry, server-side generation only, private bucket                |
 
 ## Rollback Plan
 

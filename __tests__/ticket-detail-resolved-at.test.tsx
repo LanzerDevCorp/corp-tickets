@@ -39,9 +39,13 @@ vi.mock("@/app/actions/attachments", () => ({
 
 // Mock Next.js Link — renders a plain anchor in jsdom
 vi.mock("next/link", () => ({
-  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
-  ),
+  default: ({
+    children,
+    href,
+  }: {
+    children: React.ReactNode;
+    href: string;
+  }) => <a href={href}>{children}</a>,
 }));
 
 // Import AFTER mocks are registered
@@ -79,7 +83,7 @@ describe("TicketDetail — resolved_at display", () => {
       <TicketDetail
         initialTicket={{ ...baseTicket, resolved_at: null }}
         {...defaultProps}
-      />
+      />,
     );
 
     // The info-summary label "Resuelto:" (with colon) must NOT appear.
@@ -95,12 +99,7 @@ describe("TicketDetail — resolved_at display", () => {
       resolved_at: "2026-06-25T14:00:00Z",
     };
 
-    render(
-      <TicketDetail
-        initialTicket={resolvedTicket}
-        {...defaultProps}
-      />
-    );
+    render(<TicketDetail initialTicket={resolvedTicket} {...defaultProps} />);
 
     // The info-summary label "Resuelto:" (with colon, following the "Creado:" pattern)
     // must appear when resolved_at is non-null.

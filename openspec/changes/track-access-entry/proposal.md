@@ -7,6 +7,7 @@ When a client's magic link or tracking session expires, `/track/access?error_cod
 ## Scope
 
 ### In Scope
+
 - Fix `TrackSessionBootstrap` so `/track/access` always renders `TrackAccessPanel` (skip bootstrap gate on that route)
 - Add **Consultar ticket** link in the public home header → `/track/access`
 - Remove **Acceso staff** from the public client-facing header (staff uses direct `/auth/login`, invite links, or bookmarks)
@@ -19,6 +20,7 @@ When a client's magic link or tracking session expires, `/track/access?error_cod
 - Update docs and E2E that reference public **Acceso staff** link
 
 ### Out of Scope
+
 - Changes to staff login flow, invite emails, or middleware RBAC (already enforced server-side)
 - New authentication mechanism (reuse `accessTicketWithReference` + `requestMagicLink`)
 - Visual redesign of `/track/[ticketId]` conversation view
@@ -27,9 +29,11 @@ When a client's magic link or tracking session expires, `/track/access?error_cod
 ## Capabilities
 
 ### New Capabilities
+
 - `track-access-entry`: public discovery + unified recovery for client ticket tracking via email + ticket reference.
 
 ### Modified Capabilities
+
 - Client tracking layout: conditional public styling and header on `/track/access`.
 - Auth error handling: expired codes delegate to tracking recovery page.
 
@@ -42,25 +46,25 @@ When a client's magic link or tracking session expires, `/track/access?error_cod
 
 ## Affected Areas
 
-| Area | Impact | Description |
-|------|--------|-------------|
-| `components/tracking/track-session-bootstrap.tsx` | Modified | Skip gate on `/track/access`; fix blank screen bug |
-| `components/public/public-site-header.tsx` | New | Shared header with configurable right link |
-| `app/(public)/layout.tsx` | Modified | Use `PublicSiteHeader`; add Consultar ticket link |
-| `app/(tracking)/layout.tsx` | Modified | Conditional `force-light` + public header on `/track/access` |
-| `app/(tracking)/track/access/page.tsx` | Modified | Conditional copy by `error_code` |
-| `app/auth/error/page.tsx` | Modified | Redirect expired codes to `/track/access` |
-| `lib/i18n/es.ts` | Modified | Add `public.trackTicket`, `public.submitTicket`, `tracking.accessTitle/Description`, OTP variant |
-| `tests/e2e/public-form/submit.spec.ts` | Modified | Replace staff-link test with Consultar ticket test |
-| `docs/phase-4-public-form.md` | Modified | Remove Acceso staff from public header spec |
+| Area                                              | Impact   | Description                                                                                      |
+| ------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------ |
+| `components/tracking/track-session-bootstrap.tsx` | Modified | Skip gate on `/track/access`; fix blank screen bug                                               |
+| `components/public/public-site-header.tsx`        | New      | Shared header with configurable right link                                                       |
+| `app/(public)/layout.tsx`                         | Modified | Use `PublicSiteHeader`; add Consultar ticket link                                                |
+| `app/(tracking)/layout.tsx`                       | Modified | Conditional `force-light` + public header on `/track/access`                                     |
+| `app/(tracking)/track/access/page.tsx`            | Modified | Conditional copy by `error_code`                                                                 |
+| `app/auth/error/page.tsx`                         | Modified | Redirect expired codes to `/track/access`                                                        |
+| `lib/i18n/es.ts`                                  | Modified | Add `public.trackTicket`, `public.submitTicket`, `tracking.accessTitle/Description`, OTP variant |
+| `tests/e2e/public-form/submit.spec.ts`            | Modified | Replace staff-link test with Consultar ticket test                                               |
+| `docs/phase-4-public-form.md`                     | Modified | Remove Acceso staff from public header spec                                                      |
 
 ## Risks
 
-| Risk | Likelihood | Mitigation |
-|------|------------|------------|
-| Redirect loop between `/track` and `/track/access` | Low | `/track/access` bypasses bootstrap; authenticated users still see form (by design) |
-| Header drift between layouts | Low | Single `PublicSiteHeader` component |
-| Staff cannot find login from public site | Low | Intentional; staff use invite URL or bookmark `/auth/login` |
+| Risk                                               | Likelihood | Mitigation                                                                         |
+| -------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------- |
+| Redirect loop between `/track` and `/track/access` | Low        | `/track/access` bypasses bootstrap; authenticated users still see form (by design) |
+| Header drift between layouts                       | Low        | Single `PublicSiteHeader` component                                                |
+| Staff cannot find login from public site           | Low        | Intentional; staff use invite URL or bookmark `/auth/login`                        |
 
 ## Rollback Plan
 
@@ -73,10 +77,10 @@ Revert bootstrap change, header component, and redirects. `/auth/error` can temp
 
 ## Delivery
 
-| Field | Value |
-|-------|-------|
-| Strategy | Single PR |
-| Budget | size:exception (exception-ok) |
+| Field    | Value                         |
+| -------- | ----------------------------- |
+| Strategy | Single PR                     |
+| Budget   | size:exception (exception-ok) |
 
 ## Success Criteria
 

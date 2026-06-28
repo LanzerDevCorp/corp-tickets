@@ -49,7 +49,11 @@ import {
 import { provisionClient } from "@/app/actions/client-provision";
 import { createClient } from "@/lib/supabase/server";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify";
-import { notifyNewTicket, notifyTicketCreated, notifyTicketClosed } from "@/lib/notifications/tickets";
+import {
+  notifyNewTicket,
+  notifyTicketCreated,
+  notifyTicketClosed,
+} from "@/lib/notifications/tickets";
 
 const mockProvisionClient = vi.mocked(provisionClient);
 const mockCreateClient = vi.mocked(createClient);
@@ -70,13 +74,24 @@ function makeSupabaseMock(options: {
     in: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
-    single: vi.fn().mockImplementation(() => Promise.resolve(options.queryResult || { data: null, error: null })),
-    maybeSingle: vi.fn().mockImplementation(() => Promise.resolve(options.updateResult || { data: null, error: null })),
+    single: vi
+      .fn()
+      .mockImplementation(() =>
+        Promise.resolve(options.queryResult || { data: null, error: null }),
+      ),
+    maybeSingle: vi
+      .fn()
+      .mockImplementation(() =>
+        Promise.resolve(options.updateResult || { data: null, error: null }),
+      ),
   };
 
   // Setup thenable behavior for standard queries (e.g. await query)
-  const mockPromise = Promise.resolve(options.queryResult || { data: null, error: null });
-  queryChain.then = (onfulfilled: any, onrejected: any) => mockPromise.then(onfulfilled, onrejected);
+  const mockPromise = Promise.resolve(
+    options.queryResult || { data: null, error: null },
+  );
+  queryChain.then = (onfulfilled: any, onrejected: any) =>
+    mockPromise.then(onfulfilled, onrejected);
 
   return {
     auth: {
@@ -85,9 +100,7 @@ function makeSupabaseMock(options: {
       }),
       getUser: vi.fn().mockResolvedValue({
         data: {
-          user: options.userEmail
-            ? { email: options.userEmail }
-            : null,
+          user: options.userEmail ? { email: options.userEmail } : null,
         },
       }),
     },
@@ -128,7 +141,10 @@ describe("tickets actions", () => {
       if (result.error === null) {
         expect(result.ticketId).toBe("ticket-abc");
       }
-      expect(mockProvisionClient).toHaveBeenCalledWith("client@test.com", "ticket-abc");
+      expect(mockProvisionClient).toHaveBeenCalledWith(
+        "client@test.com",
+        "ticket-abc",
+      );
     });
 
     it("retorna error de validación cuando faltan campos requeridos", async () => {
@@ -189,7 +205,7 @@ describe("tickets actions", () => {
 
       expect(notifyTicketCreated).toHaveBeenCalledWith(
         "ticket-created-email",
-        "https://auth.test/magic"
+        "https://auth.test/magic",
       );
     });
 
@@ -259,7 +275,7 @@ describe("tickets actions", () => {
         makeSupabaseMock({
           claims: { app_role: "it" },
           queryResult: { data: [{ id: "ticket-1" }], error: null },
-        }) as any
+        }) as any,
       );
 
       const tickets = await getTickets({});
@@ -271,7 +287,7 @@ describe("tickets actions", () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
           claims: { app_role: "client" },
-        }) as any
+        }) as any,
       );
 
       await expect(getTickets({})).rejects.toThrow("No autorizado");
@@ -286,7 +302,8 @@ describe("tickets actions", () => {
 
       await getTickets({ statuses: ["open", "in_progress"] });
 
-      const chain = (mock.from as ReturnType<typeof vi.fn>).mock.results[0].value;
+      const chain = (mock.from as ReturnType<typeof vi.fn>).mock.results[0]
+        .value;
       expect(chain.in).toHaveBeenCalledWith("status", ["open", "in_progress"]);
     });
 
@@ -299,7 +316,8 @@ describe("tickets actions", () => {
 
       await getTickets({});
 
-      const chain = (mock.from as ReturnType<typeof vi.fn>).mock.results[0].value;
+      const chain = (mock.from as ReturnType<typeof vi.fn>).mock.results[0]
+        .value;
       expect(chain.in).not.toHaveBeenCalled();
     });
 
@@ -312,7 +330,8 @@ describe("tickets actions", () => {
 
       await getTickets({ statuses: ["all"] });
 
-      const chain = (mock.from as ReturnType<typeof vi.fn>).mock.results[0].value;
+      const chain = (mock.from as ReturnType<typeof vi.fn>).mock.results[0]
+        .value;
       expect(chain.in).not.toHaveBeenCalled();
     });
   });
@@ -321,9 +340,16 @@ describe("tickets actions", () => {
     it("allows clients to fetch their own ticket if email matches", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { app_role: "client", email: "my-email@test.com", sub: "client-1" },
-          queryResult: { data: { id: "ticket-1", email: "my-email@test.com" }, error: null },
-        }) as any
+          claims: {
+            app_role: "client",
+            email: "my-email@test.com",
+            sub: "client-1",
+          },
+          queryResult: {
+            data: { id: "ticket-1", email: "my-email@test.com" },
+            error: null,
+          },
+        }) as any,
       );
 
       const ticket = await getTicketDetail("ticket-1");
@@ -334,29 +360,44 @@ describe("tickets actions", () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
           claims: null,
-        }) as any
+        }) as any,
       );
 
-      await expect(getTicketDetail("ticket-1")).rejects.toThrow("No autorizado");
+      await expect(getTicketDetail("ticket-1")).rejects.toThrow(
+        "No autorizado",
+      );
     });
 
     it("throws error for clients if ticket email does not match client email", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { app_role: "client", email: "other@test.com", sub: "client-1" },
+          claims: {
+            app_role: "client",
+            email: "other@test.com",
+            sub: "client-1",
+          },
           queryResult: { data: null, error: { message: "No rows found" } },
-        }) as any
+        }) as any,
       );
 
-      await expect(getTicketDetail("ticket-1")).rejects.toThrow("Ticket no encontrado o acceso denegado");
+      await expect(getTicketDetail("ticket-1")).rejects.toThrow(
+        "Ticket no encontrado o acceso denegado",
+      );
     });
 
     it("triggers auto-assignment to staff if ticket is open and unassigned", async () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
           claims: { app_role: "it", sub: "staff-uuid" },
-          updateResult: { data: { id: "ticket-1", assigned_to: "staff-uuid", status: "in_progress" }, error: null },
-        }) as any
+          updateResult: {
+            data: {
+              id: "ticket-1",
+              assigned_to: "staff-uuid",
+              status: "in_progress",
+            },
+            error: null,
+          },
+        }) as any,
       );
 
       const ticket = await getTicketDetail("ticket-1");
@@ -371,8 +412,15 @@ describe("tickets actions", () => {
         makeSupabaseMock({
           claims: { app_role: "it", sub: "staff-uuid" },
           updateResult: null,
-          queryResult: { data: { id: "ticket-1", assigned_to: "other-staff-uuid", status: "in_progress" }, error: null },
-        }) as any
+          queryResult: {
+            data: {
+              id: "ticket-1",
+              assigned_to: "other-staff-uuid",
+              status: "in_progress",
+            },
+            error: null,
+          },
+        }) as any,
       );
 
       const ticket = await getTicketDetail("ticket-1");
@@ -386,8 +434,11 @@ describe("tickets actions", () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
           claims: { app_role: "admin" },
-          queryResult: { data: { id: "ticket-1", status: "closed", closure_reason: "Fixed" }, error: null },
-        }) as any
+          queryResult: {
+            data: { id: "ticket-1", status: "closed", closure_reason: "Fixed" },
+            error: null,
+          },
+        }) as any,
       );
 
       const ticket = await updateTicketStatus("ticket-1", "closed", "Fixed");
@@ -400,10 +451,12 @@ describe("tickets actions", () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
           claims: { app_role: "admin" },
-        }) as any
+        }) as any,
       );
 
-      await expect(updateTicketStatus("ticket-1", "closed")).rejects.toThrow("Se requiere un motivo de cierre cuando el estado es cerrado");
+      await expect(updateTicketStatus("ticket-1", "closed")).rejects.toThrow(
+        "Se requiere un motivo de cierre cuando el estado es cerrado",
+      );
     });
   });
 
@@ -412,8 +465,11 @@ describe("tickets actions", () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
           claims: { app_role: "it" },
-          queryResult: { data: { id: "ticket-1", assigned_to: "new-staff-id" }, error: null },
-        }) as any
+          queryResult: {
+            data: { id: "ticket-1", assigned_to: "new-staff-id" },
+            error: null,
+          },
+        }) as any,
       );
 
       const ticket = await assignTicket("ticket-1", "new-staff-id");
@@ -431,7 +487,10 @@ describe("tickets actions", () => {
 
       const categories = await getCategories();
       expect(categories).toHaveLength(1);
-      expect(mockSupabase.from().select().eq).toHaveBeenCalledWith("is_enabled", true);
+      expect(mockSupabase.from().select().eq).toHaveBeenCalledWith(
+        "is_enabled",
+        true,
+      );
     });
 
     it("returns all categories for staff", async () => {
@@ -452,8 +511,11 @@ describe("tickets actions", () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
           claims: { app_role: "it" },
-          queryResult: { data: [{ id: "staff-1", display_name: "Juan" }], error: null },
-        }) as any
+          queryResult: {
+            data: [{ id: "staff-1", display_name: "Juan" }],
+            error: null,
+          },
+        }) as any,
       );
 
       const staff = await getStaffUsers();
@@ -472,9 +534,10 @@ describe("tickets actions", () => {
 
       await expect(markTicketAsSeen("ticket-1")).resolves.toBeUndefined();
 
-      const chain = (mock.from as ReturnType<typeof vi.fn>).mock.results[0].value;
+      const chain = (mock.from as ReturnType<typeof vi.fn>).mock.results[0]
+        .value;
       expect(chain.update).toHaveBeenCalledWith(
-        expect.objectContaining({ first_seen_at: expect.any(String) })
+        expect.objectContaining({ first_seen_at: expect.any(String) }),
       );
       expect(chain.eq).toHaveBeenCalledWith("id", "ticket-1");
       expect(chain.is).toHaveBeenCalledWith("first_seen_at", null);
@@ -497,7 +560,9 @@ describe("tickets actions", () => {
       });
       mockCreateClient.mockResolvedValue(mock as any);
 
-      await expect(markTicketAsSeen("ticket-1")).rejects.toThrow("No autorizado");
+      await expect(markTicketAsSeen("ticket-1")).rejects.toThrow(
+        "No autorizado",
+      );
 
       // from() should not have been called (no DB write)
       expect(mock.from).not.toHaveBeenCalled();
@@ -512,7 +577,9 @@ describe("tickets actions", () => {
       });
       mockCreateClient.mockResolvedValue(mock as any);
 
-      await expect(markTicketAsSeen("ticket-already-seen")).resolves.toBeUndefined();
+      await expect(
+        markTicketAsSeen("ticket-already-seen"),
+      ).resolves.toBeUndefined();
     });
 
     it("surfaces a DB error as a thrown Error with error.message", async () => {
@@ -522,7 +589,9 @@ describe("tickets actions", () => {
       });
       mockCreateClient.mockResolvedValue(mock as any);
 
-      await expect(markTicketAsSeen("ticket-1")).rejects.toThrow("connection refused");
+      await expect(markTicketAsSeen("ticket-1")).rejects.toThrow(
+        "connection refused",
+      );
     });
   });
 });

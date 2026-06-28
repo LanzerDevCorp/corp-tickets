@@ -63,7 +63,8 @@ export const es = {
     myTickets: "Mis tickets",
     dashboard: "Panel",
     verifyingInvite: "Verificando invitación…",
-    verifyingInviteDescription: "Configurando tu sesión desde el enlace de invitación.",
+    verifyingInviteDescription:
+      "Configurando tu sesión desde el enlace de invitación.",
     inviteInvalid: "Enlace de invitación inválido",
     inviteInvalidDescription:
       "Abre el enlace de tu correo de invitación o pide a un administrador que envíe uno nuevo.",
@@ -75,7 +76,8 @@ export const es = {
       "Solicita un nuevo restablecimiento de contraseña desde la página de inicio de sesión.",
     requestReset: "Solicitar restablecimiento",
     errorTitle: "Lo sentimos, algo salió mal.",
-    linkExpired: "Tu enlace expiró. Puedes entrar con tu correo y número de ticket, o solicitar un nuevo enlace.",
+    linkExpired:
+      "Tu enlace expiró. Puedes entrar con tu correo y número de ticket, o solicitar un nuevo enlace.",
     sessionExpiredTitle: "Continuar seguimiento",
     sessionExpiredDescription:
       "Tu sesión expiró. Ingresa tu correo y el número de ticket que recibiste al enviar la solicitud.",
@@ -125,7 +127,8 @@ export const es = {
     internalNote: "Nota interna",
     reply: "Responder",
     addInternalNote: "Agregar nota interna",
-    internalNotePlaceholder: "Agrega una nota interna visible solo para el personal...",
+    internalNotePlaceholder:
+      "Agrega una nota interna visible solo para el personal...",
     replyPlaceholder: "Escribe una respuesta para el cliente...",
     failedPostComment: "No se pudo publicar el comentario",
     noCommentsYet: "Aún no hay comentarios",
@@ -268,7 +271,8 @@ export const es = {
       "No encontramos un ticket con ese correo y número. Verifica los datos.",
     ticketNotFound: "Ticket no encontrado",
     ticketNotFoundOrDenied: "Ticket no encontrado o acceso denegado",
-    closureReasonRequired: "Se requiere un motivo de cierre cuando el estado es cerrado",
+    closureReasonRequired:
+      "Se requiere un motivo de cierre cuando el estado es cerrado",
     genericError: "Ocurrió un error",
   },
   email: {

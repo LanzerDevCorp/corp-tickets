@@ -30,7 +30,7 @@ export function TrackAccessPanel({
         return { error: null };
       }
     },
-    { error: null }
+    { error: null },
   );
 
   const [resendState, resendAction, resendPending] = useActionState(
@@ -40,7 +40,7 @@ export function TrackAccessPanel({
       if (result.error) return { error: result.error };
       return { error: null, submitted: true };
     },
-    { error: null, submitted: false }
+    { error: null, submitted: false },
   );
 
   const [resendOpen, setResendOpen] = useState(false);
@@ -100,7 +100,9 @@ export function TrackAccessPanel({
         ) : (
           <div className="flex flex-col gap-3">
             <div>
-              <p className="text-sm font-medium">{t("auth.resendLinkSection")}</p>
+              <p className="text-sm font-medium">
+                {t("auth.resendLinkSection")}
+              </p>
               <p className="text-xs text-muted-foreground">
                 {t("auth.resendLinkDescription")}
               </p>
@@ -126,8 +128,14 @@ export function TrackAccessPanel({
                 {resendState.error && (
                   <p className="text-sm text-red-500">{resendState.error}</p>
                 )}
-                <Button type="submit" variant="secondary" disabled={resendPending}>
-                  {resendPending ? t("common.sending") : t("auth.requestNewLink")}
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  disabled={resendPending}
+                >
+                  {resendPending
+                    ? t("common.sending")
+                    : t("auth.requestNewLink")}
                 </Button>
               </form>
             )}

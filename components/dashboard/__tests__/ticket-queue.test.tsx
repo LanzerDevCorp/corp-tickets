@@ -84,7 +84,11 @@ const BASE_TICKET = {
 };
 
 const UNSEEN_TICKET = { ...BASE_TICKET, first_seen_at: null };
-const SEEN_TICKET = { ...BASE_TICKET, id: "ticket-xyz", first_seen_at: "2026-06-25T11:00:00Z" };
+const SEEN_TICKET = {
+  ...BASE_TICKET,
+  id: "ticket-xyz",
+  first_seen_at: "2026-06-25T11:00:00Z",
+};
 
 const CATEGORIES = [{ id: "cat-1", name: "Hardware" }];
 const STAFF_USERS: never[] = [];
@@ -143,7 +147,10 @@ describe("TicketQueue — realtime + new-ticket highlight", () => {
     renderQueue([UNSEEN_TICKET]);
 
     // Initially unseen → isNew=true
-    expect(screen.getByTestId("new-ticket-highlight")).toHaveAttribute("data-is-new", "true");
+    expect(screen.getByTestId("new-ticket-highlight")).toHaveAttribute(
+      "data-is-new",
+      "true",
+    );
 
     // Simulate hover on the TicketSubjectPreview (which calls onSeen)
     await act(async () => {
@@ -151,7 +158,10 @@ describe("TicketQueue — realtime + new-ticket highlight", () => {
     });
 
     // Optimistic update: isNew should now be false (seenLocally has the id)
-    expect(screen.getByTestId("new-ticket-highlight")).toHaveAttribute("data-is-new", "false");
+    expect(screen.getByTestId("new-ticket-highlight")).toHaveAttribute(
+      "data-is-new",
+      "false",
+    );
 
     // Server action should have been called
     expect(mockMarkSeen).toHaveBeenCalledWith(UNSEEN_TICKET.id);
@@ -164,13 +174,19 @@ describe("TicketQueue — realtime + new-ticket highlight", () => {
 
     renderQueue([UNSEEN_TICKET]);
 
-    expect(screen.getByTestId("new-ticket-highlight")).toHaveAttribute("data-is-new", "true");
+    expect(screen.getByTestId("new-ticket-highlight")).toHaveAttribute(
+      "data-is-new",
+      "true",
+    );
 
     await act(async () => {
       fireEvent.mouseEnter(screen.getByTestId(`preview-${UNSEEN_TICKET.id}`));
     });
 
     // After rollback seenLocally no longer has the id → isNew restored
-    expect(screen.getByTestId("new-ticket-highlight")).toHaveAttribute("data-is-new", "true");
+    expect(screen.getByTestId("new-ticket-highlight")).toHaveAttribute(
+      "data-is-new",
+      "true",
+    );
   });
 });

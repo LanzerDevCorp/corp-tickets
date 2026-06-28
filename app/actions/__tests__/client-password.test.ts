@@ -72,7 +72,9 @@ beforeEach(() => {
 
 describe("setClientPassword", () => {
   it("rejects a password shorter than the minimum without touching Supabase", async () => {
-    mockCreateClient.mockResolvedValue(makeServerClient(CLIENT_CLAIMS) as never);
+    mockCreateClient.mockResolvedValue(
+      makeServerClient(CLIENT_CLAIMS) as never,
+    );
 
     const result = await setClientPassword("short");
 
@@ -90,7 +92,9 @@ describe("setClientPassword", () => {
   });
 
   it("sets the password and stamps password_set_at for a client", async () => {
-    mockCreateClient.mockResolvedValue(makeServerClient(CLIENT_CLAIMS) as never);
+    mockCreateClient.mockResolvedValue(
+      makeServerClient(CLIENT_CLAIMS) as never,
+    );
     mockUpdateUserById.mockResolvedValue({ data: {}, error: null });
     const updateChain = makeUpdateChain();
     mockAdminFrom.mockReturnValue(updateChain);
@@ -102,13 +106,15 @@ describe("setClientPassword", () => {
       password: "a-strong-password",
     });
     expect(updateChain.update).toHaveBeenCalledWith(
-      expect.objectContaining({ password_set_at: expect.any(String) })
+      expect.objectContaining({ password_set_at: expect.any(String) }),
     );
     expect(updateChain.eq).toHaveBeenCalledWith("id", "client-1");
   });
 
   it("propagates an auth update failure and does not stamp", async () => {
-    mockCreateClient.mockResolvedValue(makeServerClient(CLIENT_CLAIMS) as never);
+    mockCreateClient.mockResolvedValue(
+      makeServerClient(CLIENT_CLAIMS) as never,
+    );
     mockUpdateUserById.mockResolvedValue({
       data: null,
       error: { message: "weak password" },
@@ -129,7 +135,9 @@ describe("setClientPassword", () => {
 
 describe("dismissPasswordPrompt", () => {
   it("stamps password_prompt_dismissed_at for a client", async () => {
-    mockCreateClient.mockResolvedValue(makeServerClient(CLIENT_CLAIMS) as never);
+    mockCreateClient.mockResolvedValue(
+      makeServerClient(CLIENT_CLAIMS) as never,
+    );
     const updateChain = makeUpdateChain();
     mockAdminFrom.mockReturnValue(updateChain);
 
@@ -139,7 +147,7 @@ describe("dismissPasswordPrompt", () => {
     expect(updateChain.update).toHaveBeenCalledWith(
       expect.objectContaining({
         password_prompt_dismissed_at: expect.any(String),
-      })
+      }),
     );
     expect(updateChain.eq).toHaveBeenCalledWith("id", "client-1");
   });
@@ -159,9 +167,14 @@ describe("dismissPasswordPrompt", () => {
 
 describe("getPasswordDecision", () => {
   it("reports not-decided for a fresh client", async () => {
-    mockCreateClient.mockResolvedValue(makeServerClient(CLIENT_CLAIMS) as never);
+    mockCreateClient.mockResolvedValue(
+      makeServerClient(CLIENT_CLAIMS) as never,
+    );
     mockAdminFrom.mockReturnValue(
-      makeSelectChain({ password_set_at: null, password_prompt_dismissed_at: null })
+      makeSelectChain({
+        password_set_at: null,
+        password_prompt_dismissed_at: null,
+      }),
     );
 
     const result = await getPasswordDecision();
@@ -170,12 +183,14 @@ describe("getPasswordDecision", () => {
   });
 
   it("reports decided + hasPassword once a password is set", async () => {
-    mockCreateClient.mockResolvedValue(makeServerClient(CLIENT_CLAIMS) as never);
+    mockCreateClient.mockResolvedValue(
+      makeServerClient(CLIENT_CLAIMS) as never,
+    );
     mockAdminFrom.mockReturnValue(
       makeSelectChain({
         password_set_at: "2026-06-27T00:00:00Z",
         password_prompt_dismissed_at: null,
-      })
+      }),
     );
 
     const result = await getPasswordDecision();
@@ -184,12 +199,14 @@ describe("getPasswordDecision", () => {
   });
 
   it("reports decided but not hasPassword when the prompt was dismissed", async () => {
-    mockCreateClient.mockResolvedValue(makeServerClient(CLIENT_CLAIMS) as never);
+    mockCreateClient.mockResolvedValue(
+      makeServerClient(CLIENT_CLAIMS) as never,
+    );
     mockAdminFrom.mockReturnValue(
       makeSelectChain({
         password_set_at: null,
         password_prompt_dismissed_at: "2026-06-27T00:00:00Z",
-      })
+      }),
     );
 
     const result = await getPasswordDecision();

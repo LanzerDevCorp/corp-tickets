@@ -63,7 +63,7 @@ type AttachmentRow = {
 // ---------------------------------------------------------------------------
 
 function validateAttachmentFiles(
-  files: Pick<AttachmentInput, "mime_type" | "size_bytes">[]
+  files: Pick<AttachmentInput, "mime_type" | "size_bytes">[],
 ): ActionResult {
   if (files.length > MAX_FILES) {
     return { error: `Too many files — maximum is ${MAX_FILES}.` };
@@ -117,7 +117,7 @@ function generateFileId(): string {
 
 async function mapRowToAttachmentItem(
   row: AttachmentRow,
-  isStaff: boolean
+  isStaff: boolean,
 ): Promise<AttachmentItem | null> {
   const isAdminRemoved = row.deleted_at !== null && row.deleted_by !== null;
   const isRetentionExpired = row.deleted_at !== null && row.deleted_by === null;
@@ -170,7 +170,7 @@ async function mapRowToAttachmentItem(
  */
 export async function registerAttachments(
   ticketId: string,
-  files: AttachmentInput[]
+  files: AttachmentInput[],
 ): Promise<ActionResult> {
   const validation = validateAttachmentFiles(files);
   if (validation.error) {
@@ -243,7 +243,7 @@ export async function rollbackTicket(ticketId: string): Promise<ActionResult> {
  */
 export async function createStaffUploadUrls(
   ticketId: string,
-  fileMetas: AttachmentFileMeta[]
+  fileMetas: AttachmentFileMeta[],
 ): Promise<StaffUploadResult> {
   await requireStaff();
 
@@ -284,7 +284,7 @@ export async function createStaffUploadUrls(
  */
 export async function registerStaffAttachments(
   ticketId: string,
-  files: AttachmentInput[]
+  files: AttachmentInput[],
 ): Promise<ActionResult> {
   const { actorId } = await requireStaff();
 
@@ -315,7 +315,7 @@ export async function registerStaffAttachments(
  * Admin and IT only.
  */
 export async function softDeleteAttachment(
-  attachmentId: string
+  attachmentId: string,
 ): Promise<ActionResult> {
   const { actorId } = await requireStaff();
 
@@ -339,7 +339,7 @@ export async function softDeleteAttachment(
  * Admin and IT only.
  */
 export async function restoreAttachment(
-  attachmentId: string
+  attachmentId: string,
 ): Promise<ActionResult> {
   await requireStaff();
 
@@ -368,7 +368,7 @@ export async function restoreAttachment(
  * Clients can only access their own ticket; admin-removed attachments are hidden.
  */
 export async function getTicketAttachments(
-  ticketId: string
+  ticketId: string,
 ): Promise<AttachmentItem[]> {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -408,7 +408,9 @@ export async function getTicketAttachments(
   }
 
   const items = await Promise.all(
-    (rows ?? []).map((row) => mapRowToAttachmentItem(row as AttachmentRow, isStaff))
+    (rows ?? []).map((row) =>
+      mapRowToAttachmentItem(row as AttachmentRow, isStaff),
+    ),
   );
 
   return items.filter((item): item is AttachmentItem => item !== null);

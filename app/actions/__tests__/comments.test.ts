@@ -11,17 +11,17 @@ vi.mock("@/lib/notifications/comments", () => ({
 
 import { getComments, addComment } from "../comments";
 import { createClient } from "@/lib/supabase/server";
-import { notifyPublicComment, notifyClientComment } from "@/lib/notifications/comments";
+import {
+  notifyPublicComment,
+  notifyClientComment,
+} from "@/lib/notifications/comments";
 
 const mockCreateClient = vi.mocked(createClient);
 const mockNotifyPublicComment = vi.mocked(notifyPublicComment);
 const mockNotifyClientComment = vi.mocked(notifyClientComment);
 
 // Mirrors the pattern from tickets.test.ts
-function makeSupabaseMock(options: {
-  claims?: any;
-  queryResult?: any;
-}) {
+function makeSupabaseMock(options: { claims?: any; queryResult?: any }) {
   const queryChain: any = {
     select: vi.fn().mockReturnThis(),
     insert: vi.fn().mockReturnThis(),
@@ -31,17 +31,21 @@ function makeSupabaseMock(options: {
     in: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
-    single: vi.fn().mockImplementation(() =>
-      Promise.resolve(options.queryResult || { data: null, error: null })
-    ),
-    maybeSingle: vi.fn().mockImplementation(() =>
-      Promise.resolve(options.queryResult || { data: null, error: null })
-    ),
+    single: vi
+      .fn()
+      .mockImplementation(() =>
+        Promise.resolve(options.queryResult || { data: null, error: null }),
+      ),
+    maybeSingle: vi
+      .fn()
+      .mockImplementation(() =>
+        Promise.resolve(options.queryResult || { data: null, error: null }),
+      ),
   };
 
   // Thenable for queries without .single() (e.g. getComments)
   const mockPromise = Promise.resolve(
-    options.queryResult || { data: null, error: null }
+    options.queryResult || { data: null, error: null },
   );
   queryChain.then = (onfulfilled: any, onrejected: any) =>
     mockPromise.then(onfulfilled, onrejected);
@@ -90,7 +94,7 @@ describe("comments actions", () => {
         makeSupabaseMock({
           claims: { app_role: "it", sub: "staff-id" },
           queryResult: { data: sortedComments, error: null },
-        }) as any
+        }) as any,
       );
 
       const result = await getComments("ticket-uuid-1");
@@ -105,7 +109,7 @@ describe("comments actions", () => {
         makeSupabaseMock({
           claims: null,
           queryResult: { data: [], error: null },
-        }) as any
+        }) as any,
       );
 
       const result = await getComments("ticket-uuid-1");
@@ -119,7 +123,7 @@ describe("comments actions", () => {
         makeSupabaseMock({
           claims: { app_role: "it", sub: "staff-id", email: "staff@corp.com" },
           queryResult: { data: MOCK_COMMENT, error: null },
-        }) as any
+        }) as any,
       );
 
       const result = await addComment({
@@ -136,11 +140,11 @@ describe("comments actions", () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
           claims: { app_role: "it", sub: "staff-id", email: "staff@corp.com" },
-        }) as any
+        }) as any,
       );
 
       await expect(
-        addComment({ ticketId: "ticket-uuid-1", body: "", is_internal: false })
+        addComment({ ticketId: "ticket-uuid-1", body: "", is_internal: false }),
       ).rejects.toThrow();
     });
 
@@ -148,17 +152,25 @@ describe("comments actions", () => {
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
           claims: { app_role: "it", sub: "staff-id", email: "staff@corp.com" },
-        }) as any
+        }) as any,
       );
 
       await expect(
-        addComment({ ticketId: "ticket-uuid-1", body: "   ", is_internal: false })
+        addComment({
+          ticketId: "ticket-uuid-1",
+          body: "   ",
+          is_internal: false,
+        }),
       ).rejects.toThrow();
     });
 
     it("forces is_internal=false for client role regardless of payload", async () => {
       const clientMock = makeSupabaseMock({
-        claims: { app_role: "client", sub: "client-id", email: "client@example.com" },
+        claims: {
+          app_role: "client",
+          sub: "client-id",
+          email: "client@example.com",
+        },
         queryResult: {
           data: { ...MOCK_COMMENT, is_internal: false },
           error: null,
@@ -175,7 +187,7 @@ describe("comments actions", () => {
       // Verify the insert was called with is_internal: false
       const insertCall = clientMock.from().insert;
       expect(insertCall).toHaveBeenCalledWith(
-        expect.objectContaining({ is_internal: false })
+        expect.objectContaining({ is_internal: false }),
       );
       expect(result.is_internal).toBe(false);
     });
@@ -185,7 +197,7 @@ describe("comments actions", () => {
         makeSupabaseMock({
           claims: { app_role: "it", sub: "staff-id", email: "staff@corp.com" },
           queryResult: { data: MOCK_COMMENT, error: null },
-        }) as any
+        }) as any,
       );
 
       await addComment({
@@ -196,7 +208,7 @@ describe("comments actions", () => {
 
       expect(mockNotifyPublicComment).toHaveBeenCalledWith(
         MOCK_COMMENT.id,
-        "ticket-uuid-1"
+        "ticket-uuid-1",
       );
       expect(mockNotifyClientComment).not.toHaveBeenCalled();
     });
@@ -205,9 +217,13 @@ describe("comments actions", () => {
       const clientComment = { ...MOCK_COMMENT, id: "client-comment-1" };
       mockCreateClient.mockResolvedValue(
         makeSupabaseMock({
-          claims: { app_role: "client", sub: "client-id", email: "client@example.com" },
+          claims: {
+            app_role: "client",
+            sub: "client-id",
+            email: "client@example.com",
+          },
           queryResult: { data: clientComment, error: null },
-        }) as any
+        }) as any,
       );
 
       await addComment({
@@ -220,7 +236,7 @@ describe("comments actions", () => {
       // notifyClientComment (role=client) and notifyPublicComment (is_internal=false)
       expect(mockNotifyClientComment).toHaveBeenCalledWith(
         clientComment.id,
-        "ticket-uuid-1"
+        "ticket-uuid-1",
       );
     });
 
@@ -229,7 +245,7 @@ describe("comments actions", () => {
         makeSupabaseMock({
           claims: { app_role: "it", sub: "staff-id", email: "staff@corp.com" },
           queryResult: { data: MOCK_INTERNAL_COMMENT, error: null },
-        }) as any
+        }) as any,
       );
 
       await addComment({
@@ -244,11 +260,15 @@ describe("comments actions", () => {
 
     it("throws Not authorized when no role or author id", async () => {
       mockCreateClient.mockResolvedValue(
-        makeSupabaseMock({ claims: null }) as any
+        makeSupabaseMock({ claims: null }) as any,
       );
 
       await expect(
-        addComment({ ticketId: "ticket-uuid-1", body: "test", is_internal: false })
+        addComment({
+          ticketId: "ticket-uuid-1",
+          body: "test",
+          is_internal: false,
+        }),
       ).rejects.toThrow("No autorizado");
     });
   });

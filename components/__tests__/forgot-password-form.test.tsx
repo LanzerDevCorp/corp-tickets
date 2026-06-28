@@ -37,7 +37,10 @@ describe("ForgotPasswordForm", () => {
 
     render(<ForgotPasswordForm />);
 
-    await userEvent.type(screen.getByLabelText(/correo/i), "unknown@nobody.com");
+    await userEvent.type(
+      screen.getByLabelText(/correo/i),
+      "unknown@nobody.com",
+    );
     await userEvent.click(screen.getByRole("button", { name: /enviar/i }));
 
     await waitFor(() => {

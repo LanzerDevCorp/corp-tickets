@@ -15,7 +15,7 @@ export default async function Page({
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       redirect(
-        `/auth/error?error=${encodeURIComponent("Could not verify password reset link.")}`
+        `/auth/error?error=${encodeURIComponent("Could not verify password reset link.")}`,
       );
     }
     redirect("/auth/update-password");

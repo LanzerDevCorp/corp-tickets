@@ -30,7 +30,7 @@ export default async function ClientTrackTicketPage({ params }: PageProps) {
 
     // Best-effort: view tracking must never block access to the ticket.
     await markTicketViewed(ticketId).catch((err) =>
-      console.warn("[ClientTrackTicketPage] markTicketViewed failed:", err)
+      console.warn("[ClientTrackTicketPage] markTicketViewed failed:", err),
     );
 
     return (
@@ -41,10 +41,7 @@ export default async function ClientTrackTicketPage({ params }: PageProps) {
       />
     );
   } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message === es.errors.notAuthorized
-    ) {
+    if (error instanceof Error && error.message === es.errors.notAuthorized) {
       return null;
     }
 

@@ -79,10 +79,12 @@ The `/track/[ticketId]` route MUST retain the existing tracking layout styling (
 ### Requirement: Shared Public Site Header on Access Page
 
 The `/track/access` page MUST render `PublicSiteHeader` with:
+
 - Left: **Mesa de ayuda**
 - Right: link **Enviar ticket** → `/`
 
 The public home page MUST render the same component with:
+
 - Left: **Mesa de ayuda**
 - Right: link **Consultar ticket** → `/track/access`
 
@@ -98,11 +100,11 @@ The public home page MUST render the same component with:
 
 The `/track/access` page title and description MUST depend on `error_code` search param:
 
-| `error_code` | Title key | Description key |
-|--------------|-----------|-----------------|
-| (absent) | `tracking.accessTitle` | `tracking.accessDescription` |
+| `error_code`      | Title key                  | Description key                  |
+| ----------------- | -------------------------- | -------------------------------- |
+| (absent)          | `tracking.accessTitle`     | `tracking.accessDescription`     |
 | `session_expired` | `auth.sessionExpiredTitle` | `auth.sessionExpiredDescription` |
-| `otp_expired` | `tracking.otpExpiredTitle` | `tracking.otpExpiredDescription` |
+| `otp_expired`     | `tracking.otpExpiredTitle` | `tracking.otpExpiredDescription` |
 
 The form (`TrackAccessPanel`) MUST be identical across all variants.
 

@@ -20,7 +20,13 @@ vi.mock("@/lib/supabase/admin", () => ({
   },
 }));
 
-import { loginUser, logoutUser, inviteUser, resetPassword, completeInviteSetup } from "../auth";
+import {
+  loginUser,
+  logoutUser,
+  inviteUser,
+  resetPassword,
+  completeInviteSetup,
+} from "../auth";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
@@ -31,7 +37,9 @@ function makeSupabaseMock(overrides: Record<string, unknown> = {}) {
     auth: {
       signInWithPassword: vi.fn().mockResolvedValue({ data: {}, error: null }),
       signOut: vi.fn().mockResolvedValue({ error: null }),
-      getClaims: vi.fn().mockResolvedValue({ data: { claims: { app_role: "admin" } } }),
+      getClaims: vi
+        .fn()
+        .mockResolvedValue({ data: { claims: { app_role: "admin" } } }),
       resetPasswordForEmail: vi.fn().mockResolvedValue({ error: null }),
       ...overrides,
     },
@@ -102,7 +110,9 @@ describe("inviteUser", () => {
 
   it("returns error when caller is not admin", async () => {
     const mock = makeSupabaseMock({
-      getClaims: vi.fn().mockResolvedValue({ data: { claims: { app_role: "client" } } }),
+      getClaims: vi
+        .fn()
+        .mockResolvedValue({ data: { claims: { app_role: "client" } } }),
     });
     mockCreateClient.mockResolvedValue(mock as never);
 
@@ -119,7 +129,9 @@ describe("inviteUser", () => {
 
   it("calls inviteUserByEmail when caller is admin", async () => {
     const mock = makeSupabaseMock({
-      getClaims: vi.fn().mockResolvedValue({ data: { claims: { app_role: "admin" } } }),
+      getClaims: vi
+        .fn()
+        .mockResolvedValue({ data: { claims: { app_role: "admin" } } }),
     });
     mockCreateClient.mockResolvedValue(mock as never);
     vi.mocked(supabaseAdmin.auth.admin.inviteUserByEmail).mockResolvedValue({
@@ -140,11 +152,11 @@ describe("inviteUser", () => {
       "it@corp.com",
       {
         redirectTo: expect.stringContaining("/auth/accept-invite"),
-      }
+      },
     );
     expect(supabaseAdmin.auth.admin.updateUserById).toHaveBeenCalledWith(
       "invited-user-id",
-      { app_metadata: { role: "it" } }
+      { app_metadata: { role: "it" } },
     );
     expect(update).toHaveBeenCalledWith({ role: "it" });
     expect(eq).toHaveBeenCalledWith("id", "invited-user-id");
@@ -152,7 +164,9 @@ describe("inviteUser", () => {
 
   it("sets app_metadata.role=admin when inviting admin", async () => {
     const mock = makeSupabaseMock({
-      getClaims: vi.fn().mockResolvedValue({ data: { claims: { app_role: "admin" } } }),
+      getClaims: vi
+        .fn()
+        .mockResolvedValue({ data: { claims: { app_role: "admin" } } }),
     });
     mockCreateClient.mockResolvedValue(mock as never);
     vi.mocked(supabaseAdmin.auth.admin.inviteUserByEmail).mockResolvedValue({
@@ -167,7 +181,7 @@ describe("inviteUser", () => {
     await inviteUser("admin2@corp.com", "admin");
     expect(supabaseAdmin.auth.admin.updateUserById).toHaveBeenCalledWith(
       "invited-admin-id",
-      { app_metadata: { role: "admin" } }
+      { app_metadata: { role: "admin" } },
     );
   });
 });

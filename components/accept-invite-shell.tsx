@@ -35,7 +35,9 @@ export function AcceptInviteShell() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setErrorMessage(err instanceof Error ? err.message : t("errors.genericError"));
+        setErrorMessage(
+          err instanceof Error ? err.message : t("errors.genericError"),
+        );
         setStatus("invalid");
       });
 
@@ -48,8 +50,12 @@ export function AcceptInviteShell() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">{t("auth.verifyingInvite")}</CardTitle>
-          <CardDescription>{t("auth.verifyingInviteDescription")}</CardDescription>
+          <CardTitle className="text-2xl">
+            {t("auth.verifyingInvite")}
+          </CardTitle>
+          <CardDescription>
+            {t("auth.verifyingInviteDescription")}
+          </CardDescription>
         </CardHeader>
       </Card>
     );
@@ -65,7 +71,7 @@ export function AcceptInviteShell() {
             {errorMessage ? (
               <>
                 {" "}
-                <span className="block mt-2 text-xs text-muted-foreground">
+                <span className="mt-2 block text-xs text-muted-foreground">
                   ({errorMessage})
                 </span>
               </>

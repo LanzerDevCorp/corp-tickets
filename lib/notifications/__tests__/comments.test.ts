@@ -34,7 +34,10 @@ function makeChain(result: unknown) {
     eq: ReturnType<typeof vi.fn>;
     in: ReturnType<typeof vi.fn>;
     single: ReturnType<typeof vi.fn>;
-    then: (res: (v: unknown) => unknown, rej: (e: unknown) => unknown) => Promise<unknown>;
+    then: (
+      res: (v: unknown) => unknown,
+      rej: (e: unknown) => unknown,
+    ) => Promise<unknown>;
   } = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
@@ -46,7 +49,10 @@ function makeChain(result: unknown) {
 }
 
 function mockTables(map: Record<string, unknown>) {
-  mockFrom.mockImplementation((table: string) => makeChain(map[table]) as unknown as ReturnType<typeof supabaseAdmin.from>);
+  mockFrom.mockImplementation(
+    (table: string) =>
+      makeChain(map[table]) as unknown as ReturnType<typeof supabaseAdmin.from>,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -99,7 +105,11 @@ describe("notifyPublicComment", () => {
       comments: {
         data: {
           body: "We fixed it.",
-          cc_emails: ["client@example.com", "cc1@example.com", "cc1@example.com"],
+          cc_emails: [
+            "client@example.com",
+            "cc1@example.com",
+            "cc1@example.com",
+          ],
           tickets: {
             email: "client@example.com",
             name: "Alice",
@@ -170,7 +180,9 @@ describe("notifyPublicComment", () => {
     mockSend.mockRejectedValueOnce(new Error("auth error"));
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    await expect(notifyPublicComment("comment-1", "ticket-1")).resolves.toBeUndefined();
+    await expect(
+      notifyPublicComment("comment-1", "ticket-1"),
+    ).resolves.toBeUndefined();
     expect(errorSpy).toHaveBeenCalled();
 
     errorSpy.mockRestore();
@@ -228,10 +240,7 @@ describe("notifyClientComment", () => {
         const chain = {
           select: vi.fn().mockReturnThis(),
           in: vi.fn().mockResolvedValue({
-            data: [
-              { email: "it1@corp.test" },
-              { email: "admin@corp.test" },
-            ],
+            data: [{ email: "it1@corp.test" }, { email: "admin@corp.test" }],
             error: null,
           }),
         };
@@ -272,7 +281,10 @@ describe("notifyClientComment", () => {
         };
         return chain as unknown as ReturnType<typeof supabaseAdmin.from>;
       }
-      return makeChain({ data: { body: "Test", cc_emails: [] }, error: null }) as unknown as ReturnType<typeof supabaseAdmin.from>;
+      return makeChain({
+        data: { body: "Test", cc_emails: [] },
+        error: null,
+      }) as unknown as ReturnType<typeof supabaseAdmin.from>;
     });
 
     await notifyClientComment("comment-2", "ticket-2");
@@ -307,7 +319,11 @@ describe("notifyClientComment", () => {
       return makeChain({
         data: {
           body: "Still failing",
-          cc_emails: ["it1@corp.test", "external@example.com", "external@example.com"],
+          cc_emails: [
+            "it1@corp.test",
+            "external@example.com",
+            "external@example.com",
+          ],
         },
         error: null,
       }) as unknown as ReturnType<typeof supabaseAdmin.from>;
@@ -341,7 +357,9 @@ describe("notifyClientComment", () => {
     mockSend.mockRejectedValueOnce(new Error("send failed"));
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    await expect(notifyClientComment("comment-2", "ticket-2")).resolves.toBeUndefined();
+    await expect(
+      notifyClientComment("comment-2", "ticket-2"),
+    ).resolves.toBeUndefined();
     expect(errorSpy).toHaveBeenCalled();
 
     errorSpy.mockRestore();

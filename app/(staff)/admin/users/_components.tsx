@@ -59,10 +59,18 @@ import { roleLabel } from "@/lib/i18n/maps";
 // UsersTable
 // ---------------------------------------------------------------------------
 
-export function UsersTable({ users, currentUserId }: { users: UserRow[]; currentUserId?: string }) {
+export function UsersTable({
+  users,
+  currentUserId,
+}: {
+  users: UserRow[];
+  currentUserId?: string;
+}) {
   if (users.length === 0) {
     return (
-      <p className="text-muted-foreground py-8 text-center">{t("admin.noUsers")}</p>
+      <p className="py-8 text-center text-muted-foreground">
+        {t("admin.noUsers")}
+      </p>
     );
   }
 
@@ -92,7 +100,7 @@ export function UsersTable({ users, currentUserId }: { users: UserRow[]; current
               <span
                 className={getStatusBadgeClass(
                   user.is_pending_invite,
-                  user.is_active
+                  user.is_active,
                 )}
               >
                 {getStatusLabel(user.is_pending_invite, user.is_active)}
@@ -106,7 +114,10 @@ export function UsersTable({ users, currentUserId }: { users: UserRow[]; current
                   <CancelInviteButton userId={user.id} />
                 </div>
               ) : user.is_active ? (
-                <DeactivateButton userId={user.id} isSelf={user.id === currentUserId} />
+                <DeactivateButton
+                  userId={user.id}
+                  isSelf={user.id === currentUserId}
+                />
               ) : (
                 <ReactivateButton userId={user.id} />
               )}
@@ -173,7 +184,9 @@ export function InviteUserDialog() {
     try {
       result = await inviteUser(parsed.data.email, parsed.data.role);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("admin.failedSendInvitation"));
+      toast.error(
+        e instanceof Error ? e.message : t("admin.failedSendInvitation"),
+      );
       return;
     }
 
@@ -244,7 +257,9 @@ export function InviteUserDialog() {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="it">{roleLabel("it")}</SelectItem>
-                      <SelectItem value="admin">{roleLabel("admin")}</SelectItem>
+                      <SelectItem value="admin">
+                        {roleLabel("admin")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -260,7 +275,9 @@ export function InviteUserDialog() {
             form={formId}
             disabled={!form.formState.isValid || form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? t("common.sending") : t("admin.sendInvitation")}
+            {form.formState.isSubmitting
+              ? t("common.sending")
+              : t("admin.sendInvitation")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -361,7 +378,13 @@ export function CancelInviteButton({ userId }: { userId: string }) {
 // DeactivateButton
 // ---------------------------------------------------------------------------
 
-export function DeactivateButton({ userId, isSelf }: { userId: string; isSelf?: boolean }) {
+export function DeactivateButton({
+  userId,
+  isSelf,
+}: {
+  userId: string;
+  isSelf?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();

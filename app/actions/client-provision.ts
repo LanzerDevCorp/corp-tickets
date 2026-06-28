@@ -22,7 +22,7 @@ function isValidEmail(email: string): boolean {
 
 export async function provisionClient(
   email: string,
-  ticketId: string
+  ticketId: string,
 ): Promise<ProvisionResult> {
   if (!isValidEmail(email)) {
     return {
@@ -71,7 +71,7 @@ export async function provisionClient(
 }
 
 export async function requestMagicLink(
-  email: string
+  email: string,
 ): Promise<{ error: string | null }> {
   const trimmed = email.trim();
 

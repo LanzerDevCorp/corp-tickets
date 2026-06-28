@@ -42,7 +42,7 @@ export function UpdatePasswordForm({
       router.push(getPostLoginRedirect(role));
     } catch (error: unknown) {
       setError(
-        error instanceof Error ? error.message : t("errors.genericError")
+        error instanceof Error ? error.message : t("errors.genericError"),
       );
     } finally {
       setIsLoading(false);
@@ -53,8 +53,12 @@ export function UpdatePasswordForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">{t("auth.updatePasswordTitle")}</CardTitle>
-          <CardDescription>{t("auth.updatePasswordDescription")}</CardDescription>
+          <CardTitle className="text-2xl">
+            {t("auth.updatePasswordTitle")}
+          </CardTitle>
+          <CardDescription>
+            {t("auth.updatePasswordDescription")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleForgotPassword}>

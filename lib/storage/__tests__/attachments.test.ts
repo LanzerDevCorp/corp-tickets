@@ -27,10 +27,10 @@ describe("attachments constants", () => {
     expect(ALLOWED_MIME).toContain("image/webp");
     expect(ALLOWED_MIME).toContain("application/zip");
     expect(ALLOWED_MIME).toContain(
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     );
     expect(ALLOWED_MIME).toContain(
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
   });
 

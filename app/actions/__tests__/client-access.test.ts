@@ -60,7 +60,7 @@ describe("accessTicketWithReference", () => {
     mockEstablishClientSession.mockResolvedValue(null);
 
     await expect(
-      accessTicketWithReference("client@test.com", "6087BB67")
+      accessTicketWithReference("client@test.com", "6087BB67"),
     ).rejects.toThrow("REDIRECT:/track/6087bb67-a0e1-4bca-86d9-568137c7e38f");
   });
 
@@ -73,7 +73,7 @@ describe("accessTicketWithReference", () => {
 
     const result = await accessTicketWithReference(
       "client@test.com",
-      "6087BB67"
+      "6087BB67",
     );
 
     expect(result.error).toMatch(/no encontramos/i);

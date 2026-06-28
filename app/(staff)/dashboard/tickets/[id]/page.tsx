@@ -1,5 +1,9 @@
 import TicketDetail from "@/components/dashboard/ticket-detail";
-import { getTicketDetail, getStaffUsers, getCategories } from "@/app/actions/tickets";
+import {
+  getTicketDetail,
+  getStaffUsers,
+  getCategories,
+} from "@/app/actions/tickets";
 import { getComments } from "@/app/actions/comments";
 import { getTicketAttachments } from "@/app/actions/attachments";
 import { notFound } from "next/navigation";
@@ -12,7 +16,13 @@ export default async function TicketDetailPage({ params }: PageProps) {
   const { id } = await params;
 
   try {
-    const [ticket, staffUsers, categories, initialComments, initialAttachments] = await Promise.all([
+    const [
+      ticket,
+      staffUsers,
+      categories,
+      initialComments,
+      initialAttachments,
+    ] = await Promise.all([
       getTicketDetail(id),
       getStaffUsers(),
       getCategories(),

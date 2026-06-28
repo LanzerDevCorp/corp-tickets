@@ -73,7 +73,9 @@ describe("TicketDetail — markTicketAsSeen mount effect", () => {
   });
 
   it("calls markTicketAsSeen with ticket.id on initial mount", async () => {
-    render(<TicketDetail initialTicket={makeTicket("ticket-001")} {...BASE_PROPS} />);
+    render(
+      <TicketDetail initialTicket={makeTicket("ticket-001")} {...BASE_PROPS} />,
+    );
 
     // Allow the useEffect microtask to flush.
     await vi.waitFor(() => {
@@ -89,7 +91,9 @@ describe("TicketDetail — markTicketAsSeen mount effect", () => {
 
     await vi.waitFor(() => expect(mockMarkSeen).toHaveBeenCalledTimes(1));
 
-    rerender(<TicketDetail initialTicket={makeTicket("ticket-002")} {...BASE_PROPS} />);
+    rerender(
+      <TicketDetail initialTicket={makeTicket("ticket-002")} {...BASE_PROPS} />,
+    );
 
     await vi.waitFor(() => {
       expect(mockMarkSeen).toHaveBeenCalledTimes(2);

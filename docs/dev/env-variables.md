@@ -13,13 +13,13 @@ A key defined in `.env.local` overrides the same key in `.env`.
 
 ## File Purposes
 
-| File | Committed | Purpose |
-|------|-----------|---------|
-| `.env` | ✅ | Base defaults — no secrets, safe values only |
-| `.env.local` | ❌ | Local overrides — credentials, local URLs, API keys |
-| `.env.example` | ✅ | Documentation — lists required keys with dummy values |
-| `.env.development` | ✅ | Dev-only defaults (non-secret) |
-| `.env.production` | ✅ | Prod-only defaults (non-secret) |
+| File               | Committed | Purpose                                               |
+| ------------------ | --------- | ----------------------------------------------------- |
+| `.env`             | ✅        | Base defaults — no secrets, safe values only          |
+| `.env.local`       | ❌        | Local overrides — credentials, local URLs, API keys   |
+| `.env.example`     | ✅        | Documentation — lists required keys with dummy values |
+| `.env.development` | ✅        | Dev-only defaults (non-secret)                        |
+| `.env.production`  | ✅        | Prod-only defaults (non-secret)                       |
 
 ## NEXT_PUBLIC_ Prefix Rule
 

@@ -10,10 +10,7 @@
  */
 import { createClient } from "@/lib/supabase/client";
 import { registerAttachments, rollbackTicket } from "@/app/actions/attachments";
-import {
-  ATTACHMENT_BUCKET,
-  buildStoragePath,
-} from "@/lib/storage/attachments";
+import { ATTACHMENT_BUCKET, buildStoragePath } from "@/lib/storage/attachments";
 
 // Use a simple ID generator that works in both browser and test environments
 function generateId(): string {
@@ -39,7 +36,7 @@ export interface OrchestrationResult {
  */
 export async function orchestrateFileUpload(
   ticketId: string,
-  files: File[]
+  files: File[],
 ): Promise<OrchestrationResult> {
   if (files.length === 0) {
     return { error: null, canRetryWithoutFiles: false };
@@ -61,18 +58,20 @@ export async function orchestrateFileUpload(
     const { error: uploadError } = await supabase.storage
       .from(ATTACHMENT_BUCKET)
       .upload(storagePath, file);
-    console.log("AAAAAAAAAAAAA", uploadError)
+    console.log("AAAAAAAAAAAAA", uploadError);
     if (uploadError) {
       // Rollback ticket on any upload failure
       const { error: rollbackError } = await rollbackTicket(ticketId);
       if (rollbackError) {
         return {
-          error: "File upload failed and the ticket could not be cleaned up. Please contact support.",
+          error:
+            "File upload failed and the ticket could not be cleaned up. Please contact support.",
           canRetryWithoutFiles: false,
         };
       }
       return {
-        error: "El archivo no pudo ser subido. Por favor, inténtalo de nuevo o envía sin archivos.",
+        error:
+          "El archivo no pudo ser subido. Por favor, inténtalo de nuevo o envía sin archivos.",
         canRetryWithoutFiles: true,
       };
     }
@@ -86,17 +85,22 @@ export async function orchestrateFileUpload(
   }
 
   // Phase 3: Register attachment rows
-  const { error: registerError } = await registerAttachments(ticketId, uploadedFiles);
+  const { error: registerError } = await registerAttachments(
+    ticketId,
+    uploadedFiles,
+  );
   if (registerError) {
     const { error: rollbackError } = await rollbackTicket(ticketId);
     if (rollbackError) {
       return {
-        error: "Attachment registration failed and the ticket could not be cleaned up. Please contact support.",
+        error:
+          "Attachment registration failed and the ticket could not be cleaned up. Please contact support.",
         canRetryWithoutFiles: false,
       };
     }
     return {
-      error: "Attachment registration failed. Please try again or submit without files.",
+      error:
+        "Attachment registration failed. Please try again or submit without files.",
       canRetryWithoutFiles: true,
     };
   }

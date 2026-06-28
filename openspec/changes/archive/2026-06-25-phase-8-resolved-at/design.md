@@ -11,14 +11,14 @@ This mirrors the proposal's "trigger owns value" decision and the existing
 
 ## Architecture Decisions
 
-| Decision | Choice | Rejected alternative | Rationale |
-|---|---|---|---|
-| Where to set the value | Postgres `BEFORE UPDATE` trigger | Write in `updateTicketStatus` server action | Trigger covers ALL write paths; action-only writes drift if status changes elsewhere; matches established `first_seen_at` pattern |
-| Set vs clear semantics | Set `now()` on transition TO resolved; NULL on transition OUT | Set-only (never clear) | Reopen/close-out must reflect the ticket is no longer resolved; NULL keeps the field truthful |
-| Backfill source | `updated_at` for existing `status='resolved'` rows | Leave historical rows NULL | A best-effort proxy is more useful than NULL for already-resolved tickets; exactness only guaranteed going forward |
-| Column type | `TIMESTAMPTZ NULL` | `TIMESTAMP` | Matches `created_at`/`updated_at`/`first_seen_at`; TZ-aware |
-| Detail display typing | Read `initialTicket.resolved_at` (already `any`) | Introduce generated DB types | Component prop is already `any`; zero type churn, no new tooling |
-| Indexing | `idx_tickets_resolved_at` | No index | Cheap insurance for future SLA/time-to-resolution queries named as out-of-scope; `IF NOT EXISTS` keeps it idempotent |
+| Decision               | Choice                                                        | Rejected alternative                        | Rationale                                                                                                                         |
+| ---------------------- | ------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Where to set the value | Postgres `BEFORE UPDATE` trigger                              | Write in `updateTicketStatus` server action | Trigger covers ALL write paths; action-only writes drift if status changes elsewhere; matches established `first_seen_at` pattern |
+| Set vs clear semantics | Set `now()` on transition TO resolved; NULL on transition OUT | Set-only (never clear)                      | Reopen/close-out must reflect the ticket is no longer resolved; NULL keeps the field truthful                                     |
+| Backfill source        | `updated_at` for existing `status='resolved'` rows            | Leave historical rows NULL                  | A best-effort proxy is more useful than NULL for already-resolved tickets; exactness only guaranteed going forward                |
+| Column type            | `TIMESTAMPTZ NULL`                                            | `TIMESTAMP`                                 | Matches `created_at`/`updated_at`/`first_seen_at`; TZ-aware                                                                       |
+| Detail display typing  | Read `initialTicket.resolved_at` (already `any`)              | Introduce generated DB types                | Component prop is already `any`; zero type churn, no new tooling                                                                  |
+| Indexing               | `idx_tickets_resolved_at`                                     | No index                                    | Cheap insurance for future SLA/time-to-resolution queries named as out-of-scope; `IF NOT EXISTS` keeps it idempotent              |
 
 ## Data Flow
 
@@ -43,11 +43,11 @@ getTicketDetail select('*')  ──→  TicketDetail (initialTicket.resolved_at)
 
 ## File Changes
 
-| File | Action | Description |
-|---|---|---|
+| File                                                        | Action | Description                                                                                                                                                   |
+| ----------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `supabase/migrations/20260625140000_ticket_resolved_at.sql` | Create | ADD COLUMN `resolved_at`; trigger fn `set_resolved_at_on_status_change`; `BEFORE UPDATE` trigger; backfill UPDATE; `idx_tickets_resolved_at`. All idempotent. |
-| `components/dashboard/ticket-detail.tsx` | Modify | Add a "Resuelto" row in the sidebar Info Summary, rendered only when `ticket.resolved_at` is truthy, using `formatDateTime`. |
-| `lib/i18n/es.ts` | Modify | Add `common.resolved: "Resuelto"` label key. |
+| `components/dashboard/ticket-detail.tsx`                    | Modify | Add a "Resuelto" row in the sidebar Info Summary, rendered only when `ticket.resolved_at` is truthy, using `formatDateTime`.                                  |
+| `lib/i18n/es.ts`                                            | Modify | Add `common.resolved: "Resuelto"` label key.                                                                                                                  |
 
 ## Interfaces / Contracts
 
@@ -75,11 +75,11 @@ assignee block, matching existing `flex items-center justify-between` styling.
 
 ## Testing Strategy
 
-| Layer | What to Test | Approach |
-|---|---|---|
+| Layer            | What to Test                                                                                                                                                                          | Approach                                                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | DB (integration) | Trigger sets `now()` on `open→resolved`; clears on `resolved→open` and `resolved→closed`; untouched on edits that keep `status='resolved'`; backfill populates existing resolved rows | pgTAP/SQL assertions against local `supabase start`, OR a Vitest integration test issuing UPDATEs via the service-role client and asserting `resolved_at` |
-| Unit (component) | Sidebar renders formatted `resolved_at` when present; renders NO resolved row when `resolved_at` is null/undefined | Vitest + @testing-library/react, render `TicketDetail` with two `initialTicket` fixtures |
-| i18n | `t("common.resolved")` resolves to "Resuelto" | Covered implicitly by component test using real `t` |
+| Unit (component) | Sidebar renders formatted `resolved_at` when present; renders NO resolved row when `resolved_at` is null/undefined                                                                    | Vitest + @testing-library/react, render `TicketDetail` with two `initialTicket` fixtures                                                                  |
+| i18n             | `t("common.resolved")` resolves to "Resuelto"                                                                                                                                         | Covered implicitly by component test using real `t`                                                                                                       |
 
 Strict TDD: write the failing component test (null vs set fixture) BEFORE
 editing `ticket-detail.tsx`. Trigger behavior is verified by the DB test;

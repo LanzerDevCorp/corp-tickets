@@ -25,7 +25,10 @@ test.describe("Formulario público de tickets", () => {
 
     const { data, error } = await admin
       .from("categories")
-      .upsert({ name: "Soporte técnico", is_enabled: true }, { onConflict: "name" })
+      .upsert(
+        { name: "Soporte técnico", is_enabled: true },
+        { onConflict: "name" },
+      )
       .select("id")
       .single();
 
@@ -37,7 +40,7 @@ test.describe("Formulario público de tickets", () => {
     await page.goto("/");
 
     await expect(
-      page.getByRole("heading", { name: /enviar ticket de soporte/i })
+      page.getByRole("heading", { name: /enviar ticket de soporte/i }),
     ).toBeVisible();
 
     await expect(page.getByLabel(/nombre/i)).toBeVisible();
@@ -54,11 +57,13 @@ test.describe("Formulario público de tickets", () => {
     await expect(trackLink).toHaveAttribute("href", "/track/access");
   });
 
-  test("no muestra link de Acceso staff en el header público", async ({ page }) => {
+  test("no muestra link de Acceso staff en el header público", async ({
+    page,
+  }) => {
     await page.goto("/");
 
     await expect(
-      page.getByRole("link", { name: /acceso staff/i })
+      page.getByRole("link", { name: /acceso staff/i }),
     ).not.toBeVisible();
   });
 
@@ -71,10 +76,12 @@ test.describe("Formulario público de tickets", () => {
     await expect(page.getByRole("radio", { name: /urgente/i })).toBeVisible();
   });
 
-  test("happy path: llena el form y recibe mensaje de éxito", async ({ page }) => {
+  test("happy path: llena el form y recibe mensaje de éxito", async ({
+    page,
+  }) => {
     test.skip(
       !process.env.TEST_SUPABASE_RUNNING,
-      "Requiere Supabase local (TEST_SUPABASE_RUNNING=true)"
+      "Requiere Supabase local (TEST_SUPABASE_RUNNING=true)",
     );
 
     await page.goto("/");
@@ -90,34 +97,38 @@ test.describe("Formulario público de tickets", () => {
     // Priority toggle
     await page.getByRole("radio", { name: /alta/i }).click();
 
-    await page.getByLabel(/describe tu problema/i).fill(
-      "Desde esta mañana no puedo iniciar sesión. He intentado restablecer la contraseña y sigue sin funcionar."
-    );
+    await page
+      .getByLabel(/describe tu problema/i)
+      .fill(
+        "Desde esta mañana no puedo iniciar sesión. He intentado restablecer la contraseña y sigue sin funcionar.",
+      );
 
     // Turnstile disabled — submit without captcha wait
     await page.getByRole("button", { name: /enviar ticket/i }).click();
 
     await expect(
-      page.getByRole("heading", { name: /ticket recibido/i })
+      page.getByRole("heading", { name: /ticket recibido/i }),
     ).toBeVisible({ timeout: 10_000 });
 
     await expect(page.getByText(/te enviaremos un correo/i)).toBeVisible();
     await expect(page.getByText(/referencia/i)).toBeVisible();
   });
 
-  test("muestra error de validación cuando el email es inválido", async ({ page }) => {
+  test("muestra error de validación cuando el email es inválido", async ({
+    page,
+  }) => {
     await page.goto("/");
 
     const emailField = page.getByLabel(/correo electrónico/i);
     await emailField.fill("no-es-un-correo");
     await emailField.blur();
 
-    await expect(
-      page.getByText(/correo electrónico válido/i)
-    ).toBeVisible();
+    await expect(page.getByText(/correo electrónico válido/i)).toBeVisible();
   });
 
-  test("el botón enviar está deshabilitado con formulario vacío", async ({ page }) => {
+  test("el botón enviar está deshabilitado con formulario vacío", async ({
+    page,
+  }) => {
     await page.goto("/");
 
     const submitBtn = page.getByRole("button", { name: /enviar ticket/i });

@@ -7,7 +7,12 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { provisionClient } from "@/app/actions/client-provision";
 import { ticketSubmitSchema } from "@/lib/schemas/ticket-submit";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify";
-import { notifyNewTicket, notifyTicketCreated, notifyTicketClosed, notifyTicketResolved } from "@/lib/notifications/tickets";
+import {
+  notifyNewTicket,
+  notifyTicketCreated,
+  notifyTicketClosed,
+  notifyTicketResolved,
+} from "@/lib/notifications/tickets";
 import { es } from "@/lib/i18n/es";
 
 export type TicketSubmitResult =
@@ -16,7 +21,7 @@ export type TicketSubmitResult =
 
 export async function submitTicket(
   _prevState: TicketSubmitResult,
-  formData: FormData
+  formData: FormData,
 ): Promise<TicketSubmitResult> {
   const raw = {
     name: formData.get("name"),
@@ -71,8 +76,8 @@ export async function submitTicket(
       : Promise.resolve(
           console.error(
             "[submitTicket] actionLink missing — client email NOT sent. provisionError:",
-            provisionResult.error
-          )
+            provisionResult.error,
+          ),
         ),
   ]);
 
@@ -93,9 +98,7 @@ export async function getTickets(filters: {
     throw new Error(es.errors.notAuthorized);
   }
 
-  let query = supabase
-    .from("tickets")
-    .select(`
+  let query = supabase.from("tickets").select(`
       *,
       category:categories(name),
       assignee:users!assigned_to(display_name, email)
@@ -146,11 +149,13 @@ export async function getTicketDetail(id: string) {
 
     const { data: ticket, error } = await supabase
       .from("tickets")
-      .select(`
+      .select(
+        `
         *,
         category:categories(name),
         assignee:users!assigned_to(display_name, email)
-      `)
+      `,
+      )
       .eq("id", id)
       .eq("email", email)
       .single();
@@ -170,21 +175,25 @@ export async function getTicketDetail(id: string) {
     .eq("id", id)
     .eq("status", "open")
     .is("assigned_to", null)
-    .select(`
+    .select(
+      `
       *,
       category:categories(name),
       assignee:users!assigned_to(display_name, email)
-    `)
+    `,
+    )
     .maybeSingle();
 
   if (!ticket) {
     const { data, error } = await supabase
       .from("tickets")
-      .select(`
+      .select(
+        `
         *,
         category:categories(name),
         assignee:users!assigned_to(display_name, email)
-      `)
+      `,
+      )
       .eq("id", id)
       .single();
 
@@ -200,7 +209,7 @@ export async function getTicketDetail(id: string) {
 export async function updateTicketStatus(
   id: string,
   status: "open" | "in_progress" | "resolved" | "closed",
-  closureReason?: string
+  closureReason?: string,
 ) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -225,11 +234,13 @@ export async function updateTicketStatus(
     .from("tickets")
     .update(updatePayload)
     .eq("id", id)
-    .select(`
+    .select(
+      `
       *,
       category:categories(name),
       assignee:users!assigned_to(display_name, email)
-    `)
+    `,
+    )
     .single();
 
   if (error) {
@@ -260,11 +271,13 @@ export async function assignTicket(id: string, assignedTo: string | null) {
     .from("tickets")
     .update({ assigned_to: assignedTo === "unassigned" ? null : assignedTo })
     .eq("id", id)
-    .select(`
+    .select(
+      `
       *,
       category:categories(name),
       assignee:users!assigned_to(display_name, email)
-    `)
+    `,
+    )
     .single();
 
   if (error) {
@@ -286,11 +299,13 @@ export async function updateTicketCategory(id: string, categoryId: string) {
     .from("tickets")
     .update({ category_id: categoryId })
     .eq("id", id)
-    .select(`
+    .select(
+      `
       *,
       category:categories(name),
       assignee:users!assigned_to(display_name, email)
-    `)
+    `,
+    )
     .single();
 
   if (error) {

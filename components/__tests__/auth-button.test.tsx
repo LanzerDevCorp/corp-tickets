@@ -36,13 +36,13 @@ describe("AuthButton", () => {
     render(element);
 
     expect(
-      screen.getByRole("link", { name: /iniciar sesión/i })
+      screen.getByRole("link", { name: /iniciar sesión/i }),
     ).toBeInTheDocument();
   });
 
   it("shows /dashboard link for staff role (admin)", async () => {
     mockCreateClient.mockResolvedValue(
-      makeSupabaseMock({ app_role: "admin", email: "admin@corp.com" }) as never
+      makeSupabaseMock({ app_role: "admin", email: "admin@corp.com" }) as never,
     );
 
     const element = await AuthButton();
@@ -54,7 +54,10 @@ describe("AuthButton", () => {
 
   it("shows /track link for client role", async () => {
     mockCreateClient.mockResolvedValue(
-      makeSupabaseMock({ app_role: "client", email: "client@corp.com" }) as never
+      makeSupabaseMock({
+        app_role: "client",
+        email: "client@corp.com",
+      }) as never,
     );
 
     const element = await AuthButton();

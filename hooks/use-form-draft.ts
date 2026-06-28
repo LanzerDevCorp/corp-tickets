@@ -78,25 +78,45 @@ export function useFormDraft(
 
     // Restore each persisted field with shouldValidate:false to batch trigger later
     if ("name" in payload && payload.name !== undefined) {
-      form.setValue("name", payload.name, { shouldDirty: false, shouldValidate: false });
+      form.setValue("name", payload.name, {
+        shouldDirty: false,
+        shouldValidate: false,
+      });
     }
     if ("email" in payload && payload.email !== undefined) {
-      form.setValue("email", payload.email, { shouldDirty: false, shouldValidate: false });
+      form.setValue("email", payload.email, {
+        shouldDirty: false,
+        shouldValidate: false,
+      });
     }
     if ("subject" in payload && payload.subject !== undefined) {
-      form.setValue("subject", payload.subject, { shouldDirty: false, shouldValidate: false });
+      form.setValue("subject", payload.subject, {
+        shouldDirty: false,
+        shouldValidate: false,
+      });
     }
     if ("body" in payload && payload.body !== undefined) {
-      form.setValue("body", payload.body, { shouldDirty: false, shouldValidate: false });
+      form.setValue("body", payload.body, {
+        shouldDirty: false,
+        shouldValidate: false,
+      });
     }
     // Priority: only set when key is explicitly present in payload
     if ("priority" in payload && payload.priority !== undefined) {
-      form.setValue("priority", payload.priority, { shouldDirty: false, shouldValidate: false });
+      form.setValue("priority", payload.priority, {
+        shouldDirty: false,
+        shouldValidate: false,
+      });
     }
     // Stale-category guard: fall back to "" if stored UUID not in current list
     if ("category_id" in payload && payload.category_id !== undefined) {
-      const validId = categoryIds.includes(payload.category_id) ? payload.category_id : "";
-      form.setValue("category_id", validId, { shouldDirty: false, shouldValidate: false });
+      const validId = categoryIds.includes(payload.category_id)
+        ? payload.category_id
+        : "";
+      form.setValue("category_id", validId, {
+        shouldDirty: false,
+        shouldValidate: false,
+      });
     }
 
     // Batch revalidation after all setValue calls (ADR-9)

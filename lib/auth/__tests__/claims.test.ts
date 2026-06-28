@@ -12,7 +12,7 @@ describe("getAppRoleFromClaims", () => {
 
   it("prefers app_role over app_metadata.role", () => {
     expect(
-      getAppRoleFromClaims({ app_role: "admin", app_metadata: { role: "it" } })
+      getAppRoleFromClaims({ app_role: "admin", app_metadata: { role: "it" } }),
     ).toBe("admin");
   });
 

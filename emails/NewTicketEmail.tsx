@@ -1,4 +1,12 @@
-import { Html, Body, Container, Heading, Text, Button, Hr } from "@react-email/components";
+import {
+  Html,
+  Body,
+  Container,
+  Heading,
+  Text,
+  Button,
+  Hr,
+} from "@react-email/components";
 import { es } from "@/lib/i18n/es";
 import { priorityLabel } from "@/lib/i18n/maps";
 
@@ -94,7 +102,8 @@ export default function NewTicketEmail({
             >
               {priorityLabel(priority)}
             </span>
-            {"  ·  "}{es.email.newTicket.category} {categoryName}
+            {"  ·  "}
+            {es.email.newTicket.category} {categoryName}
           </Text>
 
           <Text

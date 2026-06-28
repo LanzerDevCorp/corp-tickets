@@ -21,7 +21,8 @@ function resolveTitle(errorCode: string | undefined): string {
 }
 
 function resolveDescription(errorCode: string | undefined): string {
-  if (errorCode === "session_expired") return t("auth.sessionExpiredDescription");
+  if (errorCode === "session_expired")
+    return t("auth.sessionExpiredDescription");
   if (errorCode === "otp_expired") return t("tracking.otpExpiredDescription");
   return t("tracking.accessDescription");
 }

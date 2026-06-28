@@ -27,7 +27,7 @@ describe("verifyTurnstileToken", () => {
 
   it("retorna success: true cuando Cloudflare responde con success: true", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
-      new Response(JSON.stringify({ success: true }), { status: 200 })
+      new Response(JSON.stringify({ success: true }), { status: 200 }),
     );
 
     const result = await verifyTurnstileToken("valid-token");
@@ -36,7 +36,7 @@ describe("verifyTurnstileToken", () => {
 
   it("retorna success: false cuando Cloudflare responde con success: false", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
-      new Response(JSON.stringify({ success: false }), { status: 200 })
+      new Response(JSON.stringify({ success: false }), { status: 200 }),
     );
 
     const result = await verifyTurnstileToken("bad-token");
@@ -55,7 +55,7 @@ describe("verifyTurnstileToken", () => {
 
   it("retorna success: false cuando HTTP no es 2xx", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
-      new Response("Internal Server Error", { status: 500 })
+      new Response("Internal Server Error", { status: 500 }),
     );
 
     const result = await verifyTurnstileToken("any-token");
@@ -72,7 +72,7 @@ describe("verifyTurnstileToken", () => {
 
   it("llama a siteverify con el secret y el token correctos", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
-      new Response(JSON.stringify({ success: true }), { status: 200 })
+      new Response(JSON.stringify({ success: true }), { status: 200 }),
     );
 
     await verifyTurnstileToken("my-token");
@@ -81,7 +81,7 @@ describe("verifyTurnstileToken", () => {
       SITEVERIFY_URL,
       expect.objectContaining({
         method: "POST",
-      })
+      }),
     );
   });
 

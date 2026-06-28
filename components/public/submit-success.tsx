@@ -31,9 +31,9 @@ export function SubmitSuccess({ ticketId }: SubmitSuccessProps) {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <div className="bg-white rounded-xl border border-border border-l-4 border-l-[#2563EB] shadow-sm px-8 py-12 text-center">
-        <div className="flex justify-center mb-5">
+    <div className="mx-auto w-full max-w-2xl">
+      <div className="rounded-xl border border-l-4 border-border border-l-[#2563EB] bg-white px-8 py-12 text-center shadow-sm">
+        <div className="mb-5 flex justify-center">
           <div className="rounded-full bg-blue-50 p-4">
             <CheckCircle2Icon
               className="size-8 text-[#2563EB]"
@@ -42,14 +42,16 @@ export function SubmitSuccess({ ticketId }: SubmitSuccessProps) {
           </div>
         </div>
 
-        <h2 className="text-xl font-semibold text-[#1C2438]">Ticket recibido</h2>
-        <p className="mt-2 text-sm text-muted-foreground max-w-sm mx-auto">
+        <h2 className="text-xl font-semibold text-[#1C2438]">
+          Ticket recibido
+        </h2>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
           Recibimos tu solicitud. Te enviaremos un correo con el enlace para
           darle seguimiento. Guarda tu número de ticket para volver a entrar si
           caduca la sesión.
         </p>
 
-        <div className="mt-8 mx-auto max-w-sm">
+        <div className="mx-auto mt-8 max-w-sm">
           <div
             className="relative overflow-hidden rounded-lg border border-[#1C2438]/12 bg-linear-to-br from-[#1C2438]/4 to-transparent"
             role="group"
@@ -59,13 +61,13 @@ export function SubmitSuccess({ ticketId }: SubmitSuccessProps) {
               className="absolute inset-y-3 left-0 w-4 border-r border-dashed border-[#1C2438]/20"
               aria-hidden
             />
-            <div className="pl-6 pr-4 py-4">
-              <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            <div className="py-4 pr-4 pl-6">
+              <p className="text-[10px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
                 Tu número de ticket
               </p>
               <div className="mt-2.5 flex items-center justify-between gap-3">
                 <p className="font-mono text-2xl font-semibold tracking-[0.18em] text-[#1C2438] tabular-nums">
-                  <span className="text-muted-foreground/50 tracking-normal">
+                  <span className="tracking-normal text-muted-foreground/50">
                     #
                   </span>
                   {ref}
@@ -103,7 +105,7 @@ export function SubmitSuccess({ ticketId }: SubmitSuccessProps) {
           </div>
         </div>
 
-        <p className="mt-6 text-xs text-muted-foreground/80 max-w-sm mx-auto">
+        <p className="mx-auto mt-6 max-w-sm text-xs text-muted-foreground/80">
           Cuando abras el enlace del correo, podrás crear una contraseña para
           entrar más rápido la próxima vez.
         </p>
@@ -112,7 +114,7 @@ export function SubmitSuccess({ ticketId }: SubmitSuccessProps) {
           ¿Tienes otro problema?{" "}
           <a
             href="/"
-            className="underline underline-offset-2 hover:text-foreground transition-colors"
+            className="underline underline-offset-2 transition-colors hover:text-foreground"
           >
             Enviar otro ticket
           </a>
