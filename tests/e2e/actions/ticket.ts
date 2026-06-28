@@ -32,19 +32,20 @@ export async function submitPublicTicket(page: Page, data: TicketData) {
 
 /** Dashboard queue: resolve a ticket via the hover-card "Resuelto" quick action. */
 export async function resolveViaTooltip(page: Page, subject: string) {
-  await page.getByRole("link", { name: subject }).hover();
   const button = page.getByRole("button", { name: /^resuelto$/i });
-  await expect(button).toBeVisible();
-  // The queue does not optimistically refetch, so sync on the server action
-  // response (a Next server action POST) instead of a UI change.
-  await Promise.all([
-    page.waitForResponse(
-      (r) =>
-        r.request().method() === "POST" &&
-        r.request().headers()["next-action"] !== undefined,
-    ),
-    button.click(),
-  ]);
+  // Realtime refetches can re-render the row and close the hover-card between
+  // hover and click; retry opening the card until the action is visible.
+  await expect(async () => {
+    await page.getByRole("link", { name: subject }).hover();
+    await expect(button).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 15_000 });
+
+  await button.click();
+  // onResolved refetches and the resolved ticket leaves the open queue, so the
+  // quick-action button detaches once the resolution has committed. This is a
+  // reliable sync point (a generic next-action POST would also match the
+  // markTicketAsSeen request fired on hover).
+  await expect(button).toBeHidden({ timeout: 10_000 });
 }
 
 /** Navigate to a ticket's detail page and wait for the status control. */
