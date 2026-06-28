@@ -339,6 +339,7 @@ export default function TicketQueue({
                           onSeen={
                             isNew ? () => void onSeen(ticket.id) : undefined
                           }
+                          onResolved={() => void refetch()}
                         />
                       </TableCell>
                       <TableCell className="py-3 align-top text-zinc-800 dark:text-zinc-200">
