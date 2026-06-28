@@ -39,9 +39,10 @@ Read before authoring. These are the traps that silently break deterministic run
   a string containing X (e.g. a dialog titled "Indica el motivo de cierre" vs a
   textarea labeled "Motivo de cierre"). Anchor by role: `getByRole("textbox",
   { name: /motivo de cierre/i })`.
-- The dashboard queue does NOT optimistically refetch after the tooltip
-  "Mark as resolved" (no `onResolved` wired). Do not sync on the button hiding;
-  sync on the server action response:
+- The tooltip hover-card resolve button is labeled "Resuelto" (Spanish), not
+  "Mark as resolved" — UI labels drift, so verify against the live component.
+- The tooltip resolve action does not return a UI signal you can rely on across
+  Realtime/refetch timing; sync on the server action response instead:
   `page.waitForResponse(r => r.request().method() === "POST" && r.request().headers()["next-action"] !== undefined)`.
 - Resolved/closed tickets leave the default open/in_progress queue, so assert the
   outcome on the detail page (`getByLabel(/estado del ticket/i)`), not the queue.

@@ -30,10 +30,10 @@ export async function submitPublicTicket(page: Page, data: TicketData) {
   ).toBeVisible({ timeout: 10_000 });
 }
 
-/** Dashboard queue: resolve a ticket via the hover-card "Mark as resolved" quick action. */
+/** Dashboard queue: resolve a ticket via the hover-card "Resuelto" quick action. */
 export async function resolveViaTooltip(page: Page, subject: string) {
   await page.getByRole("link", { name: subject }).hover();
-  const button = page.getByRole("button", { name: /mark as resolved/i });
+  const button = page.getByRole("button", { name: /^resuelto$/i });
   await expect(button).toBeVisible();
   // The queue does not optimistically refetch, so sync on the server action
   // response (a Next server action POST) instead of a UI change.
