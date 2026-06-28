@@ -63,7 +63,7 @@ describe("AttachmentManager", () => {
     expect(
       screen.getByRole("button", { name: /eliminar/i }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /descargar/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /ver/i })).toHaveAttribute(
       "href",
       "https://signed.url/reporte.pdf",
     );
