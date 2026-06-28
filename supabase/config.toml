@@ -133,6 +133,8 @@ allowed_mime_types = [
   "image/png",
   "image/webp",
   "application/zip",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ]
 
 # Allow connections via S3 compatible clients

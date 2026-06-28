@@ -209,20 +209,18 @@ export default function AttachmentManager({
             return (
               <li
                 key={att.id}
-                className={`flex items-center justify-between rounded-md border px-3 py-2 text-sm ${
-                  isGreyed
+                className={`flex items-center justify-between rounded-md border px-3 py-2 text-sm ${isGreyed
                     ? "border-zinc-200/60 bg-zinc-100/80 text-zinc-400 dark:border-zinc-800/60 dark:bg-zinc-900/30"
                     : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50"
-                }`}
+                  }`}
               >
                 <div className="flex min-w-0 items-center gap-2">
                   <Paperclip className="h-3.5 w-3.5 shrink-0 opacity-60" />
                   <span
-                    className={`truncate font-medium ${
-                      isGreyed
+                    className={`truncate font-medium ${isGreyed
                         ? "text-zinc-400 line-through dark:text-zinc-500"
                         : "text-zinc-800 dark:text-zinc-200"
-                    }`}
+                      }`}
                   >
                     {att.filename}
                   </span>
@@ -261,7 +259,7 @@ export default function AttachmentManager({
                         download={att.filename}
                         className="text-xs font-medium text-[#1C2438] hover:underline dark:text-zinc-300"
                       >
-                        Descargar
+                        Ver
                       </a>
                       <Button
                         type="button"
