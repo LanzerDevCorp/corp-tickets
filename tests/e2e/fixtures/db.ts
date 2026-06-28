@@ -49,6 +49,20 @@ export async function ensureCategory(name = "Soporte técnico") {
   if (error) throw error;
 }
 
+/**
+ * Delete every ticket created by the E2E suite. All test subjects carry the
+ * `E2E-` marker (see makeTicket), so this targets only test-generated data and
+ * leaves manually-seeded tickets untouched. FKs (comments, attachments,
+ * ticket_views) cascade on delete.
+ */
+export async function cleanupE2ETickets() {
+  const { error } = await adminClient()
+    .from("tickets")
+    .delete()
+    .like("subject", "%E2E-%");
+  if (error) throw error;
+}
+
 /** Resolve a ticket's UUID by its unique subject — used to open its detail page. */
 export async function getTicketIdBySubject(subject: string): Promise<string> {
   const { data, error } = await adminClient()

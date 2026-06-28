@@ -7,6 +7,7 @@ import {
   E2E_ADMIN_PASSWORD,
   STORAGE_STATE,
 } from "./fixtures/auth";
+import { cleanupE2ETickets } from "./fixtures/db";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -32,6 +33,9 @@ setup("authenticate as e2e admin", async ({ page }) => {
   const admin = createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
+
+  // Start from a clean slate in case a previous run crashed before teardown.
+  await cleanupE2ETickets();
 
   // The admin RBAC role travels in the JWT as the `app_role` claim, sourced
   // from app_metadata.role via the custom access token hook.

@@ -44,7 +44,9 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     /* Seeds the e2e admin and persists its session before the browser projects run. */
-    { name: "setup", testMatch: /global\.setup\.ts/ },
+    { name: "setup", testMatch: /global\.setup\.ts/, teardown: "cleanup" },
+    /* Removes test-created tickets after the suite finishes. */
+    { name: "cleanup", testMatch: /global\.teardown\.ts/ },
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },

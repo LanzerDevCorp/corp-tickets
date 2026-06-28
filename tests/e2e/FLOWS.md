@@ -28,6 +28,19 @@ flip its ✅/⬜ here. **Before authoring a new flow**: add a new section.
 | Exclude negatives       | `npx playwright test --grep-invert @negative --project=chromium` |
 | Watch it slow           | prefix `SLOWMO=800` and add `--headed` (or use `--ui`)           |
 
+## Test data & isolation
+
+- Every test creates its own data with a unique `E2E-<ts>-<rand>` marker
+  (`makeTicket`), so parallel tests never collide on data.
+- `global.setup.ts` wipes leftover E2E tickets at the start (clean slate), and a
+  `cleanup` teardown project (`global.teardown.ts`) wipes them again at the end,
+  so the shared local DB does not accumulate test data. Both call
+  `cleanupE2ETickets()` (deletes `subject LIKE '%E2E-%'`; FKs cascade).
+- Realtime is live: resolving a ticket in one test refetches every open
+  dashboard, which can re-render rows mid-interaction. UI actions that depend on
+  a transient element (e.g. the hover-card) must retry — see `resolveViaTooltip`
+  wrapping its hover in `expect(...).toPass()`.
+
 ## Flow: Ticket lifecycle
 
 File: `tests/e2e/ticket-lifecycle.spec.ts`
