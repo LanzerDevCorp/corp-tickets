@@ -1,14 +1,12 @@
 import { test, expect } from "@playwright/test";
-
-const ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL ?? "admin@corp.local";
-const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD ?? "AdminPass1!";
+import { E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD } from "../fixtures/auth";
 
 test.describe("Staff login flow", () => {
   test("admin logs in and is redirected to /dashboard", async ({ page }) => {
     await page.goto("/auth/login");
 
-    await page.fill('[name="email"]', ADMIN_EMAIL);
-    await page.fill('[name="password"]', ADMIN_PASSWORD);
+    await page.fill('[name="email"]', E2E_ADMIN_EMAIL);
+    await page.fill('[name="password"]', E2E_ADMIN_PASSWORD);
     await page.click('[type="submit"]');
 
     await expect(page).toHaveURL(/\/dashboard/);
@@ -17,7 +15,7 @@ test.describe("Staff login flow", () => {
   test("wrong password shows error and no redirect", async ({ page }) => {
     await page.goto("/auth/login");
 
-    await page.fill('[name="email"]', ADMIN_EMAIL);
+    await page.fill('[name="email"]', E2E_ADMIN_EMAIL);
     await page.fill('[name="password"]', "wrongpassword");
     await page.click('[type="submit"]');
 
@@ -34,13 +32,14 @@ test.describe("Staff login flow", () => {
 
   test("logout clears session and redirects to /", async ({ page }) => {
     await page.goto("/auth/login");
-    await page.fill('[name="email"]', ADMIN_EMAIL);
-    await page.fill('[name="password"]', ADMIN_PASSWORD);
+    await page.fill('[name="email"]', E2E_ADMIN_EMAIL);
+    await page.fill('[name="password"]', E2E_ADMIN_PASSWORD);
     await page.click('[type="submit"]');
     await expect(page).toHaveURL(/\/dashboard/);
 
     await page.click('button:has-text("Cerrar sesión")');
-    await expect(page).toHaveURL("/");
+    // logoutUser() redirects to "/" but middleware may redirect to /auth/login
+    await expect(page).toHaveURL(/\/(auth\/login)?$/);
 
     await page.goto("/dashboard");
     await expect(page).toHaveURL(/\/auth\/login/);

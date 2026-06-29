@@ -23,7 +23,12 @@ export async function submitPublicTicket(page: Page, data: TicketData) {
     .click();
 
   await page.getByLabel(/describe tu problema/i).fill(data.body);
-  await page.getByRole("button", { name: /enviar ticket/i }).click();
+  // WebKit may not trigger react-hook-form onChange via fill(); blur to force validation.
+  await page.getByLabel(/describe tu problema/i).blur();
+  const submitBtn = page.getByRole("button", { name: /enviar ticket/i });
+  // WebKit may lag react-hook-form onChange validation; wait for enabled state.
+  await expect(submitBtn).toBeEnabled({ timeout: 15_000 });
+  await submitBtn.click();
 
   await expect(
     page.getByRole("heading", { name: /ticket recibido/i }),

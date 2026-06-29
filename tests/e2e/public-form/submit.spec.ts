@@ -49,12 +49,12 @@ test.describe("Formulario público de tickets", () => {
     await expect(page.getByLabel(/describe tu problema/i)).toBeVisible();
   });
 
-  test("muestra el link Consultar ticket en el header", async ({ page }) => {
+  test("muestra el link Acceder en el header", async ({ page }) => {
     await page.goto("/");
 
-    const trackLink = page.getByRole("link", { name: /consultar ticket/i });
-    await expect(trackLink).toBeVisible();
-    await expect(trackLink).toHaveAttribute("href", "/track/access");
+    const accessLink = page.getByRole("link", { name: /acceder/i });
+    await expect(accessLink).toBeVisible();
+    await expect(accessLink).toHaveAttribute("href", "/portal");
   });
 
   test("no muestra link de Acceso staff en el header público", async ({
@@ -104,14 +104,21 @@ test.describe("Formulario público de tickets", () => {
       );
 
     // Turnstile disabled — submit without captcha wait
-    await page.getByRole("button", { name: /enviar ticket/i }).click();
+    // WebKit may not trigger react-hook-form onChange via fill(); blur to force validation.
+    await page.getByLabel(/describe tu problema/i).blur();
+    const submitBtn = page.getByRole("button", { name: /enviar ticket/i });
+    // WebKit may lag react-hook-form onChange validation; wait for enabled state.
+    await expect(submitBtn).toBeEnabled({ timeout: 15_000 });
+    await submitBtn.click();
 
     await expect(
       page.getByRole("heading", { name: /ticket recibido/i }),
     ).toBeVisible({ timeout: 10_000 });
 
     await expect(page.getByText(/te enviaremos un correo/i)).toBeVisible();
-    await expect(page.getByText(/referencia/i)).toBeVisible();
+    await expect(
+      page.getByText("Tu número de ticket", { exact: true }),
+    ).toBeVisible();
   });
 
   test("muestra error de validación cuando el email es inválido", async ({
@@ -123,7 +130,10 @@ test.describe("Formulario público de tickets", () => {
     await emailField.fill("no-es-un-correo");
     await emailField.blur();
 
-    await expect(page.getByText(/correo electrónico válido/i)).toBeVisible();
+    // WebKit may need a moment for react-hook-form onChange validation
+    await expect(page.getByText(/correo electrónico válido/i)).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("el botón enviar está deshabilitado con formulario vacío", async ({
