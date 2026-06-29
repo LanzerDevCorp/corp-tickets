@@ -42,6 +42,7 @@ import { formatDate } from "@/lib/format-date";
 import { TicketSubjectPreview } from "@/components/dashboard/ticket-subject-preview";
 import { statusLabel, priorityLabel } from "@/lib/labels";
 import { UNCATEGORIZED } from "@/lib/tickets/category-filter";
+import { useQueueFilters, DEFAULT_STATUSES } from "@/hooks/use-queue-filters";
 
 type QueueTicket = {
   id: string;
@@ -89,8 +90,6 @@ const STATUS_DOT_COLORS: Record<string, string> = {
   closed: "bg-rose-500",
 };
 
-const DEFAULT_STATUSES = ["open", "in_progress"];
-
 function normalizeStatusSelection(prev: string[], next: string[]): string[] {
   if (next.length === 0) return [...DEFAULT_STATUSES];
   const added = next.find((v) => !prev.includes(v));
@@ -127,9 +126,21 @@ export default function TicketQueue({
     }
   }, []);
 
-  const [statusSelection, setStatusSelection] = useState<string[]>([
-    ...DEFAULT_STATUSES,
-  ]);
+  // Filter state, persisted to localStorage so the selection survives sessions.
+  const {
+    statusSelection,
+    setStatusSelection,
+    priority,
+    setPriority,
+    assignedTo,
+    setAssignedTo,
+    categoryIds,
+    setCategoryIds,
+    sortOrder,
+    setSortOrder,
+    sortField,
+    setSortField,
+  } = useQueueFilters(staffUsers, categories);
 
   const statusBadgeLabels = useMemo(
     () =>
@@ -148,13 +159,6 @@ export default function TicketQueue({
         {} as Record<string, React.ReactNode>,
       ),
     [],
-  );
-  const [priority, setPriority] = useState<string>("all");
-  const [assignedTo, setAssignedTo] = useState<string>("all");
-  const [categoryIds, setCategoryIds] = useState<string[]>([]);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [sortField, setSortField] = useState<"created_at" | "status">(
-    "created_at",
   );
 
   const filters = {
@@ -214,7 +218,10 @@ export default function TicketQueue({
                 )
               }
             >
-              <MultiSelectTrigger className="min-w-[200px] bg-white dark:bg-zinc-900">
+              <MultiSelectTrigger
+                aria-label="Filtrar por estado"
+                className="min-w-[200px] bg-white dark:bg-zinc-900"
+              >
                 <MultiSelectValue placeholder={"Estado"} />
               </MultiSelectTrigger>
               <MultiSelectContent search={false}>
@@ -245,7 +252,10 @@ export default function TicketQueue({
             {/* Priority Filter */}
             <div className="w-[170px] shrink-0">
               <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger className="bg-white dark:bg-zinc-900">
+                <SelectTrigger
+                  aria-label="Filtrar por prioridad"
+                  className="bg-white dark:bg-zinc-900"
+                >
                   <SelectValue placeholder={"Prioridad"} />
                 </SelectTrigger>
                 <SelectContent>
@@ -265,7 +275,10 @@ export default function TicketQueue({
             {/* Assigned To Filter */}
             <div className="mx-[10px] w-[210px] shrink-0">
               <Select value={assignedTo} onValueChange={setAssignedTo}>
-                <SelectTrigger className="bg-white dark:bg-zinc-900">
+                <SelectTrigger
+                  aria-label="Filtrar por asignado"
+                  className="bg-white dark:bg-zinc-900"
+                >
                   <SelectValue placeholder={"Asignado"} />
                 </SelectTrigger>
                 <SelectContent>
@@ -282,7 +295,10 @@ export default function TicketQueue({
 
             {/* Category Filter */}
             <MultiSelect values={categoryIds} onValuesChange={setCategoryIds}>
-              <MultiSelectTrigger className="min-w-[180px] bg-white dark:bg-zinc-900">
+              <MultiSelectTrigger
+                aria-label="Filtrar por categoría"
+                className="min-w-[180px] bg-white dark:bg-zinc-900"
+              >
                 <MultiSelectValue placeholder={"Categoría"} />
               </MultiSelectTrigger>
               <MultiSelectContent search={false}>

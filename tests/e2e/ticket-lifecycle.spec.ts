@@ -14,6 +14,11 @@ import {
   setStatusViaDetail,
   submitPublicTicket,
 } from "./actions/ticket";
+import {
+  QUEUE_FILTER,
+  expectQueueFilter,
+  selectQueueFilter,
+} from "./actions/queue-filters";
 
 /**
  * Ticket lifecycle — the critical E2E flow and its status-change branches.
@@ -155,7 +160,7 @@ test.describe("Category filter", () => {
     browser: import("@playwright/test").Browser,
   ): Promise<Page> {
     const ctx = await browser.newContext({ storageState: STORAGE_STATE });
-    const page = ctx.newPage();
+    const page = await ctx.newPage();
     await page.goto("/dashboard");
     return page;
   }
@@ -290,6 +295,72 @@ test.describe("Category filter", () => {
 
       // Status filter trigger should still be visible and unchanged
       await expect(statusTrigger).toBeVisible();
+      await page.context().close();
+    },
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Queue filter persistence — dashboard ticket queue
+// ---------------------------------------------------------------------------
+
+test.describe("Queue filter persistence", () => {
+  test.beforeAll(async () => {
+    if (!hasSupabaseEnv) {
+      test.skip(true, "Requires local Supabase with service role key");
+    }
+  });
+
+  /** Helper: open an admin dashboard page backed by the persisted staff session. */
+  async function adminDashboard(
+    browser: import("@playwright/test").Browser,
+  ): Promise<Page> {
+    const ctx = await browser.newContext({ storageState: STORAGE_STATE });
+    const page = await ctx.newPage();
+    await page.goto("/dashboard");
+    // Wait for the queue to finish its initial load (and the localStorage
+    // restore re-render to settle) before touching the filters.
+    await expect(
+      page.getByRole("combobox", { name: QUEUE_FILTER.priority }),
+    ).toBeVisible({ timeout: 10_000 });
+    return page;
+  }
+
+  test(
+    "the four queue filters persist across a reload",
+    { tag: ["@filter-persistence", "@queue"] },
+    async ({ browser }) => {
+      test.skip(!hasSupabaseEnv, "Requires local Supabase");
+      const page = await adminDashboard(browser);
+
+      // Choose one value in each of the four filters. Values are picked to be
+      // deterministic regardless of seed data: "Todos los estados" collapses the
+      // status MultiSelect to a single badge, and "Sin asignar" / "Sin categoría"
+      // are always present.
+      await selectQueueFilter(page, QUEUE_FILTER.status, "Todos los estados", {
+        multiselect: true,
+      });
+      await selectQueueFilter(page, QUEUE_FILTER.priority, "Alta");
+      await selectQueueFilter(page, QUEUE_FILTER.assignee, "Sin asignar");
+      await selectQueueFilter(page, QUEUE_FILTER.category, "Sin categoría", {
+        multiselect: true,
+      });
+
+      // Sanity: a selection is reflected before the reload.
+      await expectQueueFilter(page, QUEUE_FILTER.priority, "Alta");
+
+      // Reload remounts the queue; filters are restored from localStorage.
+      await page.reload();
+      await expect(
+        page.getByRole("combobox", { name: QUEUE_FILTER.priority }),
+      ).toBeVisible({ timeout: 10_000 });
+
+      // All four selections survive the reload.
+      await expectQueueFilter(page, QUEUE_FILTER.status, "Todos los estados");
+      await expectQueueFilter(page, QUEUE_FILTER.priority, "Alta");
+      await expectQueueFilter(page, QUEUE_FILTER.assignee, "Sin asignar");
+      await expectQueueFilter(page, QUEUE_FILTER.category, "Sin categoría");
+
       await page.context().close();
     },
   );
