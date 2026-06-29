@@ -97,9 +97,14 @@ export async function notifyClientComment(
       return;
     }
 
+    // Use the explicit FK hint because `ticket_views` also creates a
+    // many-to-many path between tickets and users, which would otherwise
+    // trigger PostgREST PGRST201 "more than one relationship was found".
     const { data: ticketRow, error: ticketError } = await supabaseAdmin
       .from("tickets")
-      .select("subject, name, assigned_to, users(email, display_name)")
+      .select(
+        "subject, name, assigned_to, users!tickets_assigned_to_fkey(email, display_name)",
+      )
       .eq("id", ticketId)
       .single();
 
