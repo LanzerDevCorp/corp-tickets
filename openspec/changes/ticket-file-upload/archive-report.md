@@ -18,14 +18,14 @@ Ticket file upload feature is **complete and ready to ship**. Clients can now at
 
 All artifacts stored in **hybrid mode** (engram + openspec files):
 
-| Artifact | Topic Key | Engram ID | File Path | Status |
-|----------|-----------|-----------|-----------|--------|
-| Proposal | `sdd/ticket-file-upload/proposal` | 811 | openspec/changes/ticket-file-upload/proposal.md | Complete |
-| Spec | `sdd/ticket-file-upload/spec` | 812 | openspec/changes/ticket-file-upload/spec.md | Complete |
-| Design | `sdd/ticket-file-upload/design` | 813 | openspec/changes/ticket-file-upload/design.md | Complete |
-| Tasks | `sdd/ticket-file-upload/tasks` | 814 | openspec/changes/ticket-file-upload/tasks.md | Complete |
-| Apply Progress | `sdd/ticket-file-upload/apply-progress` | 815 | (engram only) | Complete |
-| Verify Report | `sdd/ticket-file-upload/verify-report` | 816 | openspec/changes/ticket-file-upload/verify-report.md | Complete |
+| Artifact       | Topic Key                               | Engram ID  | File Path                                             | Status   |
+| -------------- | --------------------------------------- | ---------- | ----------------------------------------------------- | -------- |
+| Proposal       | `sdd/ticket-file-upload/proposal`       | 811        | openspec/changes/ticket-file-upload/proposal.md       | Complete |
+| Spec           | `sdd/ticket-file-upload/spec`           | 812        | openspec/changes/ticket-file-upload/spec.md           | Complete |
+| Design         | `sdd/ticket-file-upload/design`         | 813        | openspec/changes/ticket-file-upload/design.md         | Complete |
+| Tasks          | `sdd/ticket-file-upload/tasks`          | 814        | openspec/changes/ticket-file-upload/tasks.md          | Complete |
+| Apply Progress | `sdd/ticket-file-upload/apply-progress` | 815        | (engram only)                                         | Complete |
+| Verify Report  | `sdd/ticket-file-upload/verify-report`  | 816        | openspec/changes/ticket-file-upload/verify-report.md  | Complete |
 | Archive Report | `sdd/ticket-file-upload/archive-report` | (this doc) | openspec/changes/ticket-file-upload/archive-report.md | Complete |
 
 ---
@@ -35,6 +35,7 @@ All artifacts stored in **hybrid mode** (engram + openspec files):
 ### Files Changed (18 total)
 
 **New files (12)**:
+
 - `supabase/migrations/20260622120000_ticket_attachments.sql` — DB table, indexes, RLS, storage policy
 - `lib/storage/attachments.ts` — Constants + path builder
 - `lib/storage/__tests__/attachments.test.ts` — 8 unit tests
@@ -49,6 +50,7 @@ All artifacts stored in **hybrid mode** (engram + openspec files):
 - `components/tracking/__tests__/client-ticket-view.attachments.test.tsx` — 3 client view tests
 
 **Modified files (6)**:
+
 - `components/public/public-ticket-form.tsx` — Integrated FileUploadZone + orchestration
 - `components/dashboard/ticket-detail.tsx` — Added initialAttachments prop + display
 - `app/(staff)/dashboard/tickets/[id]/page.tsx` — Fetch attachments
@@ -70,14 +72,14 @@ All artifacts stored in **hybrid mode** (engram + openspec files):
 
 ### Test Breakdown by Phase
 
-| Phase | Tests | Status |
-|-------|-------|--------|
-| Phase 1: Foundation | 8 | PASS |
-| Phase 2: Server Actions | 10 | PASS |
-| Phase 3: FileUploadZone | 13 | PASS |
-| Phase 4: Form Integration | 5 | PASS |
-| Phase 5: Attachment Display | 7 | PASS |
-| Phase 6: Cron Migration | 0 | DEFERRED |
+| Phase                       | Tests | Status   |
+| --------------------------- | ----- | -------- |
+| Phase 1: Foundation         | 8     | PASS     |
+| Phase 2: Server Actions     | 10    | PASS     |
+| Phase 3: FileUploadZone     | 13    | PASS     |
+| Phase 4: Form Integration   | 5     | PASS     |
+| Phase 5: Attachment Display | 7     | PASS     |
+| Phase 6: Cron Migration     | 0     | DEFERRED |
 
 ---
 
@@ -85,19 +87,19 @@ All artifacts stored in **hybrid mode** (engram + openspec files):
 
 All spec requirements implemented except Phase 6 (cron sweep), which is intentionally deferred:
 
-| Requirement | Status | Notes |
-|-------------|--------|-------|
-| File selection + client validation | DONE | Drag-drop, MIME check, count/size limits enforced |
-| Server-side re-validation | DONE | count ≤ 5, total ≤ 50MB, MIME allowlist |
-| Three-phase submit flow | DONE | submitTicket → browser upload → registerAttachments |
-| Upload failure rollback | DONE | Deletes ticket + storage objects |
-| Registration failure rollback | DONE | Deletes ticket + storage objects |
-| Private storage + signed URLs | DONE | Bucket private, 3600s signed URLs, server-minted only |
-| RLS deny-all on ticket_attachments | DONE | No SDK access; service-role actions only |
-| Staff attachment display | DONE | All attachments with signed URLs + expired state |
-| Client attachment display | DONE | Own ticket attachments only, ownership enforced server-side |
-| Two-month expiry + cron | DEFERRED | `deleted_at` column + UI label present; automation pending Phase 6 |
-| Shared constants + path builder | DONE | buildStoragePath, ALLOWED_MIME, MAX_FILES, MAX_TOTAL_BYTES |
+| Requirement                        | Status   | Notes                                                              |
+| ---------------------------------- | -------- | ------------------------------------------------------------------ |
+| File selection + client validation | DONE     | Drag-drop, MIME check, count/size limits enforced                  |
+| Server-side re-validation          | DONE     | count ≤ 5, total ≤ 50MB, MIME allowlist                            |
+| Three-phase submit flow            | DONE     | submitTicket → browser upload → registerAttachments                |
+| Upload failure rollback            | DONE     | Deletes ticket + storage objects                                   |
+| Registration failure rollback      | DONE     | Deletes ticket + storage objects                                   |
+| Private storage + signed URLs      | DONE     | Bucket private, 3600s signed URLs, server-minted only              |
+| RLS deny-all on ticket_attachments | DONE     | No SDK access; service-role actions only                           |
+| Staff attachment display           | DONE     | All attachments with signed URLs + expired state                   |
+| Client attachment display          | DONE     | Own ticket attachments only, ownership enforced server-side        |
+| Two-month expiry + cron            | DEFERRED | `deleted_at` column + UI label present; automation pending Phase 6 |
+| Shared constants + path builder    | DONE     | buildStoragePath, ALLOWED_MIME, MAX_FILES, MAX_TOTAL_BYTES         |
 
 ---
 
@@ -141,6 +143,7 @@ All spec requirements implemented except Phase 6 (cron sweep), which is intentio
 Two-month automatic file expiry is not yet implemented. The `deleted_at` column and "File expired" UI label are in place, but no scheduled job removes files or sets `deleted_at`.
 
 **What remains**:
+
 - Create `supabase/migrations/{ts}_attachments_cron.sql`
 - Enable `pg_cron` and `pg_net` extensions
 - Implement `sweep_expired_attachments()` and `sweep_orphan_storage_objects()` functions
@@ -162,27 +165,29 @@ Two-month automatic file expiry is not yet implemented. The `deleted_at` column 
 
 ## Traceability & Artifact References
 
-| Artifact Type | Engram ID | Topic Key | Full Reference |
-|---------------|-----------|-----------|-----------------|
-| Proposal | 811 | sdd/ticket-file-upload/proposal | Defines intent, scope, approach, risks, success criteria |
-| Spec | 812 | sdd/ticket-file-upload/spec | All requirements with scenarios (11 sections) |
-| Design | 813 | sdd/ticket-file-upload/design | Technical approach, architecture decisions (8 key decisions) |
-| Tasks | 814 | sdd/ticket-file-upload/tasks | 20 tasks (18 complete, 2 deferred Phase 6) |
-| Apply Progress | 815 | sdd/ticket-file-upload/apply-progress | Task-by-task completion evidence, TDD cycles |
-| Verify Report | 816 | sdd/ticket-file-upload/verify-report | Test results, completeness, security, issues |
-| Archive Report | (this) | sdd/ticket-file-upload/archive-report | Final state, delivery readiness, known risks |
+| Artifact Type  | Engram ID | Topic Key                             | Full Reference                                               |
+| -------------- | --------- | ------------------------------------- | ------------------------------------------------------------ |
+| Proposal       | 811       | sdd/ticket-file-upload/proposal       | Defines intent, scope, approach, risks, success criteria     |
+| Spec           | 812       | sdd/ticket-file-upload/spec           | All requirements with scenarios (11 sections)                |
+| Design         | 813       | sdd/ticket-file-upload/design         | Technical approach, architecture decisions (8 key decisions) |
+| Tasks          | 814       | sdd/ticket-file-upload/tasks          | 20 tasks (18 complete, 2 deferred Phase 6)                   |
+| Apply Progress | 815       | sdd/ticket-file-upload/apply-progress | Task-by-task completion evidence, TDD cycles                 |
+| Verify Report  | 816       | sdd/ticket-file-upload/verify-report  | Test results, completeness, security, issues                 |
+| Archive Report | (this)    | sdd/ticket-file-upload/archive-report | Final state, delivery readiness, known risks                 |
 
 ---
 
 ## Recommendations for Next Steps
 
 ### Go-Live Checklist
+
 - [ ] Review WARNING-1 and WARNING-2; accept or resolve before merge
 - [ ] Confirm Phase 6 (pg_cron) can wait post-launch (suggest: defer to next sprint)
 - [ ] Run full integration test against staging bucket (not required if test suite sufficient)
 - [ ] Notify customers that file attachments are now supported
 
 ### Follow-Up Tasks (Post-Launch)
+
 1. **Phase 6 Cron Migration**: Create expiry sweep job once pg_cron availability is confirmed
 2. **WARNING-1 Resolution**: Switch `rollbackTicket` to explicit per-file `storage.remove()` (low priority, cron sweep is backup)
 3. **WARNING-2 Testing**: Test client ownership query edge case against real RLS in staging (low priority, data-safe)

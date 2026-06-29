@@ -61,7 +61,7 @@ describe("provisionClient", () => {
     expect(result.alreadyExisted).toBe(false);
     expect(result.userId).toBe("new-user-id");
     expect(result.actionLink).toBe(
-      buildTicketAccessUrl("ticket-abc", "new@client.com")
+      buildTicketAccessUrl("ticket-abc", "new@client.com"),
     );
     expect(result.actionLink).toContain("/auth/ticket-access?");
     expect(result.error).toBeNull();
@@ -70,7 +70,7 @@ describe("provisionClient", () => {
         email: "new@client.com",
         email_confirm: true,
         app_metadata: { role: "client" },
-      })
+      }),
     );
   });
 
@@ -85,7 +85,7 @@ describe("provisionClient", () => {
     expect(result.alreadyExisted).toBe(true);
     expect(result.userId).toBe("existing-user-id");
     expect(result.actionLink).toBe(
-      buildTicketAccessUrl("ticket-xyz", "existing@client.com")
+      buildTicketAccessUrl("ticket-xyz", "existing@client.com"),
     );
     expect(result.error).toBeNull();
     expect(mockCreateUser).not.toHaveBeenCalled();
@@ -130,7 +130,7 @@ describe("requestMagicLink", () => {
     expect(result.error).toBeNull();
     expect(mockTicketsQueryChain.ilike).toHaveBeenCalledWith(
       "email",
-      "Existing@Client.com"
+      "Existing@Client.com",
     );
     expect(mockSendTicketAccessEmail).toHaveBeenCalledWith("ticket-abc");
   });

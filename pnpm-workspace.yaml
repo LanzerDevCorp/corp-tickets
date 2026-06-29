@@ -1,4 +1,6 @@
 allowBuilds:
+  "@ampproject/toolbox-optimizer": true
+  es5-ext: true
   esbuild: true
   sharp: true
   unrs-resolver: true

@@ -7,7 +7,6 @@ import {
   notifyPublicComment,
   notifyClientComment,
 } from "@/lib/notifications/comments";
-import { es } from "@/lib/i18n/es";
 
 export type CommentWithAuthor = {
   id: string;
@@ -28,14 +27,14 @@ export type CommentWithAuthor = {
  * The same function serves both roles — no branching needed.
  */
 export async function getComments(
-  ticketId: string
+  ticketId: string,
 ): Promise<CommentWithAuthor[]> {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (!role) {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   const { data, error } = await supabase
@@ -71,7 +70,7 @@ export async function addComment(input: {
   const authorId = claimsData?.claims?.sub;
 
   if (!role || !authorId) {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   const parsed = CommentSubmitSchema.safeParse({
@@ -82,7 +81,7 @@ export async function addComment(input: {
 
   if (!parsed.success) {
     throw new Error(
-      parsed.error.issues[0]?.message ?? es.validation.invalidCommentData
+      parsed.error.issues[0]?.message ?? "Datos del comentario inválidos",
     );
   }
 

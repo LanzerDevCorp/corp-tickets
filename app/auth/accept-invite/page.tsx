@@ -15,7 +15,7 @@ export default async function Page({
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       redirect(
-        `/auth/error?error=${encodeURIComponent("Could not verify invitation link.")}`
+        `/auth/error?error=${encodeURIComponent("Could not verify invitation link.")}`,
       );
     }
     redirect("/auth/accept-invite");

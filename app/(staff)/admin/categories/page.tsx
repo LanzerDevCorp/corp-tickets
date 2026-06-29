@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { getCategories } from "@/app/actions/admin";
 import { CategoriesTable, NewCategoryDialog } from "./_components";
-import { t } from "@/lib/i18n/t";
 
 async function CategoriesContent() {
   const result = await getCategories();
@@ -16,11 +15,13 @@ async function CategoriesContent() {
 export default function CategoriesPage() {
   return (
     <main className="flex min-h-svh flex-col p-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">{t("admin.categories")}</h1>
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{"Categorías"}</h1>
         <NewCategoryDialog />
       </div>
-      <Suspense fallback={<p className="text-muted-foreground">{t("admin.loading")}</p>}>
+      <Suspense
+        fallback={<p className="text-muted-foreground">{"Cargando..."}</p>}
+      >
         <CategoriesContent />
       </Suspense>
     </main>

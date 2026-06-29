@@ -12,7 +12,7 @@ test.describe("Client magic link flow", () => {
 
     await expect(page.getByLabel(/correo/i)).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /solicitar nuevo enlace/i })
+      page.getByRole("button", { name: /solicitar nuevo enlace/i }),
     ).toBeVisible();
   });
 

@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function ensureClientUser(
-  email: string
+  email: string,
 ): Promise<{ userId: string | null; error: string | null }> {
   const { data: existingUser } = await supabaseAdmin
     .from("users")
@@ -35,7 +35,7 @@ export async function ensureClientUser(
 export async function establishClientSession(
   supabase: SupabaseClient,
   email: string,
-  redirectTo?: string
+  redirectTo?: string,
 ): Promise<string | null> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   const { data: linkData, error: linkError } =

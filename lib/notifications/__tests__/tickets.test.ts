@@ -17,7 +17,11 @@ vi.mock("@react-email/components", async (importActual) => {
   return { ...actual, render: vi.fn().mockResolvedValue("<html>email</html>") };
 });
 
-import { notifyNewTicket, notifyTicketCreated, notifyTicketClosed } from "../tickets";
+import {
+  notifyNewTicket,
+  notifyTicketCreated,
+  notifyTicketClosed,
+} from "../tickets";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { resend } from "@/lib/resend";
 import { render } from "@react-email/components";
@@ -58,10 +62,7 @@ const TICKET_ROW = {
   categories: { name: "Hardware" },
 };
 
-const STAFF_DATA = [
-  { email: "admin@corp.test" },
-  { email: "it@corp.test" },
-];
+const STAFF_DATA = [{ email: "admin@corp.test" }, { email: "it@corp.test" }];
 
 function mockTables(ticketResult: unknown, staffResult: unknown) {
   mockFrom.mockImplementation((table: string) => {
@@ -94,7 +95,7 @@ describe("notifyNewTicket", () => {
   it("sends email to all active admin and IT staff when ticket exists", async () => {
     mockTables(
       { data: TICKET_ROW, error: null },
-      { data: STAFF_DATA, error: null }
+      { data: STAFF_DATA, error: null },
     );
 
     await notifyNewTicket("ticket-123");
@@ -109,14 +110,15 @@ describe("notifyNewTicket", () => {
   it("only sends to users where is_active=true (skips inactive staff)", async () => {
     mockTables(
       { data: TICKET_ROW, error: null },
-      { data: STAFF_DATA, error: null }
+      { data: STAFF_DATA, error: null },
     );
 
     await notifyNewTicket("ticket-123");
 
     // Verify .eq("is_active", true) was called on the staff chain
     const staffChain = mockFrom.mock.results.find(
-      (r) => mockFrom.mock.calls[mockFrom.mock.results.indexOf(r)]?.[0] === "users"
+      (r) =>
+        mockFrom.mock.calls[mockFrom.mock.results.indexOf(r)]?.[0] === "users",
     )?.value as Record<string, ReturnType<typeof vi.fn>>;
 
     expect(staffChain?.eq).toHaveBeenCalledWith("is_active", true);
@@ -125,7 +127,7 @@ describe("notifyNewTicket", () => {
   it("subject line contains ticket subject", async () => {
     mockTables(
       { data: TICKET_ROW, error: null },
-      { data: STAFF_DATA, error: null }
+      { data: STAFF_DATA, error: null },
     );
 
     await notifyNewTicket("ticket-123");
@@ -137,7 +139,7 @@ describe("notifyNewTicket", () => {
   it("renders NewTicketEmail with correct submitterName, submitterEmail, priority, categoryName, body", async () => {
     mockTables(
       { data: TICKET_ROW, error: null },
-      { data: STAFF_DATA, error: null }
+      { data: STAFF_DATA, error: null },
     );
 
     await notifyNewTicket("ticket-123");
@@ -168,7 +170,7 @@ describe("notifyNewTicket", () => {
     // The module-level mock sets it non-null; just verify no exception is thrown
     mockTables(
       { data: TICKET_ROW, error: null },
-      { data: STAFF_DATA, error: null }
+      { data: STAFF_DATA, error: null },
     );
 
     // This version still uses the module-level mock, which has resend set
@@ -181,7 +183,7 @@ describe("notifyNewTicket", () => {
 
     mockTables(
       { data: TICKET_ROW, error: null },
-      { data: STAFF_DATA, error: null }
+      { data: STAFF_DATA, error: null },
     );
 
     await notifyNewTicket("ticket-123");
@@ -192,7 +194,7 @@ describe("notifyNewTicket", () => {
   it("returns without sending when ticket is not found (supabase error)", async () => {
     mockTables(
       { data: null, error: { message: "not found" } },
-      { data: STAFF_DATA, error: null }
+      { data: STAFF_DATA, error: null },
     );
 
     await notifyNewTicket("ticket-123");
@@ -201,10 +203,7 @@ describe("notifyNewTicket", () => {
   });
 
   it("returns without sending when recipient list is empty", async () => {
-    mockTables(
-      { data: TICKET_ROW, error: null },
-      { data: [], error: null }
-    );
+    mockTables({ data: TICKET_ROW, error: null }, { data: [], error: null });
 
     await notifyNewTicket("ticket-123");
 
@@ -214,7 +213,7 @@ describe("notifyNewTicket", () => {
   it("swallows errors and never throws when resend.emails.send rejects", async () => {
     mockTables(
       { data: TICKET_ROW, error: null },
-      { data: STAFF_DATA, error: null }
+      { data: STAFF_DATA, error: null },
     );
 
     mockSend.mockRejectedValueOnce(new Error("send failed"));
@@ -256,7 +255,7 @@ describe("notifyNewTicket", () => {
         },
         error: null,
       },
-      { data: STAFF_DATA, error: null }
+      { data: STAFF_DATA, error: null },
     );
 
     await notifyNewTicket("ticket-123");
@@ -270,7 +269,7 @@ describe("notifyNewTicket", () => {
   it("calls render() with NewTicketEmail component", async () => {
     mockTables(
       { data: TICKET_ROW, error: null },
-      { data: STAFF_DATA, error: null }
+      { data: STAFF_DATA, error: null },
     );
 
     await notifyNewTicket("ticket-123");
@@ -292,7 +291,7 @@ describe("notifyNewTicket", () => {
           { email: "it2@corp.test" },
         ],
         error: null,
-      }
+      },
     );
 
     await notifyNewTicket("ticket-123");
@@ -330,7 +329,10 @@ describe("notifyTicketCreated", () => {
   it("returns without sending when ticket is not found", async () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === "tickets") {
-        return makeTicketChain({ data: null, error: { message: "not found" } }) as never;
+        return makeTicketChain({
+          data: null,
+          error: { message: "not found" },
+        }) as never;
       }
       return makeStaffChain({ data: [], error: null }) as never;
     });
@@ -416,6 +418,8 @@ describe("notifyTicketClosed", () => {
       trackingUrl: string;
     }>;
     expect(rendered.props.closureReason).toBe("Replaced toner cartridge");
-    expect(rendered.props.trackingUrl).toBe("https://corp.test/track/ticket-123");
+    expect(rendered.props.trackingUrl).toBe(
+      "https://corp.test/track/ticket-123",
+    );
   });
 });

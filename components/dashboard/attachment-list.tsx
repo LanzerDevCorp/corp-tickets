@@ -22,7 +22,7 @@ export default function AttachmentList({ attachments }: AttachmentListProps) {
           key={att.id}
           className="flex items-center justify-between rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900/50"
         >
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex min-w-0 items-center gap-2">
             <span className="truncate font-medium text-zinc-800 dark:text-zinc-200">
               {att.filename}
             </span>
@@ -32,7 +32,9 @@ export default function AttachmentList({ attachments }: AttachmentListProps) {
           </div>
           <div className="ml-2 shrink-0">
             {att.expired ? (
-              <span className="text-xs text-muted-foreground italic">File expired</span>
+              <span className="text-xs text-muted-foreground italic">
+                File expired
+              </span>
             ) : att.url ? (
               <a
                 href={att.url}

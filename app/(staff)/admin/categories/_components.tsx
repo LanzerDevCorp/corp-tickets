@@ -39,11 +39,8 @@ import {
   updateCategory,
   type CategoryRow,
 } from "@/app/actions/admin";
-import {
-  categoryUpsertSchema,
-} from "@/lib/schemas/category-upsert";
+import { categoryUpsertSchema } from "@/lib/schemas/category-upsert";
 import { formatDate } from "@/lib/format-date";
-import { t } from "@/lib/i18n/t";
 
 // ---------------------------------------------------------------------------
 // CategoriesTable
@@ -52,8 +49,8 @@ import { t } from "@/lib/i18n/t";
 export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
   if (categories.length === 0) {
     return (
-      <p className="text-muted-foreground py-8 text-center">
-        {t("admin.noCategoriesYet")}
+      <p className="py-8 text-center text-muted-foreground">
+        {"Aún no hay categorías. Crea la primera."}
       </p>
     );
   }
@@ -62,10 +59,10 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>{t("admin.name")}</TableHead>
-          <TableHead>{t("admin.status")}</TableHead>
-          <TableHead>{t("admin.joined")}</TableHead>
-          <TableHead>{t("common.actions")}</TableHead>
+          <TableHead>{"Nombre"}</TableHead>
+          <TableHead>{"Estado"}</TableHead>
+          <TableHead>{"Registro"}</TableHead>
+          <TableHead>{"Acciones"}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -74,18 +71,16 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
             <TableCell>{cat.name}</TableCell>
             <TableCell>
               {cat.is_enabled ? (
-                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                  {t("admin.enabled")}
+                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                  {"Habilitada"}
                 </span>
               ) : (
-                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground">
-                  {t("admin.disabled")}
+                <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+                  {"Deshabilitada"}
                 </span>
               )}
             </TableCell>
-            <TableCell>
-              {formatDate(cat.created_at)}
-            </TableCell>
+            <TableCell>{formatDate(cat.created_at)}</TableCell>
             <TableCell>
               <div className="flex items-center gap-2">
                 <CategoryToggleSwitch
@@ -133,7 +128,7 @@ export function NewCategoryDialog() {
       return;
     }
 
-    toast.success(t("admin.categoryCreated"));
+    toast.success("Categoría creada.");
     form.reset();
     setOpen(false);
     router.refresh();
@@ -142,13 +137,13 @@ export function NewCategoryDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>{t("admin.newCategory")}</Button>
+        <Button>{"Nueva categoría"}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("admin.newCategoryTitle")}</DialogTitle>
+          <DialogTitle>{"Nueva categoría"}</DialogTitle>
           <DialogDescription>
-            {t("admin.newCategoryDescription")}
+            {"Crea una nueva categoría de tickets."}
           </DialogDescription>
         </DialogHeader>
 
@@ -163,7 +158,7 @@ export function NewCategoryDialog() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("admin.name")}</FormLabel>
+                  <FormLabel>{"Nombre"}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -184,7 +179,7 @@ export function NewCategoryDialog() {
             form={formId}
             disabled={!form.formState.isValid || form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? t("admin.creating") : t("admin.createCategory")}
+            {form.formState.isSubmitting ? "Creando..." : "Crear categoría"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -217,13 +212,15 @@ export function EditCategoryDialog({ category }: { category: CategoryRow }) {
       return;
     }
 
-    const result = await updateCategory(category.id, { name: parsed.data.name });
+    const result = await updateCategory(category.id, {
+      name: parsed.data.name,
+    });
     if (result.error) {
       toast.error(result.error);
       return;
     }
 
-    toast.success(t("admin.categoryUpdated"));
+    toast.success("Categoría actualizada.");
     setOpen(false);
     router.refresh();
   };
@@ -231,15 +228,15 @@ export function EditCategoryDialog({ category }: { category: CategoryRow }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("admin.editCategoryAria")}>
+        <Button variant="ghost" size="icon" aria-label={"Editar categoría"}>
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("admin.editCategoryTitle")}</DialogTitle>
+          <DialogTitle>{"Editar categoría"}</DialogTitle>
           <DialogDescription>
-            {t("admin.editCategoryDescription")}
+            {"Actualiza el nombre de la categoría."}
           </DialogDescription>
         </DialogHeader>
 
@@ -254,12 +251,9 @@ export function EditCategoryDialog({ category }: { category: CategoryRow }) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("admin.name")}</FormLabel>
+                  <FormLabel>{"Nombre"}</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      disabled={form.formState.isSubmitting}
-                    />
+                    <Input {...field} disabled={form.formState.isSubmitting} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -274,7 +268,7 @@ export function EditCategoryDialog({ category }: { category: CategoryRow }) {
             form={formId}
             disabled={!form.formState.isValid || form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? t("common.saving") : t("admin.saveChanges")}
+            {form.formState.isSubmitting ? "Guardando..." : "Guardar cambios"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -311,7 +305,7 @@ export function CategoryToggleSwitch({
     <Switch
       checked={checked}
       onCheckedChange={handleToggle}
-      aria-label={t("admin.toggleCategoryAria")}
+      aria-label={"Activar o desactivar categoría"}
     />
   );
 }

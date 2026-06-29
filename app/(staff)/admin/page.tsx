@@ -1,36 +1,39 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Tag } from "lucide-react";
-import { t } from "@/lib/i18n/t";
 
 export default function AdminPage() {
   return (
     <main className="flex min-h-svh flex-col p-8">
-      <h1 className="text-2xl font-bold mb-2">{t("admin.title")}</h1>
-      <p className="text-muted-foreground mb-8">{t("admin.subtitle")}</p>
+      <h1 className="mb-2 text-2xl font-bold">{"Administración"}</h1>
+      <p className="mb-8 text-muted-foreground">
+        {"Administra usuarios y categorías de tickets."}
+      </p>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-2xl">
+      <div className="grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2">
         <Link href="/admin/users" className="block">
-          <Card className="hover:bg-accent transition-colors cursor-pointer h-full">
+          <Card className="h-full cursor-pointer transition-colors hover:bg-accent">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">
               <Users className="h-5 w-5 text-muted-foreground" />
-              <CardTitle className="text-base">{t("admin.users")}</CardTitle>
+              <CardTitle className="text-base">{"Usuarios"}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">{t("admin.usersDescription")}</p>
+              <p className="text-sm text-muted-foreground">
+                {"Invita y administra cuentas del personal."}
+              </p>
             </CardContent>
           </Card>
         </Link>
 
         <Link href="/admin/categories" className="block">
-          <Card className="hover:bg-accent transition-colors cursor-pointer h-full">
+          <Card className="h-full cursor-pointer transition-colors hover:bg-accent">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">
               <Tag className="h-5 w-5 text-muted-foreground" />
-              <CardTitle className="text-base">{t("admin.categories")}</CardTitle>
+              <CardTitle className="text-base">{"Categorías"}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                {t("admin.categoriesDescription")}
+                {"Agrega y configura categorías de tickets."}
               </p>
             </CardContent>
           </Card>

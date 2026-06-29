@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { t } from "@/lib/i18n/t";
 
 type Status = "loading" | "ready" | "invalid";
 
@@ -35,7 +34,9 @@ export function AcceptInviteShell() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setErrorMessage(err instanceof Error ? err.message : t("errors.genericError"));
+        setErrorMessage(
+          err instanceof Error ? err.message : "Ocurrió un error",
+        );
         setStatus("invalid");
       });
 
@@ -48,8 +49,12 @@ export function AcceptInviteShell() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">{t("auth.verifyingInvite")}</CardTitle>
-          <CardDescription>{t("auth.verifyingInviteDescription")}</CardDescription>
+          <CardTitle className="text-2xl">
+            {"Verificando invitación…"}
+          </CardTitle>
+          <CardDescription>
+            {"Configurando tu sesión desde el enlace de invitación."}
+          </CardDescription>
         </CardHeader>
       </Card>
     );
@@ -59,13 +64,17 @@ export function AcceptInviteShell() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">{t("auth.inviteInvalid")}</CardTitle>
+          <CardTitle className="text-2xl">
+            {"Enlace de invitación inválido"}
+          </CardTitle>
           <CardDescription>
-            {t("auth.inviteInvalidDescription")}
+            {
+              "Abre el enlace de tu correo de invitación o pide a un administrador que envíe uno nuevo."
+            }
             {errorMessage ? (
               <>
                 {" "}
-                <span className="block mt-2 text-xs text-muted-foreground">
+                <span className="mt-2 block text-xs text-muted-foreground">
                   ({errorMessage})
                 </span>
               </>
@@ -74,7 +83,7 @@ export function AcceptInviteShell() {
         </CardHeader>
         <CardContent>
           <Button asChild className="w-full">
-            <Link href="/auth/login">{t("auth.goToLogin")}</Link>
+            <Link href="/auth/login">{"Ir a iniciar sesión"}</Link>
           </Button>
         </CardContent>
       </Card>

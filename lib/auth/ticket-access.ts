@@ -11,7 +11,9 @@ function ticketAccessSecret(): string {
 export function signTicketAccess(ticketId: string, email: string): string {
   const secret = ticketAccessSecret();
   if (!secret) {
-    throw new Error("Missing TICKET_ACCESS_SECRET or SUPABASE_SERVICE_ROLE_KEY");
+    throw new Error(
+      "Missing TICKET_ACCESS_SECRET or SUPABASE_SERVICE_ROLE_KEY",
+    );
   }
 
   return createHmac("sha256", secret)
@@ -22,7 +24,7 @@ export function signTicketAccess(ticketId: string, email: string): string {
 export function verifyTicketAccess(
   ticketId: string,
   email: string,
-  signature: string
+  signature: string,
 ): boolean {
   if (!signature) return false;
 

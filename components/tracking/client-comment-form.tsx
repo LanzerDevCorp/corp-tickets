@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addComment, type CommentWithAuthor } from "@/app/actions/comments";
 import { CommentSubmitSchema } from "@/lib/schemas/comment-submit";
-import { t } from "@/lib/i18n/t";
 
 const ClientCommentFormSchema = CommentSubmitSchema.omit({
   is_internal: true,
@@ -60,7 +59,7 @@ export default function ClientCommentForm({
     for (const email of ccEmails) {
       const result = z.string().email().safeParse(email);
       if (!result.success) {
-        setCcParseError(t("tracking.invalidEmail", { email }));
+        setCcParseError(`Correo electrónico inválido: ${email}`);
         return;
       }
     }
@@ -68,7 +67,9 @@ export default function ClientCommentForm({
     const bodyCheck = CommentSubmitSchema.shape.body.safeParse(data.body);
     if (!bodyCheck.success) {
       form.setError("body", {
-        message: bodyCheck.error.issues[0]?.message ?? t("validation.invalidCommentData"),
+        message:
+          bodyCheck.error.issues[0]?.message ??
+          "Datos del comentario inválidos",
       });
       return;
     }
@@ -84,7 +85,9 @@ export default function ClientCommentForm({
       form.reset();
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : t("dashboard.failedPostComment");
+        err instanceof Error
+          ? err.message
+          : "No se pudo publicar el comentario";
       form.setError("root", { message });
     }
   };
@@ -92,7 +95,7 @@ export default function ClientCommentForm({
   return (
     <div className="rounded-xl border border-zinc-200 bg-white/50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
       <h4 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-        {t("tracking.addComment")}
+        {"Agregar comentario"}
       </h4>
 
       <form id={formId} onSubmit={form.handleSubmit(handleSubmit)}>
@@ -102,12 +105,14 @@ export default function ClientCommentForm({
           render={({ field, fieldState }) => (
             <div className="mb-3 space-y-1.5">
               <Label htmlFor={`${formId}-body`} className="sr-only">
-                {t("tracking.comment")}
+                {"Comentario"}
               </Label>
               <Textarea
                 {...field}
                 id={`${formId}-body`}
-                placeholder={t("tracking.commentPlaceholder")}
+                placeholder={
+                  "Comparte detalles adicionales o responde al equipo..."
+                }
                 className="min-h-[100px] resize-y"
                 disabled={disabled || form.formState.isSubmitting}
                 aria-invalid={fieldState.invalid}
@@ -128,7 +133,7 @@ export default function ClientCommentForm({
           render={({ field }) => (
             <div className="mb-3 space-y-1.5">
               <Label htmlFor={`${formId}-cc`} className="text-xs text-zinc-500">
-                {t("tracking.ccOptional")}
+                {"CC (opcional, correos separados por comas)"}
               </Label>
               <Input
                 {...field}
@@ -143,7 +148,9 @@ export default function ClientCommentForm({
         />
 
         {(ccParseError || rootError) && (
-          <p className="mb-2 text-xs text-rose-500">{ccParseError ?? rootError}</p>
+          <p className="mb-2 text-xs text-rose-500">
+            {ccParseError ?? rootError}
+          </p>
         )}
 
         <div className="flex justify-end">
@@ -151,12 +158,12 @@ export default function ClientCommentForm({
             type="submit"
             form={formId}
             disabled={
-              disabled ||
-              !form.formState.isValid ||
-              form.formState.isSubmitting
+              disabled || !form.formState.isValid || form.formState.isSubmitting
             }
           >
-            {form.formState.isSubmitting ? t("common.posting") : t("tracking.postComment")}
+            {form.formState.isSubmitting
+              ? "Publicando..."
+              : "Publicar comentario"}
           </Button>
         </div>
       </form>

@@ -16,14 +16,11 @@ type Status = "checking" | "ready" | "expired";
  * Establishes session from legacy #access_token hash links, then refreshes so
  * server components can read cookies. New magic links use /auth/confirm instead.
  */
-export function TrackSessionBootstrap({
-  children,
-  hasServerSession,
-}: Props) {
+export function TrackSessionBootstrap({ children, hasServerSession }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [status, setStatus] = useState<Status>(
-    hasServerSession ? "ready" : "checking"
+    hasServerSession ? "ready" : "checking",
   );
 
   useEffect(() => {

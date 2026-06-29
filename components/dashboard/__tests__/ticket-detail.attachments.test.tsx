@@ -7,8 +7,20 @@ import AttachmentList from "../attachment-list";
 describe("AttachmentList", () => {
   it("renders filename, size, and download link for active attachments", () => {
     const attachments = [
-      { id: "1", filename: "report.pdf", size_bytes: 1024, url: "https://signed.url/file1", expired: false },
-      { id: "2", filename: "photo.png", size_bytes: 2048 * 1024, url: "https://signed.url/file2", expired: false },
+      {
+        id: "1",
+        filename: "report.pdf",
+        size_bytes: 1024,
+        url: "https://signed.url/file1",
+        expired: false,
+      },
+      {
+        id: "2",
+        filename: "photo.png",
+        size_bytes: 2048 * 1024,
+        url: "https://signed.url/file2",
+        expired: false,
+      },
     ];
 
     render(<AttachmentList attachments={attachments} />);
@@ -24,7 +36,13 @@ describe("AttachmentList", () => {
 
   it("renders 'File expired' with no link when expired is true", () => {
     const attachments = [
-      { id: "1", filename: "old.pdf", size_bytes: 512, url: null, expired: true },
+      {
+        id: "1",
+        filename: "old.pdf",
+        size_bytes: 512,
+        url: null,
+        expired: true,
+      },
     ];
 
     render(<AttachmentList attachments={attachments} />);
@@ -46,13 +64,28 @@ describe("AttachmentList", () => {
 
   it("renders mixed active and expired attachments correctly", () => {
     const attachments = [
-      { id: "1", filename: "active.pdf", size_bytes: 1000, url: "https://signed.url/a", expired: false },
-      { id: "2", filename: "expired.pdf", size_bytes: 500, url: null, expired: true },
+      {
+        id: "1",
+        filename: "active.pdf",
+        size_bytes: 1000,
+        url: "https://signed.url/a",
+        expired: false,
+      },
+      {
+        id: "2",
+        filename: "expired.pdf",
+        size_bytes: 500,
+        url: null,
+        expired: true,
+      },
     ];
 
     render(<AttachmentList attachments={attachments} />);
 
-    expect(screen.getByRole("link")).toHaveAttribute("href", "https://signed.url/a");
+    expect(screen.getByRole("link")).toHaveAttribute(
+      "href",
+      "https://signed.url/a",
+    );
     expect(screen.getByText("File expired")).toBeInTheDocument();
     // Only one link — expired file has no link
     expect(screen.getAllByRole("link")).toHaveLength(1);

@@ -38,20 +38,20 @@ Formulario público de envío de tickets con protección Cloudflare Turnstile. F
 
 ## 2. Decisiones de diseño
 
-| # | Tema | Decisión |
-|---|------|----------|
-| 1 | Alcance | Flujo end-to-end; emails en fase 6 |
-| 2 | Post-envío | Éxito **inline** en `/`, sin redirect |
-| 3 | Formulario | **RHF + Zod** en cliente; **`useActionState`** en server con re-validación |
-| 4 | Turnstile | Modo **invisible**; test keys de Cloudflare en local; verificación **siempre** activa (sin bypass) |
-| 5 | Categorías | Precarga en **Server Component** → prop al form client |
-| 6 | Sin categorías | **Ocultar** formulario; mostrar Card informativo |
-| 7 | Validación | Schema **conservador** (ver §4) |
-| 8 | Idioma | **Español (MX)** — UI pública de esta fase |
-| 9 | Tests | Unit/integration + **Playwright e2e** happy path |
-| 10 | Seed | `supabase/seed.sql` con categorías de ejemplo |
-| 11 | Layout | Header *"Mesa de ayuda"* + link *"Consultar ticket"* → `/track/access` |
-| 12 | Errores | Por campo (validación) / Turnstile con reset widget / genérico catch-all |
+| #   | Tema           | Decisión                                                                                           |
+| --- | -------------- | -------------------------------------------------------------------------------------------------- |
+| 1   | Alcance        | Flujo end-to-end; emails en fase 6                                                                 |
+| 2   | Post-envío     | Éxito **inline** en `/`, sin redirect                                                              |
+| 3   | Formulario     | **RHF + Zod** en cliente; **`useActionState`** en server con re-validación                         |
+| 4   | Turnstile      | Modo **invisible**; test keys de Cloudflare en local; verificación **siempre** activa (sin bypass) |
+| 5   | Categorías     | Precarga en **Server Component** → prop al form client                                             |
+| 6   | Sin categorías | **Ocultar** formulario; mostrar Card informativo                                                   |
+| 7   | Validación     | Schema **conservador** (ver §4)                                                                    |
+| 8   | Idioma         | **Español (MX)** — UI pública de esta fase                                                         |
+| 9   | Tests          | Unit/integration + **Playwright e2e** happy path                                                   |
+| 10  | Seed           | `supabase/seed.sql` con categorías de ejemplo                                                      |
+| 11  | Layout         | Header _"Mesa de ayuda"_ + link _"Consultar ticket"_ → `/track/access`                             |
+| 12  | Errores        | Por campo (validación) / Turnstile con reset widget / genérico catch-all                           |
 
 ---
 
@@ -103,10 +103,10 @@ export const ticketSubmitSchema = z.object({
 
 ## 5. Cloudflare Turnstile
 
-| Entorno | Site key | Secret key |
-|---------|----------|------------|
-| Local / CI | `1x00000000000000000000AA` (test — always passes) | `1x0000000000000000000000000000000AA` |
-| Staging / Prod | Keys reales desde Cloudflare Dashboard | Keys reales |
+| Entorno        | Site key                                          | Secret key                            |
+| -------------- | ------------------------------------------------- | ------------------------------------- |
+| Local / CI     | `1x00000000000000000000AA` (test — always passes) | `1x0000000000000000000000000000000AA` |
+| Staging / Prod | Keys reales desde Cloudflare Dashboard            | Keys reales                           |
 
 - Librería: `@marsidev/react-turnstile` (ya instalada)
 - Modo: `size: "invisible"`, `action: "submit-ticket"`
@@ -149,22 +149,22 @@ Referenciado por `supabase/config.toml` → `[db.seed] sql_paths`.
 
 **Route group:** `app/(public)/`
 
-| Elemento | Valor |
-|----------|-------|
-| `lang` | `es-MX` |
-| `title` | Enviar ticket · Corp Tickets |
-| Header | *Mesa de ayuda* + link *Consultar ticket* → `/track/access` |
+| Elemento  | Valor                                                            |
+| --------- | ---------------------------------------------------------------- |
+| `lang`    | `es-MX`                                                          |
+| `title`   | Enviar ticket · Corp Tickets                                     |
+| Header    | _Mesa de ayuda_ + link _Consultar ticket_ → `/track/access`      |
 | Contenido | Card centrado con formulario o mensaje de éxito / sin categorías |
 
 ---
 
 ## 8. Manejo de errores
 
-| Tipo | Comportamiento UI |
-|------|-------------------|
-| Validación Zod | Errores por campo vía RHF |
-| Turnstile inválido/expirado | *"La verificación de seguridad falló. Intenta de nuevo."* + reset del widget |
-| DB / RLS / error inesperado | *"No pudimos enviar tu ticket. Intenta de nuevo."* (sin detalle técnico) |
+| Tipo                        | Comportamiento UI                                                            |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| Validación Zod              | Errores por campo vía RHF                                                    |
+| Turnstile inválido/expirado | _"La verificación de seguridad falló. Intenta de nuevo."_ + reset del widget |
+| DB / RLS / error inesperado | _"No pudimos enviar tu ticket. Intenta de nuevo."_ (sin detalle técnico)     |
 
 Orden en `submitTicket`: parse Zod → verify Turnstile → insert → `provisionClient` (best-effort, no bloquea éxito).
 
@@ -181,15 +181,15 @@ Respuesta tipada de la action:
 
 ## 9. Copy (es-MX)
 
-| Estado | Texto |
-|--------|-------|
-| Título del formulario | Enviar ticket de soporte |
-| Éxito | Recibimos tu ticket. Te enviaremos un correo con el enlace de seguimiento. |
-| Sin categorías | No hay categorías disponibles por el momento. Intenta más tarde. |
-| Turnstile fallido | La verificación de seguridad falló. Intenta de nuevo. |
-| Error genérico | No pudimos enviar tu ticket. Intenta de nuevo. |
-| Header | Mesa de ayuda |
-| Link consultar | Consultar ticket |
+| Estado                | Texto                                                                      |
+| --------------------- | -------------------------------------------------------------------------- |
+| Título del formulario | Enviar ticket de soporte                                                   |
+| Éxito                 | Recibimos tu ticket. Te enviaremos un correo con el enlace de seguimiento. |
+| Sin categorías        | No hay categorías disponibles por el momento. Intenta más tarde.           |
+| Turnstile fallido     | La verificación de seguridad falló. Intenta de nuevo.                      |
+| Error genérico        | No pudimos enviar tu ticket. Intenta de nuevo.                             |
+| Header                | Mesa de ayuda                                                              |
+| Link consultar        | Consultar ticket                                                           |
 
 ---
 
@@ -216,12 +216,12 @@ tests/e2e/public-form/submit.spec.ts
 
 ## 11. Tests
 
-| Capa | Archivo | Qué cubre |
-|------|---------|-----------|
-| Schema | `lib/schemas/ticket-submit.test.ts` | Edge cases de validación |
-| Turnstile | `lib/turnstile/verify.test.ts` | Mock POST siteverify |
-| Action | `app/actions/__tests__/tickets.test.ts` | submitTicket + validación + turnstile |
-| E2E | `tests/e2e/public-form/submit.spec.ts` | Happy path: llenar → submit → éxito inline |
+| Capa      | Archivo                                 | Qué cubre                                  |
+| --------- | --------------------------------------- | ------------------------------------------ |
+| Schema    | `lib/schemas/ticket-submit.test.ts`     | Edge cases de validación                   |
+| Turnstile | `lib/turnstile/verify.test.ts`          | Mock POST siteverify                       |
+| Action    | `app/actions/__tests__/tickets.test.ts` | submitTicket + validación + turnstile      |
+| E2E       | `tests/e2e/public-form/submit.spec.ts`  | Happy path: llenar → submit → éxito inline |
 
 E2E usa test keys de Cloudflare; submit real sin bypass.
 
@@ -236,10 +236,10 @@ npx skills add cloudflare/skills@turnstile-spin -g -y
 npx skills add ovachiever/droid-tings@react-hook-form-zod -g -y
 ```
 
-| Skill | Installs | Uso |
-|-------|----------|-----|
-| `cloudflare/skills@turnstile-spin` | ~2.7K | Integración Turnstile (oficial Cloudflare) |
-| `ovachiever/droid-tings@react-hook-form-zod` | ~584 | RHF + Zod + shadcn Form |
+| Skill                                        | Installs | Uso                                        |
+| -------------------------------------------- | -------- | ------------------------------------------ |
+| `cloudflare/skills@turnstile-spin`           | ~2.7K    | Integración Turnstile (oficial Cloudflare) |
+| `ovachiever/droid-tings@react-hook-form-zod` | ~584     | RHF + Zod + shadcn Form                    |
 
 ### Ya disponibles en el proyecto
 

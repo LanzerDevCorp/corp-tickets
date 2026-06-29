@@ -8,14 +8,14 @@
 
 **Código existente (conservado):**
 
-| Archivo | Rol |
-|---|---|
-| `lib/turnstile/config.ts` | Flag de activación |
-| `lib/turnstile/verify.ts` | Verificación server-side (Siteverify API) |
-| `components/public/public-ticket-form.tsx` | Widget Turnstile en el formulario |
-| `lib/schemas/ticket-submit.ts` | Validación del token en el schema |
-| `app/actions/tickets.ts` | Llama a `verifyTurnstileToken` antes del insert |
-| `.agents/skills/turnstile-spin/` | Skill de integración Cloudflare |
+| Archivo                                    | Rol                                             |
+| ------------------------------------------ | ----------------------------------------------- |
+| `lib/turnstile/config.ts`                  | Flag de activación                              |
+| `lib/turnstile/verify.ts`                  | Verificación server-side (Siteverify API)       |
+| `components/public/public-ticket-form.tsx` | Widget Turnstile en el formulario               |
+| `lib/schemas/ticket-submit.ts`             | Validación del token en el schema               |
+| `app/actions/tickets.ts`                   | Llama a `verifyTurnstileToken` antes del insert |
+| `.agents/skills/turnstile-spin/`           | Skill de integración Cloudflare                 |
 
 **Para reactivar:**
 

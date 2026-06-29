@@ -23,41 +23,41 @@ async function TicketFormSection() {
 
 function FormSkeleton() {
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <div className="bg-white rounded-xl border border-border border-l-4 border-l-[#1C2438] shadow-sm px-8 py-8 space-y-5 animate-pulse">
+    <div className="mx-auto w-full max-w-2xl">
+      <div className="animate-pulse space-y-5 rounded-xl border border-l-4 border-border border-l-[#1C2438] bg-white px-8 py-8 shadow-sm">
         <div className="space-y-2">
-          <div className="h-7 w-56 bg-muted rounded" />
-          <div className="h-4 w-72 bg-muted rounded" />
+          <div className="h-7 w-56 rounded bg-muted" />
+          <div className="h-4 w-72 rounded bg-muted" />
         </div>
         <div className="grid grid-cols-2 gap-5">
           <div className="space-y-2">
-            <div className="h-4 w-16 bg-muted rounded" />
-            <div className="h-9 bg-muted rounded-md" />
+            <div className="h-4 w-16 rounded bg-muted" />
+            <div className="h-9 rounded-md bg-muted" />
           </div>
           <div className="space-y-2">
-            <div className="h-4 w-32 bg-muted rounded" />
-            <div className="h-9 bg-muted rounded-md" />
+            <div className="h-4 w-32 rounded bg-muted" />
+            <div className="h-9 rounded-md bg-muted" />
           </div>
         </div>
         <div className="space-y-2">
-          <div className="h-4 w-14 bg-muted rounded" />
-          <div className="h-9 bg-muted rounded-md" />
+          <div className="h-4 w-14 rounded bg-muted" />
+          <div className="h-9 rounded-md bg-muted" />
         </div>
         <div className="grid grid-cols-2 gap-5">
           <div className="space-y-2">
-            <div className="h-4 w-20 bg-muted rounded" />
-            <div className="h-9 bg-muted rounded-md" />
+            <div className="h-4 w-20 rounded bg-muted" />
+            <div className="h-9 rounded-md bg-muted" />
           </div>
           <div className="space-y-2">
-            <div className="h-4 w-20 bg-muted rounded" />
-            <div className="h-9 bg-muted rounded-md" />
+            <div className="h-4 w-20 rounded bg-muted" />
+            <div className="h-9 rounded-md bg-muted" />
           </div>
         </div>
         <div className="space-y-2">
-          <div className="h-4 w-36 bg-muted rounded" />
-          <div className="h-32 bg-muted rounded-md" />
+          <div className="h-4 w-36 rounded bg-muted" />
+          <div className="h-32 rounded-md bg-muted" />
         </div>
-        <div className="h-10 bg-muted rounded-md" />
+        <div className="h-10 rounded-md bg-muted" />
       </div>
     </div>
   );

@@ -23,7 +23,7 @@ describe("LoginForm", () => {
   it("renders a submit button", () => {
     render(<LoginForm />);
     expect(
-      screen.getByRole("button", { name: /iniciar sesión/i })
+      screen.getByRole("button", { name: /iniciar sesión/i }),
     ).toBeInTheDocument();
   });
 
@@ -34,7 +34,9 @@ describe("LoginForm", () => {
 
     await userEvent.type(screen.getByLabelText(/correo/i), "wrong@test.com");
     await userEvent.type(screen.getByLabelText(/^contraseña$/i), "badpass");
-    await userEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /iniciar sesión/i }),
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/credenciales inválidas/i)).toBeInTheDocument();

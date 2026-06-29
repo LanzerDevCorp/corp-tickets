@@ -23,7 +23,11 @@ export async function GET(request: NextRequest) {
     .eq("id", ticketId)
     .single();
 
-  if (error || !ticket?.email || !verifyTicketAccess(ticketId, ticket.email, sig)) {
+  if (
+    error ||
+    !ticket?.email ||
+    !verifyTicketAccess(ticketId, ticket.email, sig)
+  ) {
     redirect("/auth/error?error=Invalid+or+expired+ticket+link");
   }
 
@@ -37,12 +41,16 @@ export async function GET(request: NextRequest) {
   const sessionError = await establishClientSession(
     supabase,
     ticket.email,
-    redirectTo
+    redirectTo,
   );
 
   if (sessionError) {
     redirect(`/auth/error?error=${encodeURIComponent(sessionError)}`);
   }
 
-  redirect(`/track/${ticketId}`);
+  // Route through the first-access gate: new clients see the set-password
+  // interstitial once; clients who already decided pass straight to the ticket.
+  redirect(
+    `/auth/set-password?next=${encodeURIComponent(`/track/${ticketId}`)}`,
+  );
 }

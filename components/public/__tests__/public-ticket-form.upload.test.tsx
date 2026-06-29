@@ -11,11 +11,16 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // ---------------------------------------------------------------------------
 
 const mockStorageUpload = vi.hoisted(() => vi.fn());
-const mockStorageFrom = vi.hoisted(() => vi.fn(() => ({ upload: mockStorageUpload })));
+const mockStorageFrom = vi.hoisted(() =>
+  vi.fn(() => ({ upload: mockStorageUpload })),
+);
 const mockRegisterAttachments = vi.hoisted(() => vi.fn());
 const mockRollbackTicket = vi.hoisted(() => vi.fn());
 const mockBuildStoragePath = vi.hoisted(() =>
-  vi.fn((ticketId: string, fileId: string, name: string) => `tickets/${ticketId}/${fileId}-${name}`)
+  vi.fn(
+    (ticketId: string, fileId: string, name: string) =>
+      `tickets/${ticketId}/${fileId}-${name}`,
+  ),
 );
 
 // ---------------------------------------------------------------------------
@@ -37,7 +42,13 @@ vi.mock("@/lib/storage/attachments", () => ({
   ATTACHMENT_BUCKET: "ticket-attachments",
   MAX_FILES: 5,
   MAX_TOTAL_BYTES: 50 * 1024 * 1024,
-  ALLOWED_MIME: ["application/pdf", "image/jpeg", "image/png", "image/webp", "application/zip"],
+  ALLOWED_MIME: [
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "application/zip",
+  ],
   buildStoragePath: mockBuildStoragePath,
 }));
 
@@ -61,7 +72,10 @@ describe("orchestrateFileUpload", () => {
   });
 
   it("happy path — uploads files then calls registerAttachments in order", async () => {
-    mockStorageUpload.mockResolvedValue({ data: { path: "tickets/t1/uuid-a.pdf" }, error: null });
+    mockStorageUpload.mockResolvedValue({
+      data: { path: "tickets/t1/uuid-a.pdf" },
+      error: null,
+    });
     mockRegisterAttachments.mockResolvedValue({ error: null });
 
     const result = await orchestrateFileUpload("ticket-1", [FILE_A, FILE_B]);
@@ -72,9 +86,15 @@ describe("orchestrateFileUpload", () => {
     expect(mockRegisterAttachments).toHaveBeenCalledWith(
       "ticket-1",
       expect.arrayContaining([
-        expect.objectContaining({ filename: "a.pdf", mime_type: "application/pdf" }),
-        expect.objectContaining({ filename: "b.pdf", mime_type: "application/pdf" }),
-      ])
+        expect.objectContaining({
+          filename: "a.pdf",
+          mime_type: "application/pdf",
+        }),
+        expect.objectContaining({
+          filename: "b.pdf",
+          mime_type: "application/pdf",
+        }),
+      ]),
     );
   });
 
@@ -87,7 +107,10 @@ describe("orchestrateFileUpload", () => {
   });
 
   it("upload failure triggers rollbackTicket and returns error with retry hint", async () => {
-    mockStorageUpload.mockResolvedValue({ data: null, error: { message: "storage error" } });
+    mockStorageUpload.mockResolvedValue({
+      data: null,
+      error: { message: "storage error" },
+    });
     mockRollbackTicket.mockResolvedValue({ error: null });
 
     const result = await orchestrateFileUpload("ticket-1", [FILE_A]);
@@ -99,7 +122,10 @@ describe("orchestrateFileUpload", () => {
   });
 
   it("register failure triggers rollbackTicket and returns error with retry hint", async () => {
-    mockStorageUpload.mockResolvedValue({ data: { path: "tickets/t1/uuid-a.pdf" }, error: null });
+    mockStorageUpload.mockResolvedValue({
+      data: { path: "tickets/t1/uuid-a.pdf" },
+      error: null,
+    });
     mockRegisterAttachments.mockResolvedValue({ error: "db insert failed" });
     mockRollbackTicket.mockResolvedValue({ error: null });
 
@@ -111,7 +137,10 @@ describe("orchestrateFileUpload", () => {
   });
 
   it("rollback failure after upload error returns error with canRetryWithoutFiles=false", async () => {
-    mockStorageUpload.mockResolvedValue({ data: null, error: { message: "upload failed" } });
+    mockStorageUpload.mockResolvedValue({
+      data: null,
+      error: { message: "upload failed" },
+    });
     mockRollbackTicket.mockResolvedValue({ error: "rollback also failed" });
 
     const result = await orchestrateFileUpload("ticket-1", [FILE_A]);

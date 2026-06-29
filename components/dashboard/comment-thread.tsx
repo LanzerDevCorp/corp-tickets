@@ -2,7 +2,6 @@ import { Lock, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { type CommentWithAuthor } from "@/app/actions/comments";
 import { formatDateTime } from "@/lib/format-date";
-import { t } from "@/lib/i18n/t";
 
 type CommentThreadProps = {
   comments: CommentWithAuthor[];
@@ -13,7 +12,7 @@ export default function CommentThread({ comments }: CommentThreadProps) {
     return (
       <div className="flex flex-col items-center gap-3 py-12 text-zinc-400">
         <MessageSquare className="h-8 w-8 opacity-40" />
-        <p className="text-sm">{t("dashboard.noCommentsYet")}</p>
+        <p className="text-sm">{"Aún no hay comentarios"}</p>
       </div>
     );
   }
@@ -28,28 +27,29 @@ export default function CommentThread({ comments }: CommentThreadProps) {
 }
 
 function CommentCard({ comment }: { comment: CommentWithAuthor }) {
-  const authorName = comment.author?.display_name ?? comment.author?.email ?? t("common.unknown");
+  const authorName =
+    comment.author?.display_name ?? comment.author?.email ?? "Desconocido";
   const timestamp = formatDateTime(comment.created_at);
 
   if (comment.is_internal) {
     return (
       <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
-        <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="mb-2 flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
               {authorName}
             </span>
             <Badge
               variant="outline"
-              className="bg-amber-500/10 text-amber-700 border-amber-500/30 dark:text-amber-400 flex items-center gap-1 text-[10px] px-1.5 py-0"
+              className="flex items-center gap-1 border-amber-500/30 bg-amber-500/10 px-1.5 py-0 text-[10px] text-amber-700 dark:text-amber-400"
             >
               <Lock className="h-3 w-3" />
-              {t("dashboard.internal")}
+              {"Interno"}
             </Badge>
           </div>
-          <time className="text-xs text-zinc-400 shrink-0">{timestamp}</time>
+          <time className="shrink-0 text-xs text-zinc-400">{timestamp}</time>
         </div>
-        <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-line leading-relaxed">
+        <p className="text-sm leading-relaxed whitespace-pre-line text-zinc-700 dark:text-zinc-300">
           {comment.body}
         </p>
       </div>
@@ -57,14 +57,14 @@ function CommentCard({ comment }: { comment: CommentWithAuthor }) {
   }
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white/50 dark:border-zinc-800 dark:bg-zinc-950/50 p-4">
-      <div className="flex items-start justify-between gap-2 mb-2">
+    <div className="rounded-xl border border-zinc-200 bg-white/50 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
+      <div className="mb-2 flex items-start justify-between gap-2">
         <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
           {authorName}
         </span>
-        <time className="text-xs text-zinc-400 shrink-0">{timestamp}</time>
+        <time className="shrink-0 text-xs text-zinc-400">{timestamp}</time>
       </div>
-      <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-line leading-relaxed">
+      <p className="text-sm leading-relaxed whitespace-pre-line text-zinc-700 dark:text-zinc-300">
         {comment.body}
       </p>
     </div>

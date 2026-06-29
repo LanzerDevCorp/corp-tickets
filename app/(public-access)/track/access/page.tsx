@@ -6,7 +6,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { TrackAccessPanel } from "@/components/tracking/track-access-panel";
-import { t } from "@/lib/i18n/t";
 
 type SearchParams = {
   error_code?: string;
@@ -15,15 +14,17 @@ type SearchParams = {
 };
 
 function resolveTitle(errorCode: string | undefined): string {
-  if (errorCode === "session_expired") return t("auth.sessionExpiredTitle");
-  if (errorCode === "otp_expired") return t("tracking.otpExpiredTitle");
-  return t("tracking.accessTitle");
+  if (errorCode === "session_expired") return "Continuar seguimiento";
+  if (errorCode === "otp_expired") return "Enlace expirado";
+  return "Consultar tu ticket";
 }
 
 function resolveDescription(errorCode: string | undefined): string {
-  if (errorCode === "session_expired") return t("auth.sessionExpiredDescription");
-  if (errorCode === "otp_expired") return t("tracking.otpExpiredDescription");
-  return t("tracking.accessDescription");
+  if (errorCode === "session_expired")
+    return "Tu sesión expiró. Ingresa tu correo y el número de ticket que recibiste al enviar la solicitud.";
+  if (errorCode === "otp_expired")
+    return "Tu enlace de acceso expiró. Ingresa tu correo y número de ticket para continuar, o solicita un nuevo enlace.";
+  return "Ingresa el correo y el número de ticket que recibiste al enviar la solicitud.";
 }
 
 export default async function TrackAccessPage({

@@ -15,7 +15,6 @@ import {
   type CommentSubmitData,
 } from "@/lib/schemas/comment-submit";
 import { cn } from "@/lib/utils";
-import { t } from "@/lib/i18n/t";
 
 // Input type: zod's input (optional fields due to .default()) — this is what the form holds
 type CommentFormInput = z.input<typeof CommentSubmitSchema>;
@@ -55,7 +54,7 @@ export default function CommentForm({ ticketId, onPosted }: CommentFormProps) {
       form.reset();
     } catch (err: any) {
       form.setError("root", {
-        message: err?.message ?? t("dashboard.failedPostComment"),
+        message: err?.message ?? "No se pudo publicar el comentario",
       });
     }
   };
@@ -65,18 +64,18 @@ export default function CommentForm({ ticketId, onPosted }: CommentFormProps) {
       className={cn(
         "rounded-xl border p-4 transition-colors",
         isInternal
-          ? "bg-amber-500/5 border-amber-500/30"
-          : "bg-white/50 border-zinc-200 dark:bg-zinc-950/50 dark:border-zinc-800"
+          ? "border-amber-500/30 bg-amber-500/5"
+          : "border-zinc-200 bg-white/50 dark:border-zinc-800 dark:bg-zinc-950/50",
       )}
     >
       {/* Form header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {isInternal && (
             <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
           )}
           <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-            {isInternal ? t("dashboard.internalNote") : t("dashboard.reply")}
+            {isInternal ? "Nota interna" : "Responder"}
           </span>
         </div>
 
@@ -87,9 +86,9 @@ export default function CommentForm({ ticketId, onPosted }: CommentFormProps) {
             <div className="flex items-center gap-2">
               <Label
                 htmlFor={`${formId}-internal`}
-                className="text-xs text-zinc-500 cursor-pointer"
+                className="cursor-pointer text-xs text-zinc-500"
               >
-                {t("dashboard.internalNoteToggle")}
+                {"Nota interna"}
               </Label>
               <Switch
                 id={`${formId}-internal`}
@@ -108,19 +107,19 @@ export default function CommentForm({ ticketId, onPosted }: CommentFormProps) {
           name="body"
           control={form.control}
           render={({ field, fieldState }) => (
-            <div className="space-y-1.5 mb-3">
+            <div className="mb-3 space-y-1.5">
               <Textarea
                 {...field}
                 id={`${formId}-body`}
                 placeholder={
                   isInternal
-                    ? t("dashboard.internalNotePlaceholder")
-                    : t("dashboard.replyPlaceholder")
+                    ? "Agrega una nota interna visible solo para el personal..."
+                    : "Escribe una respuesta para el cliente..."
                 }
                 className={cn(
                   "min-h-[100px] resize-y",
                   isInternal &&
-                    "border-amber-500/30 focus-visible:ring-amber-500/50"
+                    "border-amber-500/30 focus-visible:ring-amber-500/50",
                 )}
                 disabled={form.formState.isSubmitting}
                 aria-invalid={fieldState.invalid}
@@ -135,27 +134,23 @@ export default function CommentForm({ ticketId, onPosted }: CommentFormProps) {
           )}
         />
 
-        {rootError && (
-          <p className="text-xs text-rose-500 mb-2">{rootError}</p>
-        )}
+        {rootError && <p className="mb-2 text-xs text-rose-500">{rootError}</p>}
 
         <div className="flex justify-end">
           <Button
             type="submit"
             form={formId}
-            disabled={
-              !form.formState.isValid || form.formState.isSubmitting
-            }
+            disabled={!form.formState.isValid || form.formState.isSubmitting}
             className={cn(
               isInternal &&
-                "bg-amber-600 hover:bg-amber-700 text-white border-amber-600"
+                "border-amber-600 bg-amber-600 text-white hover:bg-amber-700",
             )}
           >
             {form.formState.isSubmitting
-              ? t("common.posting")
+              ? "Publicando..."
               : isInternal
-              ? t("dashboard.addInternalNote")
-              : t("dashboard.reply")}
+                ? "Agregar nota interna"
+                : "Responder"}
           </Button>
         </div>
       </form>

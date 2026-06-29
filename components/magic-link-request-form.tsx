@@ -5,7 +5,6 @@ import { requestMagicLink } from "@/app/actions/client-provision";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { t } from "@/lib/i18n/t";
 
 type Props = {
   defaultEmail?: string;
@@ -21,19 +20,21 @@ export function MagicLinkRequestForm({ defaultEmail }: Props) {
       if (result.error) return { error: result.error };
       return { error: null, submitted: true };
     },
-    { error: null, submitted: false }
+    { error: null, submitted: false },
   );
 
   if (state.submitted) {
     return (
-      <p className="text-sm text-green-600">{t("auth.magicLinkCheckEmail")}</p>
+      <p className="text-sm text-green-600">
+        {"Revisa tu correo para obtener un nuevo enlace."}
+      </p>
     );
   }
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div className="grid gap-2">
-        <Label htmlFor="magic-email">{t("common.email")}</Label>
+        <Label htmlFor="magic-email">{"Correo electrónico"}</Label>
         <Input
           id="magic-email"
           name="email"
@@ -44,7 +45,7 @@ export function MagicLinkRequestForm({ defaultEmail }: Props) {
       </div>
       {state.error && <p className="text-sm text-red-500">{state.error}</p>}
       <Button type="submit" disabled={isPending}>
-        {isPending ? t("common.sending") : t("auth.requestNewLink")}
+        {isPending ? "Enviando..." : "Solicitar nuevo enlace"}
       </Button>
     </form>
   );

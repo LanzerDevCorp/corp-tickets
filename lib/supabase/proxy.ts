@@ -8,13 +8,16 @@ const STAFF_ONLY_PREFIXES = ["/dashboard", "/admin"];
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/") || pathname.startsWith(route + "?")
+    (route) =>
+      pathname === route ||
+      pathname.startsWith(route + "/") ||
+      pathname.startsWith(route + "?"),
   );
 }
 
 function isStaffOnlyRoute(pathname: string): boolean {
   return STAFF_ONLY_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
+    (prefix) => pathname === prefix || pathname.startsWith(prefix + "/"),
   );
 }
 
@@ -31,15 +34,15 @@ export async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
+            request.cookies.set(name, value),
           );
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   // Do not run code between createServerClient and getClaims().

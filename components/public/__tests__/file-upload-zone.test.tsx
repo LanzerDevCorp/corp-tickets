@@ -31,7 +31,7 @@ describe("validateFiles (pure logic)", () => {
 
   it("returns error when combined count exceeds MAX_FILES", () => {
     const five = Array.from({ length: MAX_FILES }, (_, i) =>
-      makeFile(`f${i}.pdf`, "application/pdf", 100)
+      makeFile(`f${i}.pdf`, "application/pdf", 100),
     );
     const { valid, error } = validateFiles([PDF], five);
     expect(error).not.toBeNull();
@@ -70,7 +70,9 @@ describe("FileUploadZone", () => {
     const onFilesChange = vi.fn();
     render(<FileUploadZone selectedFiles={[]} onFilesChange={onFilesChange} />);
 
-    expect(screen.getByRole("button", { name: /choose files/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /choose files/i }),
+    ).toBeInTheDocument();
     const input = document.querySelector('input[type="file"]');
     expect(input).not.toBeNull();
   });
@@ -79,7 +81,9 @@ describe("FileUploadZone", () => {
     const onFilesChange = vi.fn();
     render(<FileUploadZone selectedFiles={[]} onFilesChange={onFilesChange} />);
 
-    const dropZone = screen.getByRole("button", { name: /choose files/i }).closest("div")!;
+    const dropZone = screen
+      .getByRole("button", { name: /choose files/i })
+      .closest("div")!;
 
     fireEvent.drop(dropZone, {
       dataTransfer: {
@@ -95,12 +99,19 @@ describe("FileUploadZone", () => {
 
   it("shows count-limit error when 5 files are selected and a 6th is dropped", () => {
     const existing5 = Array.from({ length: 5 }, (_, i) =>
-      makeFile(`file${i}.pdf`, "application/pdf", 100)
+      makeFile(`file${i}.pdf`, "application/pdf", 100),
     );
     const onFilesChange = vi.fn();
-    render(<FileUploadZone selectedFiles={existing5} onFilesChange={onFilesChange} />);
+    render(
+      <FileUploadZone
+        selectedFiles={existing5}
+        onFilesChange={onFilesChange}
+      />,
+    );
 
-    const dropZone = screen.getByRole("button", { name: /choose files/i }).closest("div")!;
+    const dropZone = screen
+      .getByRole("button", { name: /choose files/i })
+      .closest("div")!;
     fireEvent.drop(dropZone, {
       dataTransfer: {
         files: [PDF],
@@ -114,9 +125,13 @@ describe("FileUploadZone", () => {
 
   it("shows size error when dropped file pushes total over 50 MiB", () => {
     const onFilesChange = vi.fn();
-    render(<FileUploadZone selectedFiles={[MB_30]} onFilesChange={onFilesChange} />);
+    render(
+      <FileUploadZone selectedFiles={[MB_30]} onFilesChange={onFilesChange} />,
+    );
 
-    const dropZone = screen.getByRole("button", { name: /choose files/i }).closest("div")!;
+    const dropZone = screen
+      .getByRole("button", { name: /choose files/i })
+      .closest("div")!;
     fireEvent.drop(dropZone, {
       dataTransfer: {
         files: [MB_30],
@@ -130,7 +145,12 @@ describe("FileUploadZone", () => {
 
   it("shows filename and size for each selected file", () => {
     const onFilesChange = vi.fn();
-    render(<FileUploadZone selectedFiles={[PDF, PNG]} onFilesChange={onFilesChange} />);
+    render(
+      <FileUploadZone
+        selectedFiles={[PDF, PNG]}
+        onFilesChange={onFilesChange}
+      />,
+    );
 
     expect(screen.getByText("report.pdf")).toBeInTheDocument();
     expect(screen.getByText("photo.png")).toBeInTheDocument();
@@ -139,7 +159,12 @@ describe("FileUploadZone", () => {
 
   it("renders a remove button for each selected file", () => {
     const onFilesChange = vi.fn();
-    render(<FileUploadZone selectedFiles={[PDF, PNG]} onFilesChange={onFilesChange} />);
+    render(
+      <FileUploadZone
+        selectedFiles={[PDF, PNG]}
+        onFilesChange={onFilesChange}
+      />,
+    );
 
     const removeButtons = screen.getAllByRole("button", { name: /remove/i });
     expect(removeButtons).toHaveLength(2);
@@ -147,7 +172,12 @@ describe("FileUploadZone", () => {
 
   it("calls onFilesChange without the removed file when remove is clicked", async () => {
     const onFilesChange = vi.fn();
-    render(<FileUploadZone selectedFiles={[PDF, PNG]} onFilesChange={onFilesChange} />);
+    render(
+      <FileUploadZone
+        selectedFiles={[PDF, PNG]}
+        onFilesChange={onFilesChange}
+      />,
+    );
 
     const removeButtons = screen.getAllByRole("button", { name: /remove/i });
     await userEvent.click(removeButtons[0]); // remove first file (PDF)
@@ -157,7 +187,12 @@ describe("FileUploadZone", () => {
 
   it("renders a total-size progress bar reflecting selected bytes vs 50 MiB", () => {
     const onFilesChange = vi.fn();
-    render(<FileUploadZone selectedFiles={[PDF, PNG]} onFilesChange={onFilesChange} />);
+    render(
+      <FileUploadZone
+        selectedFiles={[PDF, PNG]}
+        onFilesChange={onFilesChange}
+      />,
+    );
 
     const progressBar = screen.getByRole("progressbar");
     expect(progressBar).toBeInTheDocument();

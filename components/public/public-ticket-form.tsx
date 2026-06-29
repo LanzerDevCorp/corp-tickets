@@ -1,6 +1,13 @@
 "use client";
 
-import { useRef, useState, useActionState, startTransition, useCallback } from "react";
+import {
+  useRef,
+  useState,
+  useActionState,
+  startTransition,
+  useCallback,
+} from "react";
+import { useFormDraft } from "@/hooks/use-form-draft";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { Turnstile } from "@marsidev/react-turnstile";
@@ -29,16 +36,15 @@ import {
   type TicketSubmitData,
   PRIORITY_LABELS,
 } from "@/lib/schemas/ticket-submit";
-import {
-  submitTicket,
-  type TicketSubmitResult,
-} from "@/app/actions/tickets";
+import { submitTicket, type TicketSubmitResult } from "@/app/actions/tickets";
 import { isTurnstileEnabled } from "@/lib/turnstile/config";
 import { SubmitSuccess } from "./submit-success";
 import { FileUploadZone } from "./file-upload-zone";
 import { orchestrateFileUpload } from "./upload-orchestration";
 
-const INITIAL_STATE: TicketSubmitResult = { error: "no-submit" as unknown as string } as unknown as TicketSubmitResult;
+const INITIAL_STATE: TicketSubmitResult = {
+  error: "no-submit" as unknown as string,
+} as unknown as TicketSubmitResult;
 
 const PRIORITY_STYLES: Record<
   "low" | "medium" | "high" | "urgent",
@@ -86,7 +92,7 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
 
   const [actionState, formAction, isPending] = useActionState(
     submitTicket,
-    null as unknown as TicketSubmitResult
+    null as unknown as TicketSubmitResult,
   );
 
   const form = useForm<TicketSubmitData>({
@@ -103,9 +109,23 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
   });
 
   // Phase 1 success + files → enter upload phase
-  const isPhase1Success = actionState && actionState.error === null && "ticketId" in actionState;
+  const isPhase1Success =
+    actionState && actionState.error === null && "ticketId" in actionState;
 
-  const isSuccess = isPhase1Success && (selectedFiles.length === 0 || uploadSuccess);
+  const isSuccess =
+    isPhase1Success && (selectedFiles.length === 0 || uploadSuccess);
+
+  // T-06: Draft persistence hook — MUST be called before any early return (Rules of Hooks)
+  const { hasDraft, clearDraft } = useFormDraft(form, categories, !!isSuccess);
+
+  // T-08: Inline confirm state machine for the "Limpiar" button
+  const [confirmingClear, setConfirmingClear] = useState(false);
+
+  const handleConfirmClear = () => {
+    clearDraft();
+    setSelectedFiles([]);
+    setConfirmingClear(false);
+  };
 
   // Trigger file upload phases after ticket is created
   // We use useCallback to avoid stale closure issues
@@ -130,12 +150,20 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
         setUploadSuccess(true);
       }
     },
-    [selectedFiles]
+    [selectedFiles],
   );
 
   // When phase 1 succeeds and files are pending, run upload orchestration
-  if (isPhase1Success && selectedFiles.length > 0 && !uploadSuccess && !uploadError && !isUploading) {
-    handleFileUploadPhase((actionState as { error: null; ticketId: string }).ticketId);
+  if (
+    isPhase1Success &&
+    selectedFiles.length > 0 &&
+    !uploadSuccess &&
+    !uploadError &&
+    !isUploading
+  ) {
+    handleFileUploadPhase(
+      (actionState as { error: null; ticketId: string }).ticketId,
+    );
   }
 
   if (isSuccess) {
@@ -149,16 +177,19 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
 
   if (isUploading) {
     return (
-      <div className="w-full max-w-2xl mx-auto">
-        <div className="bg-white rounded-xl border border-border shadow-sm p-8 text-center">
-          <p className="text-sm text-muted-foreground animate-pulse">Uploading files...</p>
+      <div className="mx-auto w-full max-w-2xl">
+        <div className="rounded-xl border border-border bg-white p-8 text-center shadow-sm">
+          <p className="animate-pulse text-sm text-muted-foreground">
+            Uploading files...
+          </p>
         </div>
       </div>
     );
   }
 
-  const isTurnstileReady =
-    turnstileOn ? turnstileToken.length > 0 && !turnstileError : true;
+  const isTurnstileReady = turnstileOn
+    ? turnstileToken.length > 0 && !turnstileError
+    : true;
   const isFormValid = form.formState.isValid && isTurnstileReady;
 
   async function handleSubmit(data: TicketSubmitData) {
@@ -203,9 +234,9 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="mx-auto w-full max-w-2xl">
       {/* Signature element: left navy accent border on the form card */}
-      <div className="bg-white rounded-xl border border-border border-l-4 border-l-[#1C2438] shadow-sm">
+      <div className="rounded-xl border border-l-4 border-border border-l-[#1C2438] bg-white shadow-sm">
         <div className="px-8 pt-8 pb-2">
           <h1 className="text-2xl font-semibold tracking-tight text-[#1C2438]">
             Enviar ticket de soporte
@@ -216,12 +247,26 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
           </p>
         </div>
 
-        <div className="px-8 pb-8 pt-6">
+        <div className="px-8 pt-6 pb-8">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
               className="space-y-5"
             >
+              {/* T-07: Recovery banner — shown when a draft was restored on mount */}
+              {hasDraft && (
+                <div className="flex items-center justify-between rounded-md border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-800">
+                  <span>Borrador recuperado</span>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingClear(true)}
+                    className="ml-4 font-medium underline underline-offset-2 hover:text-blue-600 focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none"
+                  >
+                    Limpiar
+                  </button>
+                </div>
+              )}
+
               {/* Name + Email row */}
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <FormField
@@ -321,29 +366,33 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Prioridad</FormLabel>
-                      <div className="flex gap-1.5" role="group" aria-label="Prioridad">
-                        {(
-                          ["low", "medium", "high", "urgent"] as const
-                        ).map((p) => {
-                          const isActive = field.value === p;
-                          const styles = PRIORITY_STYLES[p];
-                          return (
-                            <button
-                              key={p}
-                              type="button"
-                              role="radio"
-                              aria-checked={isActive}
-                              disabled={isPending}
-                              onClick={() => field.onChange(p)}
-                              className={cn(
-                                "flex-1 h-9 rounded-md border text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed",
-                                isActive ? styles.active : styles.base
-                              )}
-                            >
-                              {PRIORITY_LABELS[p]}
-                            </button>
-                          );
-                        })}
+                      <div
+                        className="flex gap-1.5"
+                        role="group"
+                        aria-label="Prioridad"
+                      >
+                        {(["low", "medium", "high", "urgent"] as const).map(
+                          (p) => {
+                            const isActive = field.value === p;
+                            const styles = PRIORITY_STYLES[p];
+                            return (
+                              <button
+                                key={p}
+                                type="button"
+                                role="radio"
+                                aria-checked={isActive}
+                                disabled={isPending}
+                                onClick={() => field.onChange(p)}
+                                className={cn(
+                                  "h-9 flex-1 rounded-md border text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+                                  isActive ? styles.active : styles.base,
+                                )}
+                              >
+                                {PRIORITY_LABELS[p]}
+                              </button>
+                            );
+                          },
+                        )}
                       </div>
                       <FormMessage />
                     </FormItem>
@@ -373,7 +422,9 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
 
               {/* File attachments */}
               <div>
-                <p className="text-sm font-medium mb-2">Archivos adjuntos (opcional)</p>
+                <p className="mb-2 text-sm font-medium">
+                  Archivos adjuntos (opcional)
+                </p>
                 <FileUploadZone
                   selectedFiles={selectedFiles}
                   onFilesChange={setSelectedFiles}
@@ -427,7 +478,7 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
                     }}
                   />
                   {(turnstileError || isTurnstileServerError) && (
-                    <p className="text-sm text-destructive mt-1">
+                    <p className="mt-1 text-sm text-destructive">
                       La verificación de seguridad falló. Intenta de nuevo.
                     </p>
                   )}
@@ -439,14 +490,50 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
                 <p className="text-sm text-destructive">{serverError}</p>
               )}
 
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full bg-[#1C2438] hover:bg-[#2a3450] text-white transition-colors"
-                disabled={!isFormValid || isPending || isUploading}
-              >
-                {isPending ? "Enviando..." : "Enviar ticket →"}
-              </Button>
+              {/* T-08: Action row — submit + "Limpiar" inline confirm state machine */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="flex-1 bg-[#1C2438] text-white transition-colors hover:bg-[#2a3450]"
+                  disabled={!isFormValid || isPending || isUploading}
+                >
+                  {isPending ? "Enviando..." : "Enviar ticket →"}
+                </Button>
+
+                {/* Idle: show "Limpiar" trigger */}
+                {!confirmingClear ? (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingClear(true)}
+                    className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:whitespace-nowrap"
+                  >
+                    Limpiar
+                  </button>
+                ) : (
+                  /* Confirming: show destructive confirm + cancel */
+                  <span className="flex flex-wrap items-center gap-1.5 text-sm">
+                    <span className="text-muted-foreground">
+                      ¿Limpiar todo? Los archivos también se perderán.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleConfirmClear}
+                      className="font-medium text-destructive underline underline-offset-2 hover:text-destructive/80 focus-visible:ring-2 focus-visible:ring-destructive focus-visible:outline-none"
+                    >
+                      Confirmar
+                    </button>
+                    <span className="text-muted-foreground">·</span>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingClear(false)}
+                      className="font-medium underline underline-offset-2 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                      Cancelar
+                    </button>
+                  </span>
+                )}
+              </div>
             </form>
           </Form>
         </div>

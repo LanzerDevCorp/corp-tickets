@@ -24,6 +24,16 @@ vi.mock("@/components/tracking/track-session-bootstrap", () => ({
   ),
 }));
 
+vi.mock("@/lib/auth/session-email", () => ({
+  getAuthenticatedEmail: vi.fn().mockResolvedValue("client@example.com"),
+}));
+
+vi.mock("@/components/tracking/client-account-menu", () => ({
+  ClientAccountMenu: ({ email }: { email?: string }) => (
+    <div data-testid="account-menu">{email}</div>
+  ),
+}));
+
 import TrackingLayout from "../layout";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -59,7 +69,7 @@ describe("TrackingLayout", () => {
     } as never);
 
     await expect(
-      TrackingLayout({ children: <div>child</div> })
+      TrackingLayout({ children: <div>child</div> }),
     ).rejects.toThrow("REDIRECT:/dashboard");
   });
 
@@ -67,7 +77,13 @@ describe("TrackingLayout", () => {
     mockCreateClient.mockResolvedValue({
       auth: {
         getClaims: vi.fn().mockResolvedValue({
-          data: { claims: { app_role: "client", sub: "client-1" } },
+          data: {
+            claims: {
+              app_role: "client",
+              sub: "client-1",
+              email: "client@example.com",
+            },
+          },
         }),
       },
     } as never);

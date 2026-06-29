@@ -20,7 +20,7 @@ function formatBytes(bytes: number): string {
 
 export function validateFiles(
   incoming: File[],
-  existing: File[]
+  existing: File[],
 ): { valid: File[]; error: string | null } {
   const allowedSet = new Set<string>(ALLOWED_MIME);
 
@@ -28,7 +28,7 @@ export function validateFiles(
     if (!allowedSet.has(file.type)) {
       return {
         valid: [],
-        error: `File type not allowed: "${file.type}". Accepted formats: PDF, JPEG, PNG, WebP, ZIP.`,
+        error: `File type not allowed: "${file.type}". Accepted formats: PDF, JPEG, PNG, WebP, ZIP, DOCX, XLSX.`,
       };
     }
   }
@@ -120,7 +120,7 @@ export function FileUploadZone({
           isDragging
             ? "border-[#1C2438] bg-[#1C2438]/5"
             : "border-border hover:border-[#1C2438]/40",
-          disabled && "pointer-events-none opacity-50"
+          disabled && "pointer-events-none opacity-50",
         )}
       >
         <p className="text-sm text-muted-foreground">
@@ -136,7 +136,8 @@ export function FileUploadZone({
           </button>
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          PDF, JPEG, PNG, WebP, ZIP — hasta {MAX_FILES} archivos, 50 MB total
+          PDF, JPEG, PNG, WebP, ZIP, DOCX, XLSX — hasta {MAX_FILES} archivos, 50
+          MB total
         </p>
         <input
           ref={inputRef}
@@ -165,7 +166,7 @@ export function FileUploadZone({
               key={`${file.name}-${index}`}
               className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-3 py-2 text-sm"
             >
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex min-w-0 items-center gap-2">
                 <span className="truncate font-medium">{file.name}</span>
                 <span className="shrink-0 text-xs text-muted-foreground">
                   {formatBytes(file.size)}
@@ -202,7 +203,7 @@ export function FileUploadZone({
             <div
               className={cn(
                 "h-full rounded-full transition-all",
-                progressPercent >= 90 ? "bg-destructive" : "bg-[#1C2438]"
+                progressPercent >= 90 ? "bg-destructive" : "bg-[#1C2438]",
               )}
               style={{ width: `${progressPercent}%` }}
             />

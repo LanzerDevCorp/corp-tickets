@@ -9,14 +9,13 @@ import { redirect } from "next/navigation";
 import { staffInviteRedirectUrl } from "@/lib/auth/staff-invite";
 import { adminInviteSchema } from "@/lib/schemas/admin-invite";
 import { acceptInviteSchema } from "@/lib/schemas/accept-invite";
-import { es } from "@/lib/i18n/es";
 
 type AuthResult = { error: string | null; role?: Role };
 type InviteResult = { error: string | null };
 
 export async function loginUser(
   _prevState: AuthResult,
-  formData: FormData
+  formData: FormData,
 ): Promise<AuthResult> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
@@ -26,7 +25,7 @@ export async function loginUser(
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { error: es.errors.invalidCredentials };
+    return { error: "Credenciales inválidas" };
   }
 
   const { data } = await supabase.auth.getClaims();
@@ -43,11 +42,11 @@ export async function logoutUser(): Promise<void> {
 
 export async function inviteUser(
   email: string,
-  role: "it" | "admin"
+  role: "it" | "admin",
 ): Promise<InviteResult> {
   const parsed = adminInviteSchema.safeParse({ email, role });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? es.errors.invalidInput };
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
   const supabase = await createClient();
@@ -55,15 +54,13 @@ export async function inviteUser(
   const callerRole = getAppRoleFromClaims(data?.claims);
 
   if (callerRole !== "admin") {
-    return { error: es.errors.unauthorized };
+    return { error: "No autorizado" };
   }
 
   const redirectTo = staffInviteRedirectUrl();
 
-  const { data: invited, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(
-    email,
-    { redirectTo }
-  );
+  const { data: invited, error } =
+    await supabaseAdmin.auth.admin.inviteUserByEmail(email, { redirectTo });
 
   if (error) {
     return { error: error.message ?? null };
@@ -71,7 +68,7 @@ export async function inviteUser(
 
   const { error: metaError } = await supabaseAdmin.auth.admin.updateUserById(
     invited.user.id,
-    { app_metadata: { role } }
+    { app_metadata: { role } },
   );
 
   if (metaError) {
@@ -88,7 +85,7 @@ export async function inviteUser(
 
 export async function completeInviteSetup(
   _prevState: AuthResult,
-  formData: FormData
+  formData: FormData,
 ): Promise<AuthResult> {
   const parsed = acceptInviteSchema.safeParse({
     name: formData.get("name"),
@@ -97,7 +94,7 @@ export async function completeInviteSetup(
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? es.errors.invalidInput };
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
   const supabase = await createClient();
@@ -107,7 +104,8 @@ export async function completeInviteSetup(
 
   if (!userId) {
     return {
-      error: es.errors.inviteExpired,
+      error:
+        "Tu enlace de invitación expiró o no es válido. Solicita una nueva invitación.",
     };
   }
 
@@ -133,7 +131,7 @@ export async function completeInviteSetup(
 }
 
 export async function resetPassword(
-  email: string
+  email: string,
 ): Promise<{ error: string | null }> {
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(email, {

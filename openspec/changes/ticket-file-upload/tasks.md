@@ -2,14 +2,14 @@
 
 ## Review Workload Forecast
 
-| Field | Value |
-|-------|-------|
-| Estimated changed lines | 500–700 |
-| 400-line budget risk | High |
-| Chained PRs recommended | No |
-| Suggested split | Single PR (size:exception) |
-| Delivery strategy | exception-ok |
-| Chain strategy | size-exception |
+| Field                   | Value                      |
+| ----------------------- | -------------------------- |
+| Estimated changed lines | 500–700                    |
+| 400-line budget risk    | High                       |
+| Chained PRs recommended | No                         |
+| Suggested split         | Single PR (size:exception) |
+| Delivery strategy       | exception-ok               |
+| Chain strategy          | size-exception             |
 
 Decision needed before apply: No
 Chained PRs recommended: No
@@ -18,9 +18,9 @@ Chain strategy: size-exception
 
 ### Suggested Work Units
 
-| Unit | Goal | Likely PR | Notes |
-|------|------|-----------|-------|
-| 1 | All tasks below | Single PR | size:exception accepted; maintainer approval required |
+| Unit | Goal            | Likely PR | Notes                                                 |
+| ---- | --------------- | --------- | ----------------------------------------------------- |
+| 1    | All tasks below | Single PR | size:exception accepted; maintainer approval required |
 
 ---
 
@@ -84,16 +84,16 @@ Chain strategy: size-exception
 
 ## Spec → Task Coverage
 
-| Spec Requirement | Tasks |
-|-----------------|-------|
-| File selection + client validation | 3.1, 3.2, 3.3 |
-| Server-side re-validation | 2.1, 2.2, 2.5 |
-| Three-phase submit flow | 4.1, 4.2, 4.3 |
-| Upload failure rollback | 2.1, 2.3, 4.1, 4.2, 4.3 |
-| Registration failure rollback | 2.1, 2.4, 4.1, 4.2, 4.3 |
-| Private storage + signed URLs | 1.1, 1.2, 2.4 |
-| RLS deny-all on ticket_attachments | 1.1 |
-| Staff attachment display | 5.1, 5.2, 5.6 |
-| Client attachment display + ownership | 5.3, 5.4, 5.5, 5.6 |
-| Two-month expiry + cron | 6.1, 6.2 — DEFERRED |
-| Shared constants + path builder | 1.4, 1.5, 1.6 |
+| Spec Requirement                      | Tasks                   |
+| ------------------------------------- | ----------------------- |
+| File selection + client validation    | 3.1, 3.2, 3.3           |
+| Server-side re-validation             | 2.1, 2.2, 2.5           |
+| Three-phase submit flow               | 4.1, 4.2, 4.3           |
+| Upload failure rollback               | 2.1, 2.3, 4.1, 4.2, 4.3 |
+| Registration failure rollback         | 2.1, 2.4, 4.1, 4.2, 4.3 |
+| Private storage + signed URLs         | 1.1, 1.2, 2.4           |
+| RLS deny-all on ticket_attachments    | 1.1                     |
+| Staff attachment display              | 5.1, 5.2, 5.6           |
+| Client attachment display + ownership | 5.3, 5.4, 5.5, 5.6      |
+| Two-month expiry + cron               | 6.1, 6.2 — DEFERRED     |
+| Shared constants + path builder       | 1.4, 1.5, 1.6           |

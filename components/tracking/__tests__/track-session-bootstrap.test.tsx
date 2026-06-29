@@ -36,7 +36,7 @@ describe("TrackSessionBootstrap", () => {
     render(
       <TrackSessionBootstrap hasServerSession={false}>
         <div data-testid="child-content">Track Access Panel</div>
-      </TrackSessionBootstrap>
+      </TrackSessionBootstrap>,
     );
 
     expect(screen.getByTestId("child-content")).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe("TrackSessionBootstrap", () => {
     render(
       <TrackSessionBootstrap hasServerSession={false}>
         <div>form</div>
-      </TrackSessionBootstrap>
+      </TrackSessionBootstrap>,
     );
 
     await act(async () => {
@@ -61,7 +61,7 @@ describe("TrackSessionBootstrap", () => {
     render(
       <TrackSessionBootstrap hasServerSession={false}>
         <div data-testid="access-panel">panel</div>
-      </TrackSessionBootstrap>
+      </TrackSessionBootstrap>,
     );
 
     expect(screen.getByTestId("access-panel")).toBeInTheDocument();
@@ -73,7 +73,7 @@ describe("TrackSessionBootstrap", () => {
     render(
       <TrackSessionBootstrap hasServerSession={false}>
         <div>ticket content</div>
-      </TrackSessionBootstrap>
+      </TrackSessionBootstrap>,
     );
 
     await act(async () => {
@@ -81,7 +81,7 @@ describe("TrackSessionBootstrap", () => {
     });
 
     expect(mockReplace).toHaveBeenCalledWith(
-      expect.stringContaining("/track/access")
+      expect.stringContaining("/track/access"),
     );
   });
 
@@ -89,7 +89,7 @@ describe("TrackSessionBootstrap", () => {
     render(
       <TrackSessionBootstrap hasServerSession={true}>
         <div data-testid="authenticated-child">ticket view</div>
-      </TrackSessionBootstrap>
+      </TrackSessionBootstrap>,
     );
 
     expect(screen.getByTestId("authenticated-child")).toBeInTheDocument();

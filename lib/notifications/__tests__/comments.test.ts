@@ -20,6 +20,7 @@ vi.mock("@react-email/components", async (importActual) => {
 import { notifyPublicComment, notifyClientComment } from "../comments";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { resend } from "@/lib/resend";
+import { render } from "@react-email/components";
 
 const mockFrom = vi.mocked(supabaseAdmin.from);
 const mockSend = vi.mocked(resend!.emails.send);
@@ -34,7 +35,10 @@ function makeChain(result: unknown) {
     eq: ReturnType<typeof vi.fn>;
     in: ReturnType<typeof vi.fn>;
     single: ReturnType<typeof vi.fn>;
-    then: (res: (v: unknown) => unknown, rej: (e: unknown) => unknown) => Promise<unknown>;
+    then: (
+      res: (v: unknown) => unknown,
+      rej: (e: unknown) => unknown,
+    ) => Promise<unknown>;
   } = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
@@ -46,7 +50,10 @@ function makeChain(result: unknown) {
 }
 
 function mockTables(map: Record<string, unknown>) {
-  mockFrom.mockImplementation((table: string) => makeChain(map[table]) as unknown as ReturnType<typeof supabaseAdmin.from>);
+  mockFrom.mockImplementation(
+    (table: string) =>
+      makeChain(map[table]) as unknown as ReturnType<typeof supabaseAdmin.from>,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -74,6 +81,7 @@ describe("notifyPublicComment", () => {
           body: "We fixed it.",
           cc_emails: [],
           tickets: {
+            id: "ticket-1",
             email: "client@example.com",
             name: "Alice",
             subject: "Login issue",
@@ -99,8 +107,13 @@ describe("notifyPublicComment", () => {
       comments: {
         data: {
           body: "We fixed it.",
-          cc_emails: ["client@example.com", "cc1@example.com", "cc1@example.com"],
+          cc_emails: [
+            "client@example.com",
+            "cc1@example.com",
+            "cc1@example.com",
+          ],
           tickets: {
+            id: "ticket-1",
             email: "client@example.com",
             name: "Alice",
             subject: "Login issue",
@@ -137,6 +150,7 @@ describe("notifyPublicComment", () => {
           body: "We fixed it.",
           cc_emails: [],
           tickets: {
+            id: "ticket-1",
             email: "client@example.com",
             name: "Alice",
             subject: "Login issue",
@@ -158,6 +172,7 @@ describe("notifyPublicComment", () => {
           body: "We fixed it.",
           cc_emails: [],
           tickets: {
+            id: "ticket-1",
             email: "client@example.com",
             name: "Alice",
             subject: "Login issue",
@@ -170,10 +185,38 @@ describe("notifyPublicComment", () => {
     mockSend.mockRejectedValueOnce(new Error("auth error"));
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    await expect(notifyPublicComment("comment-1", "ticket-1")).resolves.toBeUndefined();
+    await expect(
+      notifyPublicComment("comment-1", "ticket-1"),
+    ).resolves.toBeUndefined();
     expect(errorSpy).toHaveBeenCalled();
 
     errorSpy.mockRestore();
+  });
+
+  it("passes ticketReference and trackingUrl to the email template", async () => {
+    mockTables({
+      comments: {
+        data: {
+          body: "We fixed it.",
+          cc_emails: [],
+          tickets: {
+            id: "ticket-1",
+            email: "client@example.com",
+            name: "Alice",
+            subject: "Login issue",
+          },
+        },
+        error: null,
+      },
+    });
+
+    await notifyPublicComment("comment-1", "ticket-1");
+
+    const mockRender = render as unknown as ReturnType<typeof vi.fn>;
+    expect(mockRender).toHaveBeenCalledTimes(1);
+    const element = mockRender.mock.calls[0][0];
+    expect(element.props.ticketReference).toBe("TICKET-1");
+    expect(element.props.trackingUrl).toBe("/track/ticket-1");
   });
 });
 
@@ -186,6 +229,7 @@ describe("notifyClientComment", () => {
     mockTables({
       tickets: {
         data: {
+          id: "ticket-2",
           subject: "Printer broken",
           name: "Bob",
           assigned_to: "staff-uuid-1",
@@ -214,6 +258,7 @@ describe("notifyClientComment", () => {
       if (table === "tickets") {
         return makeChain({
           data: {
+            id: "ticket-2",
             subject: "Broken VPN",
             name: "Ada",
             assigned_to: null,
@@ -228,10 +273,7 @@ describe("notifyClientComment", () => {
         const chain = {
           select: vi.fn().mockReturnThis(),
           in: vi.fn().mockResolvedValue({
-            data: [
-              { email: "it1@corp.test" },
-              { email: "admin@corp.test" },
-            ],
+            data: [{ email: "it1@corp.test" }, { email: "admin@corp.test" }],
             error: null,
           }),
         };
@@ -257,6 +299,7 @@ describe("notifyClientComment", () => {
       if (table === "tickets") {
         return makeChain({
           data: {
+            id: "ticket-2",
             subject: "Broken VPN",
             name: "Ada",
             assigned_to: null,
@@ -272,7 +315,10 @@ describe("notifyClientComment", () => {
         };
         return chain as unknown as ReturnType<typeof supabaseAdmin.from>;
       }
-      return makeChain({ data: { body: "Test", cc_emails: [] }, error: null }) as unknown as ReturnType<typeof supabaseAdmin.from>;
+      return makeChain({
+        data: { body: "Test", cc_emails: [] },
+        error: null,
+      }) as unknown as ReturnType<typeof supabaseAdmin.from>;
     });
 
     await notifyClientComment("comment-2", "ticket-2");
@@ -285,6 +331,7 @@ describe("notifyClientComment", () => {
       if (table === "tickets") {
         return makeChain({
           data: {
+            id: "ticket-2",
             subject: "Broken VPN",
             name: "Ada",
             assigned_to: null,
@@ -307,7 +354,11 @@ describe("notifyClientComment", () => {
       return makeChain({
         data: {
           body: "Still failing",
-          cc_emails: ["it1@corp.test", "external@example.com", "external@example.com"],
+          cc_emails: [
+            "it1@corp.test",
+            "external@example.com",
+            "external@example.com",
+          ],
         },
         error: null,
       }) as unknown as ReturnType<typeof supabaseAdmin.from>;
@@ -325,6 +376,7 @@ describe("notifyClientComment", () => {
     mockTables({
       tickets: {
         data: {
+          id: "ticket-2",
           subject: "Printer broken",
           name: "Bob",
           assigned_to: "staff-uuid-1",
@@ -341,9 +393,38 @@ describe("notifyClientComment", () => {
     mockSend.mockRejectedValueOnce(new Error("send failed"));
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    await expect(notifyClientComment("comment-2", "ticket-2")).resolves.toBeUndefined();
+    await expect(
+      notifyClientComment("comment-2", "ticket-2"),
+    ).resolves.toBeUndefined();
     expect(errorSpy).toHaveBeenCalled();
 
     errorSpy.mockRestore();
+  });
+
+  it("passes ticketReference and trackingUrl to the email template", async () => {
+    mockTables({
+      tickets: {
+        data: {
+          id: "ticket-2",
+          subject: "Printer broken",
+          name: "Bob",
+          assigned_to: "staff-uuid-1",
+          users: { email: "staff@corp.test", display_name: "Staff" },
+        },
+        error: null,
+      },
+      comments: {
+        data: { body: "Still broken.", cc_emails: [] },
+        error: null,
+      },
+    });
+
+    await notifyClientComment("comment-2", "ticket-2");
+
+    const mockRender = render as unknown as ReturnType<typeof vi.fn>;
+    expect(mockRender).toHaveBeenCalledTimes(1);
+    const element = mockRender.mock.calls[0][0];
+    expect(element.props.ticketReference).toBe("TICKET-2");
+    expect(element.props.trackingUrl).toBe("/track/ticket-2");
   });
 });

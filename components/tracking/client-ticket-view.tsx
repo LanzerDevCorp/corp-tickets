@@ -17,8 +17,7 @@ import { type AttachmentItem } from "@/app/actions/attachments";
 import AttachmentList from "@/components/dashboard/attachment-list";
 import { formatDateTime } from "@/lib/format-date";
 import { formatTicketReference } from "@/lib/tickets/reference";
-import { t } from "@/lib/i18n/t";
-import { statusLabel, priorityLabel } from "@/lib/i18n/maps";
+import { statusLabel, priorityLabel } from "@/lib/labels";
 
 type ClientTicketViewProps = {
   initialTicket: {
@@ -67,37 +66,37 @@ export default function ClientTicketView({
           <div className="mb-3 flex flex-wrap gap-2">
             <Badge
               variant="outline"
-              className={`${STATUS_COLORS[initialTicket.status] ?? ""} px-2.5 py-0.5 text-[10px] uppercase tracking-wider`}
+              className={`${STATUS_COLORS[initialTicket.status] ?? ""} px-2.5 py-0.5 text-[10px] tracking-wider uppercase`}
             >
               {statusLabel(initialTicket.status)}
             </Badge>
             <Badge
               variant="outline"
-              className={`${PRIORITY_COLORS[initialTicket.priority] ?? ""} px-2.5 py-0.5 text-[10px] uppercase tracking-wider`}
+              className={`${PRIORITY_COLORS[initialTicket.priority] ?? ""} px-2.5 py-0.5 text-[10px] tracking-wider uppercase`}
             >
               {priorityLabel(initialTicket.priority)}
             </Badge>
             <Badge
               variant="secondary"
-              className="bg-zinc-100 text-[10px] uppercase tracking-wider text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+              className="bg-zinc-100 text-[10px] tracking-wider text-zinc-700 uppercase dark:bg-zinc-900 dark:text-zinc-300"
             >
-              {initialTicket.category?.name ?? t("common.general")}
+              {initialTicket.category?.name ?? "General"}
             </Badge>
           </div>
           <CardTitle className="text-2xl font-bold text-zinc-950 dark:text-zinc-50">
             {initialTicket.subject}
           </CardTitle>
-          <CardDescription className="mt-1 font-mono text-xs uppercase tracking-wider text-zinc-400">
+          <CardDescription className="mt-1 font-mono text-xs tracking-wider text-zinc-400 uppercase">
             #{formatTicketReference(initialTicket.id)}
           </CardDescription>
           <CardDescription className="mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
             <span className="flex items-center gap-1.5 text-zinc-500">
               <User className="h-3.5 w-3.5" />
-              {t("common.assigned")}{" "}
+              {"Asignado:"}{" "}
               <strong className="font-medium text-zinc-700 dark:text-zinc-300">
                 {initialTicket.assignee?.display_name ||
                   initialTicket.assignee?.email ||
-                  t("common.pendingAssignment")}
+                  "Asignación pendiente"}
               </strong>
             </span>
             <span className="flex items-center gap-1.5 text-zinc-500">
@@ -108,20 +107,20 @@ export default function ClientTicketView({
         </CardHeader>
         <CardContent className="pt-6">
           <div>
-            <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-              {t("common.description")}
+            <h3 className="mb-2 text-sm font-semibold tracking-wider text-zinc-400 uppercase">
+              {"Descripción"}
             </h3>
-            <p className="whitespace-pre-line leading-relaxed text-zinc-800 dark:text-zinc-200">
+            <p className="leading-relaxed whitespace-pre-line text-zinc-800 dark:text-zinc-200">
               {initialTicket.body}
             </p>
           </div>
 
           {isClosed && initialTicket.closure_reason && (
             <div className="mt-8 rounded-xl border border-rose-500/20 bg-rose-500/5 p-4">
-              <h4 className="mb-1 text-sm font-semibold uppercase tracking-wider text-rose-500">
-                {t("dashboard.closureReason")}
+              <h4 className="mb-1 text-sm font-semibold tracking-wider text-rose-500 uppercase">
+                {"Motivo de cierre"}
               </h4>
-              <p className="text-sm italic text-zinc-700 dark:text-zinc-300">
+              <p className="text-sm text-zinc-700 italic dark:text-zinc-300">
                 {initialTicket.closure_reason}
               </p>
             </div>
@@ -129,7 +128,7 @@ export default function ClientTicketView({
 
           {initialAttachments.length > 0 && (
             <div className="mt-6 space-y-3">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+              <h3 className="text-sm font-semibold tracking-wider text-zinc-400 uppercase">
                 Attachments
               </h3>
               <AttachmentList attachments={initialAttachments} />
@@ -139,13 +138,15 @@ export default function ClientTicketView({
       </Card>
 
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
-          {t("common.conversation")}
+        <h3 className="text-sm font-semibold tracking-wider text-zinc-400 uppercase">
+          {"Conversación"}
         </h3>
         <CommentThread comments={comments} />
         {isClosed ? (
           <p className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/50">
-            {t("tracking.ticketClosedNotice")}
+            {
+              "Este ticket está cerrado. Puedes revisar la conversación arriba pero no agregar comentarios nuevos."
+            }
           </p>
         ) : (
           <ClientCommentForm

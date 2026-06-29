@@ -35,9 +35,11 @@ describe("ClientCommentForm", () => {
 
     await user.type(
       screen.getByPlaceholderText(/comparte detalles/i),
-      "Hello team"
+      "Hello team",
     );
-    await user.click(screen.getByRole("button", { name: /publicar comentario/i }));
+    await user.click(
+      screen.getByRole("button", { name: /publicar comentario/i }),
+    );
 
     await waitFor(() => {
       expect(mockAddComment).toHaveBeenCalledWith({
@@ -67,20 +69,22 @@ describe("ClientCommentForm", () => {
 
     await user.type(
       screen.getByPlaceholderText(/comparte detalles/i),
-      "Update"
+      "Update",
     );
     await user.type(
       screen.getByLabelText(/cc \(opcional/i),
-      "a@test.com, b@test.com"
+      "a@test.com, b@test.com",
     );
-    await user.click(screen.getByRole("button", { name: /publicar comentario/i }));
+    await user.click(
+      screen.getByRole("button", { name: /publicar comentario/i }),
+    );
 
     await waitFor(() => {
       expect(mockAddComment).toHaveBeenCalledWith(
         expect.objectContaining({
           cc_emails: ["a@test.com", "b@test.com"],
           is_internal: false,
-        })
+        }),
       );
     });
   });
@@ -92,29 +96,27 @@ describe("ClientCommentForm", () => {
 
     await user.type(
       screen.getByPlaceholderText(/comparte detalles/i),
-      "Valid body"
+      "Valid body",
     );
     await user.type(screen.getByLabelText(/cc \(opcional/i), "not-an-email");
-    await user.click(screen.getByRole("button", { name: /publicar comentario/i }));
+    await user.click(
+      screen.getByRole("button", { name: /publicar comentario/i }),
+    );
 
-    expect(await screen.findByText(/correo electrónico inválido/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/correo electrónico inválido/i),
+    ).toBeInTheDocument();
     expect(mockAddComment).not.toHaveBeenCalled();
   });
 
   it("disables form when disabled prop is true", () => {
     render(
-      <ClientCommentForm
-        ticketId="ticket-1"
-        disabled
-        onPosted={vi.fn()}
-      />
+      <ClientCommentForm ticketId="ticket-1" disabled onPosted={vi.fn()} />,
     );
 
+    expect(screen.getByPlaceholderText(/comparte detalles/i)).toBeDisabled();
     expect(
-      screen.getByPlaceholderText(/comparte detalles/i)
-    ).toBeDisabled();
-    expect(
-      screen.getByRole("button", { name: /publicar comentario/i })
+      screen.getByRole("button", { name: /publicar comentario/i }),
     ).toBeDisabled();
   });
 });

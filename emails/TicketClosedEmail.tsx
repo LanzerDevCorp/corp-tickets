@@ -7,7 +7,6 @@ import {
   Button,
   Hr,
 } from "@react-email/components";
-import { es } from "@/lib/i18n/es";
 
 interface TicketClosedEmailProps {
   clientName: string;
@@ -48,7 +47,7 @@ export default function TicketClosedEmail({
               margin: "0 0 16px",
             }}
           >
-            {es.email.ticketClosed.greeting.replace("{name}", clientName)}
+            {`Hola ${clientName},`}
           </Text>
 
           <Heading
@@ -72,7 +71,9 @@ export default function TicketClosedEmail({
               margin: "0 0 16px",
             }}
           >
-            {es.email.ticketClosed.intro}
+            {
+              "Tu ticket fue cerrado. Este es el motivo que proporcionó nuestro equipo:"
+            }
           </Text>
 
           <Text
@@ -104,7 +105,7 @@ export default function TicketClosedEmail({
               marginBottom: "24px",
             }}
           >
-            {es.email.ticketClosed.viewHistory}
+            {"Ver historial del ticket"}
           </Button>
 
           <Hr
@@ -123,7 +124,7 @@ export default function TicketClosedEmail({
               margin: "0",
             }}
           >
-            {es.email.ticketClosed.footer}
+            {"Esta es una notificación automática del sistema de tickets."}
           </Text>
         </Container>
       </Body>

@@ -7,8 +7,13 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { provisionClient } from "@/app/actions/client-provision";
 import { ticketSubmitSchema } from "@/lib/schemas/ticket-submit";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify";
-import { notifyNewTicket, notifyTicketCreated, notifyTicketClosed } from "@/lib/notifications/tickets";
-import { es } from "@/lib/i18n/es";
+import {
+  notifyNewTicket,
+  notifyTicketCreated,
+  notifyTicketClosed,
+  notifyTicketResolved,
+} from "@/lib/notifications/tickets";
+import { buildCategoryFilter } from "@/lib/tickets/category-filter";
 
 export type TicketSubmitResult =
   | { error: null; ticketId: string }
@@ -16,7 +21,7 @@ export type TicketSubmitResult =
 
 export async function submitTicket(
   _prevState: TicketSubmitResult,
-  formData: FormData
+  formData: FormData,
 ): Promise<TicketSubmitResult> {
   const raw = {
     name: formData.get("name"),
@@ -71,8 +76,8 @@ export async function submitTicket(
       : Promise.resolve(
           console.error(
             "[submitTicket] actionLink missing — client email NOT sent. provisionError:",
-            provisionResult.error
-          )
+            provisionResult.error,
+          ),
         ),
   ]);
 
@@ -83,19 +88,19 @@ export async function getTickets(filters: {
   statuses?: string[];
   priority?: string;
   assigned_to?: string;
+  category_ids?: string[];
   sortOrder?: "asc" | "desc";
+  sortField?: "created_at" | "status";
 }) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
-  let query = supabase
-    .from("tickets")
-    .select(`
+  let query = supabase.from("tickets").select(`
       *,
       category:categories(name),
       assignee:users!assigned_to(display_name, email)
@@ -116,7 +121,34 @@ export async function getTickets(filters: {
     }
   }
 
-  query = query.order("created_at", { ascending: filters.sortOrder === "asc" });
+  const categoryFilter = buildCategoryFilter(filters.category_ids);
+  switch (categoryFilter.kind) {
+    case "in":
+      query = query.in("category_id", categoryFilter.ids);
+      break;
+    case "isNull":
+      query = query.is("category_id", null);
+      break;
+    case "or":
+      query = query.or(
+        `category_id.in.(${categoryFilter.ids.join(",")}),category_id.is.null`,
+      );
+      break;
+    case "none":
+    default:
+      // No category constraint — return all tickets regardless of category
+      break;
+  }
+
+  if (filters.sortField === "status") {
+    query = query
+      .order("status", { ascending: filters.sortOrder === "asc" })
+      .order("created_at", { ascending: false });
+  } else {
+    query = query.order("created_at", {
+      ascending: filters.sortOrder === "asc",
+    });
+  }
 
   const { data, error } = await query;
   if (error) {
@@ -132,7 +164,7 @@ export async function getTicketDetail(id: string) {
   const userId = claims?.sub as string | undefined;
 
   if (!userId) {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   const role = getAppRoleFromClaims(claims);
@@ -141,22 +173,24 @@ export async function getTicketDetail(id: string) {
   if (role === "client") {
     const email = await getAuthenticatedEmail(supabase, claims);
     if (!email) {
-      throw new Error(es.errors.notAuthorized);
+      throw new Error("No autorizado");
     }
 
     const { data: ticket, error } = await supabase
       .from("tickets")
-      .select(`
+      .select(
+        `
         *,
         category:categories(name),
         assignee:users!assigned_to(display_name, email)
-      `)
+      `,
+      )
       .eq("id", id)
       .eq("email", email)
       .single();
 
     if (error || !ticket) {
-      throw new Error(es.errors.ticketNotFoundOrDenied);
+      throw new Error("Ticket no encontrado o acceso denegado");
     }
     return ticket;
   }
@@ -170,26 +204,30 @@ export async function getTicketDetail(id: string) {
     .eq("id", id)
     .eq("status", "open")
     .is("assigned_to", null)
-    .select(`
+    .select(
+      `
       *,
       category:categories(name),
       assignee:users!assigned_to(display_name, email)
-    `)
+    `,
+    )
     .maybeSingle();
 
   if (!ticket) {
     const { data, error } = await supabase
       .from("tickets")
-      .select(`
+      .select(
+        `
         *,
         category:categories(name),
         assignee:users!assigned_to(display_name, email)
-      `)
+      `,
+      )
       .eq("id", id)
       .single();
 
     if (error || !data) {
-      throw new Error(es.errors.ticketNotFound);
+      throw new Error("Ticket no encontrado");
     }
     ticket = data;
   }
@@ -200,18 +238,20 @@ export async function getTicketDetail(id: string) {
 export async function updateTicketStatus(
   id: string,
   status: "open" | "in_progress" | "resolved" | "closed",
-  closureReason?: string
+  closureReason?: string,
 ) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   if (status === "closed" && !closureReason) {
-    throw new Error(es.errors.closureReasonRequired);
+    throw new Error(
+      "Se requiere un motivo de cierre cuando el estado es cerrado",
+    );
   }
 
   const updatePayload: any = { status };
@@ -225,11 +265,13 @@ export async function updateTicketStatus(
     .from("tickets")
     .update(updatePayload)
     .eq("id", id)
-    .select(`
+    .select(
+      `
       *,
       category:categories(name),
       assignee:users!assigned_to(display_name, email)
-    `)
+    `,
+    )
     .single();
 
   if (error) {
@@ -238,6 +280,10 @@ export async function updateTicketStatus(
 
   if (status === "closed") {
     void notifyTicketClosed(id);
+  }
+
+  if (status === "resolved") {
+    void notifyTicketResolved(id);
   }
 
   return data;
@@ -249,24 +295,75 @@ export async function assignTicket(id: string, assignedTo: string | null) {
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   const { data, error } = await supabase
     .from("tickets")
     .update({ assigned_to: assignedTo === "unassigned" ? null : assignedTo })
     .eq("id", id)
-    .select(`
+    .select(
+      `
       *,
       category:categories(name),
       assignee:users!assigned_to(display_name, email)
-    `)
+    `,
+    )
     .single();
 
   if (error) {
     throw new Error(error.message);
   }
   return data;
+}
+
+export async function updateTicketCategory(id: string, categoryId: string) {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const role = getAppRoleFromClaims(claimsData?.claims);
+
+  if (role !== "admin" && role !== "it") {
+    throw new Error("No autorizado");
+  }
+
+  const { data, error } = await supabase
+    .from("tickets")
+    .update({ category_id: categoryId })
+    .eq("id", id)
+    .select(
+      `
+      *,
+      category:categories(name),
+      assignee:users!assigned_to(display_name, email)
+    `,
+    )
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+export async function markTicketAsSeen(ticketId: string): Promise<void> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const role = getAppRoleFromClaims(claimsData?.claims);
+
+  if (role !== "admin" && role !== "it") {
+    throw new Error("No autorizado");
+  }
+
+  // Idempotent: only the first caller wins; zero rows updated is a valid success.
+  const { error } = await supabase
+    .from("tickets")
+    .update({ first_seen_at: new Date().toISOString() })
+    .eq("id", ticketId)
+    .is("first_seen_at", null);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
 export async function getCategories() {
@@ -293,7 +390,7 @@ export async function getStaffUsers() {
   const role = getAppRoleFromClaims(claimsData?.claims);
 
   if (role !== "admin" && role !== "it") {
-    throw new Error(es.errors.notAuthorized);
+    throw new Error("No autorizado");
   }
 
   const { data, error } = await supabase

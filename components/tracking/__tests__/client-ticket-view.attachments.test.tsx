@@ -9,18 +9,33 @@ import AttachmentList from "@/components/dashboard/attachment-list";
 describe("AttachmentList in client tracking view", () => {
   it("renders filename, size, and download link for active attachments", () => {
     const attachments = [
-      { id: "a1", filename: "invoice.pdf", size_bytes: 4096, url: "https://signed.url/a1", expired: false },
+      {
+        id: "a1",
+        filename: "invoice.pdf",
+        size_bytes: 4096,
+        url: "https://signed.url/a1",
+        expired: false,
+      },
     ];
 
     render(<AttachmentList attachments={attachments} />);
 
     expect(screen.getByText("invoice.pdf")).toBeInTheDocument();
-    expect(screen.getByRole("link")).toHaveAttribute("href", "https://signed.url/a1");
+    expect(screen.getByRole("link")).toHaveAttribute(
+      "href",
+      "https://signed.url/a1",
+    );
   });
 
   it("renders 'File expired' label with no link for expired attachments", () => {
     const attachments = [
-      { id: "b1", filename: "screenshot.png", size_bytes: 512, url: null, expired: true },
+      {
+        id: "b1",
+        filename: "screenshot.png",
+        size_bytes: 512,
+        url: null,
+        expired: true,
+      },
     ];
 
     render(<AttachmentList attachments={attachments} />);

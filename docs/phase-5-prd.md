@@ -88,6 +88,7 @@ Client INSERT policy enforces `is_internal = false` at the database level regard
 ### Application-layer validation (Zod)
 
 A shared `CommentSubmitSchema` (client + server) validates:
+
 - `body`: non-empty string
 - `is_internal`: boolean — when the caller is a client, the server action overrides this to `false` before insert (belt-and-suspenders on top of RLS)
 - `cc_emails`: array of valid email strings, default `[]`
@@ -130,6 +131,7 @@ The comment section is embedded in the existing `ticket-detail` layout (2/3 + 1/
 ### What makes a good test here
 
 Test external behavior at the highest seam possible. For comments, the highest and most valuable seams are:
+
 1. **RLS (database)** — if a policy is wrong, no application code can compensate. Test directly against the Supabase client using different role sessions.
 2. **Server action + Zod** — test that the action rejects bad input and calls the DB correctly, without caring about which React component invoked it.
 
@@ -139,6 +141,7 @@ Do not test component internals (toggle state, CSS classes). If the RLS and acti
 
 **RLS — `supabase/tests/rls.test.ts`** (prior art: existing RLS test file)  
 Cases:
+
 - Staff can INSERT public comment ✓
 - Staff can INSERT internal comment ✓
 - Staff can SELECT all comments on any ticket ✓
@@ -153,6 +156,7 @@ Cases:
 
 **Server actions — `app/actions/__tests__/comments.test.ts`** (prior art: `tickets.test.ts` — mock Supabase client, test action logic)  
 Cases:
+
 - `getComments` returns comments ordered ASC
 - `addComment` with valid staff payload inserts and returns new comment
 - `addComment` rejects empty body
@@ -162,6 +166,7 @@ Cases:
 
 **Zod schema — `lib/schemas/comment-submit.test.ts`** (prior art: `ticket-submit.test.ts`)  
 Cases:
+
 - Valid payload passes
 - Empty body fails
 - Invalid email in `cc_emails` fails

@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { updateTicketStatus, assignTicket } from "@/app/actions/tickets";
+import { useState, useEffect } from "react";
+import {
+  updateTicketStatus,
+  assignTicket,
+  updateTicketCategory,
+  markTicketAsSeen,
+} from "@/app/actions/tickets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -22,27 +33,34 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Calendar, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  User,
+  Calendar,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import Link from "next/link";
 import CommentThread from "@/components/dashboard/comment-thread";
 import CommentForm from "@/components/dashboard/comment-form";
-import AttachmentList from "@/components/dashboard/attachment-list";
+import AttachmentManager from "@/components/dashboard/attachment-manager";
 import { type CommentWithAuthor } from "@/app/actions/comments";
 import { type AttachmentItem } from "@/app/actions/attachments";
 import { formatDateTime } from "@/lib/format-date";
-import { t } from "@/lib/i18n/t";
-import { statusLabel, priorityLabel } from "@/lib/i18n/maps";
+import { statusLabel, priorityLabel } from "@/lib/labels";
 
 type TicketDetailProps = {
   initialTicket: any;
   staffUsers: any[];
+  categories: { id: string; name: string; is_enabled?: boolean }[];
   initialComments: CommentWithAuthor[];
   initialAttachments?: AttachmentItem[];
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
   low: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  medium: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20 dark:text-yellow-500",
+  medium:
+    "bg-yellow-500/10 text-yellow-600 border-yellow-500/20 dark:text-yellow-500",
   high: "bg-orange-500/10 text-orange-500 border-orange-500/20",
   urgent: "bg-red-500/10 text-red-500 border-red-500/20 animate-pulse",
 };
@@ -57,11 +75,21 @@ const STATUS_COLORS: Record<string, string> = {
 export default function TicketDetail({
   initialTicket,
   staffUsers,
+  categories,
   initialComments,
   initialAttachments = [],
 }: TicketDetailProps) {
   const [ticket, setTicket] = useState(initialTicket);
-  const [comments, setComments] = useState<CommentWithAuthor[]>(initialComments);
+  const [comments, setComments] =
+    useState<CommentWithAuthor[]>(initialComments);
+
+  // Mark the ticket as seen on mount (and whenever the ticket id changes).
+  // This runs independently of — and in addition to — the existing
+  // open → in_progress auto-transition in getTicketDetail. Both paths are
+  // idempotent via the first_seen_at IS NULL guard on the server action.
+  useEffect(() => {
+    void markTicketAsSeen(initialTicket.id);
+  }, [initialTicket.id]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -84,7 +112,7 @@ export default function TicketDetail({
       const updated = await updateTicketStatus(ticket.id, newStatus as any);
       setTicket(updated);
     } catch (err: any) {
-      setErrorMsg(err.message || t("dashboard.failedUpdateStatus"));
+      setErrorMsg(err.message || "No se pudo actualizar el estado");
     } finally {
       setIsUpdating(false);
     }
@@ -92,7 +120,7 @@ export default function TicketDetail({
 
   const submitClosure = async () => {
     if (!closureReason.trim()) {
-      setDialogError(t("dashboard.closureReasonRequired"));
+      setDialogError("Indica un motivo para cerrar el ticket");
       return;
     }
 
@@ -100,10 +128,27 @@ export default function TicketDetail({
       setIsUpdating(true);
       setDialogError(null);
       setIsDialogOpen(false);
-      const updated = await updateTicketStatus(ticket.id, "closed", closureReason);
+      const updated = await updateTicketStatus(
+        ticket.id,
+        "closed",
+        closureReason,
+      );
       setTicket(updated);
     } catch (err: any) {
-      setErrorMsg(err.message || t("dashboard.failedCloseTicket"));
+      setErrorMsg(err.message || "No se pudo cerrar el ticket");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCategoryChange = async (newCategoryId: string) => {
+    try {
+      setIsUpdating(true);
+      setErrorMsg(null);
+      const updated = await updateTicketCategory(ticket.id, newCategoryId);
+      setTicket(updated);
+    } catch (err: any) {
+      setErrorMsg(err.message || "No se pudo actualizar la categoría");
     } finally {
       setIsUpdating(false);
     }
@@ -117,88 +162,109 @@ export default function TicketDetail({
       const updated = await assignTicket(ticket.id, val);
       setTicket(updated);
     } catch (err: any) {
-      setErrorMsg(err.message || t("dashboard.failedAssignTicket"));
+      setErrorMsg(err.message || "No se pudo asignar el ticket");
     } finally {
       setIsUpdating(false);
     }
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
+    <div className="mx-auto max-w-6xl space-y-6">
       {/* Back button */}
       <div className="flex items-center gap-4">
         <Button variant="outline" size="sm" asChild className="gap-2">
           <Link href="/dashboard">
             <ArrowLeft className="h-4 w-4" />
-            {t("dashboard.backToQueue")}
+            {"Volver a la cola"}
           </Link>
         </Button>
         {isUpdating && (
-          <span className="text-sm text-zinc-400 animate-pulse">{t("dashboard.savingChanges")}</span>
+          <span className="animate-pulse text-sm text-zinc-400">
+            {"Guardando cambios..."}
+          </span>
         )}
       </div>
 
       {errorMsg && (
-        <div className="flex items-center gap-2 p-4 text-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+        <div className="flex items-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 text-rose-500">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <p className="text-sm">{errorMsg}</p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main Content Area */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6 lg:col-span-2">
           <Card className="border-zinc-200 bg-white/50 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/50">
             <CardHeader className="border-b border-zinc-100 pb-6 dark:border-zinc-900">
-              <div className="flex flex-wrap gap-2 mb-3">
-                <Badge variant="outline" className={`${STATUS_COLORS[ticket.status]} uppercase tracking-wider text-[10px] px-2.5 py-0.5`}>
+              <div className="mb-3 flex flex-wrap gap-2">
+                <Badge
+                  variant="outline"
+                  className={`${STATUS_COLORS[ticket.status]} px-2.5 py-0.5 text-[10px] tracking-wider uppercase`}
+                >
                   {statusLabel(ticket.status)}
                 </Badge>
-                <Badge variant="outline" className={`${PRIORITY_COLORS[ticket.priority]} uppercase tracking-wider text-[10px] px-2.5 py-0.5`}>
+                <Badge
+                  variant="outline"
+                  className={`${PRIORITY_COLORS[ticket.priority]} px-2.5 py-0.5 text-[10px] tracking-wider uppercase`}
+                >
                   {priorityLabel(ticket.priority)}
                 </Badge>
-                <Badge variant="secondary" className="bg-zinc-100 text-zinc-700 uppercase tracking-wider text-[10px] dark:bg-zinc-900 dark:text-zinc-300">
-                  {ticket.category?.name || t("common.general")}
+                <Badge
+                  variant="secondary"
+                  className="bg-zinc-100 text-[10px] tracking-wider text-zinc-700 uppercase dark:bg-zinc-900 dark:text-zinc-300"
+                >
+                  {ticket.category?.name || "General"}
                 </Badge>
               </div>
               <CardTitle className="text-2xl font-bold text-zinc-950 dark:text-zinc-50">
                 {ticket.subject}
               </CardTitle>
-              <CardDescription className="flex items-center gap-2 mt-2">
-                <span>{t("common.submittedBy")} <strong>{ticket.name}</strong> ({ticket.email})</span>
+              <CardDescription className="mt-2 flex items-center gap-2">
+                <span>
+                  {"Enviado por:"} <strong>{ticket.name}</strong> (
+                  {ticket.email})
+                </span>
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="prose prose-zinc max-w-none dark:prose-invert">
-                <h3 className="text-sm font-semibold text-zinc-400 mb-2 uppercase tracking-wider">{t("common.description")}</h3>
-                <p className="text-zinc-800 dark:text-zinc-200 whitespace-pre-line leading-relaxed">
+              <div className="prose prose-zinc dark:prose-invert max-w-none">
+                <h3 className="mb-2 text-sm font-semibold tracking-wider text-zinc-400 uppercase">
+                  {"Descripción"}
+                </h3>
+                <p className="leading-relaxed whitespace-pre-line text-zinc-800 dark:text-zinc-200">
                   {ticket.body || ticket.description}
                 </p>
               </div>
 
               {ticket.status === "closed" && ticket.closure_reason && (
-                <div className="mt-8 p-4 rounded-xl border border-rose-500/20 bg-rose-500/5">
-                  <h4 className="text-sm font-semibold text-rose-500 uppercase tracking-wider mb-1">{t("dashboard.closureReason")}</h4>
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300 italic">{ticket.closure_reason}</p>
+                <div className="mt-8 rounded-xl border border-rose-500/20 bg-rose-500/5 p-4">
+                  <h4 className="mb-1 text-sm font-semibold tracking-wider text-rose-500 uppercase">
+                    {"Motivo de cierre"}
+                  </h4>
+                  <p className="text-sm text-zinc-700 italic dark:text-zinc-300">
+                    {ticket.closure_reason}
+                  </p>
                 </div>
               )}
             </CardContent>
           </Card>
 
           {/* Attachments */}
-          {initialAttachments.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
-                Adjuntos
-              </h3>
-              <AttachmentList attachments={initialAttachments} />
-            </div>
-          )}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold tracking-wider text-zinc-400 uppercase">
+              Adjuntos
+            </h3>
+            <AttachmentManager
+              ticketId={ticket.id}
+              initialAttachments={initialAttachments}
+            />
+          </div>
 
           {/* Comment thread + form */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
-              {t("common.comments")}
+            <h3 className="text-sm font-semibold tracking-wider text-zinc-400 uppercase">
+              {"Comentarios"}
             </h3>
             <CommentThread comments={comments} />
             <CommentForm
@@ -212,42 +278,93 @@ export default function TicketDetail({
         <div className="space-y-6">
           <Card className="border-zinc-200 bg-white/50 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/50">
             <CardHeader>
-              <CardTitle className="text-lg font-bold">{t("common.actions")}</CardTitle>
+              <CardTitle className="text-lg font-bold">{"Acciones"}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Status Selector */}
               <div className="space-y-2">
-                <Label htmlFor="status" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{t("dashboard.ticketStatus")}</Label>
+                <Label
+                  htmlFor="status"
+                  className="text-xs font-semibold tracking-wider text-zinc-400 uppercase"
+                >
+                  {"Estado del ticket"}
+                </Label>
                 <Select
                   value={ticket.status}
                   onValueChange={handleStatusChange}
                   disabled={isUpdating}
                 >
-                  <SelectTrigger id="status" className="bg-white dark:bg-zinc-900">
+                  <SelectTrigger
+                    id="status"
+                    className="bg-white dark:bg-zinc-900"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="open">{statusLabel("open")}</SelectItem>
-                    <SelectItem value="in_progress">{statusLabel("in_progress")}</SelectItem>
-                    <SelectItem value="resolved">{statusLabel("resolved")}</SelectItem>
-                    <SelectItem value="closed">{statusLabel("closed")}</SelectItem>
+                    <SelectItem value="in_progress">
+                      {statusLabel("in_progress")}
+                    </SelectItem>
+                    <SelectItem value="resolved">
+                      {statusLabel("resolved")}
+                    </SelectItem>
+                    <SelectItem value="closed">
+                      {statusLabel("closed")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Category Selector */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="category"
+                  className="text-xs font-semibold tracking-wider text-zinc-400 uppercase"
+                >
+                  {"Categoría del ticket"}
+                </Label>
+                <Select
+                  value={ticket.category_id}
+                  onValueChange={handleCategoryChange}
+                  disabled={isUpdating}
+                >
+                  <SelectTrigger
+                    id="category"
+                    className="bg-white dark:bg-zinc-900"
+                  >
+                    <SelectValue placeholder={"Sin categoría"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Assignee Selector */}
               <div className="space-y-2">
-                <Label htmlFor="assignee" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{t("dashboard.assignedStaff")}</Label>
+                <Label
+                  htmlFor="assignee"
+                  className="text-xs font-semibold tracking-wider text-zinc-400 uppercase"
+                >
+                  {"Personal asignado"}
+                </Label>
                 <Select
                   value={ticket.assigned_to || "unassigned"}
                   onValueChange={handleAssigneeChange}
                   disabled={isUpdating}
                 >
-                  <SelectTrigger id="assignee" className="bg-white dark:bg-zinc-900">
+                  <SelectTrigger
+                    id="assignee"
+                    className="bg-white dark:bg-zinc-900"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">{t("common.unassigned")}</SelectItem>
+                    <SelectItem value="unassigned">{"Sin asignar"}</SelectItem>
                     {staffUsers.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.display_name || user.email}
@@ -258,15 +375,33 @@ export default function TicketDetail({
               </div>
 
               {/* Sidebar Info Summary */}
-              <div className="pt-4 border-t border-zinc-100 space-y-3 text-xs text-zinc-500 dark:border-zinc-900">
+              <div className="space-y-3 border-t border-zinc-100 pt-4 text-xs text-zinc-500 dark:border-zinc-900">
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> {t("common.created")}:</span>
-                  <span className="font-medium">{formatDateTime(ticket.created_at)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> {t("common.assignee")}</span>
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5" /> {"Creado:"}
+                  </span>
                   <span className="font-medium">
-                    {ticket.assignee?.display_name || ticket.assignee?.email || t("common.unassigned")}
+                    {formatDateTime(ticket.created_at)}
+                  </span>
+                </div>
+                {ticket.resolved_at && (
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle className="h-3.5 w-3.5" /> {"Resuelto:"}
+                    </span>
+                    <span className="font-medium">
+                      {formatDateTime(ticket.resolved_at)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <User className="h-3.5 w-3.5" /> {"Asignado:"}
+                  </span>
+                  <span className="font-medium">
+                    {ticket.assignee?.display_name ||
+                      ticket.assignee?.email ||
+                      "Sin asignar"}
                   </span>
                 </div>
               </div>
@@ -279,20 +414,24 @@ export default function TicketDetail({
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{t("dashboard.closureReasonDialogTitle")}</DialogTitle>
+            <DialogTitle>{"Indica el motivo de cierre"}</DialogTitle>
             <DialogDescription>
-              {t("dashboard.closureReasonDialogDescription")}
+              {
+                "Explica por qué se cierra este ticket sin resolución. El cliente podrá ver este motivo."
+              }
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="reason">{t("dashboard.closureReason")}</Label>
+              <Label htmlFor="reason">{"Motivo de cierre"}</Label>
               <Textarea
                 id="reason"
                 value={closureReason}
                 onChange={(e) => setClosureReason(e.target.value)}
-                placeholder={t("dashboard.closureReasonPlaceholder")}
+                placeholder={
+                  "p. ej. Ticket duplicado, fuera de alcance o el cliente retiró la solicitud."
+                }
                 className="min-h-[100px]"
               />
               {dialogError && (
@@ -302,11 +441,15 @@ export default function TicketDetail({
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isUpdating}>
-              {t("common.cancel")}
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              disabled={isUpdating}
+            >
+              {"Cancelar"}
             </Button>
             <Button onClick={submitClosure} disabled={isUpdating}>
-              {t("dashboard.confirmClosure")}
+              {"Confirmar cierre"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -3,12 +3,11 @@ import { render } from "@react-email/components";
 import NewTicketEmail from "@/emails/NewTicketEmail";
 import TicketCreatedEmail from "@/emails/TicketCreatedEmail";
 import TicketClosedEmail from "@/emails/TicketClosedEmail";
+import TicketResolvedEmail from "@/emails/TicketResolvedEmail";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { resend } from "@/lib/resend";
 import { buildTicketAccessUrl } from "@/lib/auth/ticket-access";
 import { formatTicketReference } from "@/lib/tickets/reference";
-import { t } from "@/lib/i18n/t";
-import { es } from "@/lib/i18n/es";
 
 type TicketAccessRow = {
   id: string;
@@ -22,24 +21,28 @@ type TicketAccessRow = {
 function categoryNameFromTicket(ticket: TicketAccessRow): string {
   const rawCat = ticket.categories;
   if (Array.isArray(rawCat)) {
-    return rawCat[0]?.name ?? es.common.uncategorized;
+    return rawCat[0]?.name ?? "Sin categoría";
   }
-  return rawCat?.name ?? es.common.uncategorized;
+  return rawCat?.name ?? "Sin categoría";
 }
 
 export async function sendTicketAccessEmail(
   ticketId: string,
-  magicLinkUrl?: string
+  magicLinkUrl?: string,
 ): Promise<{ error: string | null }> {
   if (!resend) {
     console.error("[sendTicketAccessEmail] Resend client not initialized");
-    return { error: es.errors.magicLinkSendFailed };
+    return {
+      error: "No pudimos enviar el enlace. Intenta de nuevo en unos minutos.",
+    };
   }
 
   const from = process.env.RESEND_FROM_EMAIL;
   if (!from) {
     console.error("[sendTicketAccessEmail] RESEND_FROM_EMAIL is not set");
-    return { error: es.errors.magicLinkSendFailed };
+    return {
+      error: "No pudimos enviar el enlace. Intenta de nuevo en unos minutos.",
+    };
   }
 
   const { data: ticketRow, error: ticketError } = await supabaseAdmin
@@ -49,8 +52,11 @@ export async function sendTicketAccessEmail(
     .single();
 
   if (ticketError || !ticketRow) {
-    console.error("[sendTicketAccessEmail] Failed to fetch ticket", ticketError);
-    return { error: es.errors.ticketNotFound };
+    console.error(
+      "[sendTicketAccessEmail] Failed to fetch ticket",
+      ticketError,
+    );
+    return { error: "Ticket no encontrado" };
   }
 
   const ticket = ticketRow as TicketAccessRow;
@@ -61,7 +67,9 @@ export async function sendTicketAccessEmail(
       accessUrl = buildTicketAccessUrl(ticket.id, ticket.email);
     } catch (err) {
       console.error("[sendTicketAccessEmail] Failed to build access URL", err);
-      return { error: es.errors.magicLinkSendFailed };
+      return {
+        error: "No pudimos enviar el enlace. Intenta de nuevo en unos minutos.",
+      };
     }
   }
 
@@ -74,25 +82,29 @@ export async function sendTicketAccessEmail(
         priority: ticket.priority as "low" | "medium" | "high" | "urgent",
         categoryName: categoryNameFromTicket(ticket),
         magicLinkUrl: accessUrl,
-      })
+      }),
     );
 
     const { error: sendError } = await resend.emails.send({
       from,
       to: ticket.email,
-      subject: t("email.subjects.ticketCreated", { subject: ticket.subject }),
+      subject: `Ticket recibido: "${ticket.subject}"`,
       html,
     });
 
     if (sendError) {
       console.error("[sendTicketAccessEmail] Resend send error", sendError);
-      return { error: es.errors.magicLinkSendFailed };
+      return {
+        error: "No pudimos enviar el enlace. Intenta de nuevo en unos minutos.",
+      };
     }
 
     return { error: null };
   } catch (err) {
     console.error("[sendTicketAccessEmail]", err);
-    return { error: es.errors.magicLinkSendFailed };
+    return {
+      error: "No pudimos enviar el enlace. Intenta de nuevo en unos minutos.",
+    };
   }
 }
 
@@ -100,7 +112,7 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
   try {
     if (!resend) {
       console.error(
-        "[notifyNewTicket] Resend client not initialized — RESEND_API_KEY missing"
+        "[notifyNewTicket] Resend client not initialized — RESEND_API_KEY missing",
       );
       return;
     }
@@ -120,7 +132,7 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
     if (ticketError || !ticketRow) {
       console.error(
         "[notifyNewTicket] Failed to fetch ticket data",
-        ticketError
+        ticketError,
       );
       return;
     }
@@ -135,7 +147,7 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
     if (staffError) {
       console.error(
         "[notifyNewTicket] Failed to fetch staff users",
-        staffError
+        staffError,
       );
       return;
     }
@@ -160,8 +172,8 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
 
     const rawCat = ticket.categories;
     const categoryName = Array.isArray(rawCat)
-      ? (rawCat[0]?.name ?? es.common.uncategorized)
-      : (rawCat?.name ?? es.common.uncategorized);
+      ? (rawCat[0]?.name ?? "Sin categoría")
+      : (rawCat?.name ?? "Sin categoría");
 
     // 3. Render email
     const html = await render(
@@ -174,14 +186,14 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
         categoryName,
         body: ticket.body,
         dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/dashboard`,
-      })
+      }),
     );
 
     // 4. Send
     const { error: sendError } = await resend.emails.send({
       from,
       to: recipients,
-      subject: t("email.subjects.newTicket", { subject: ticket.subject }),
+      subject: `Nuevo ticket: "${ticket.subject}"`,
       html,
     });
     if (sendError) {
@@ -194,7 +206,7 @@ export async function notifyNewTicket(ticketId: string): Promise<void> {
 
 export async function notifyTicketCreated(
   ticketId: string,
-  magicLinkUrl: string
+  magicLinkUrl: string,
 ): Promise<void> {
   if (!magicLinkUrl) {
     console.error("[notifyTicketCreated] magicLinkUrl is empty — skipping");
@@ -211,7 +223,7 @@ export async function notifyTicketClosed(ticketId: string): Promise<void> {
   try {
     if (!resend) {
       console.error(
-        "[notifyTicketClosed] Resend client not initialized — RESEND_API_KEY missing"
+        "[notifyTicketClosed] Resend client not initialized — RESEND_API_KEY missing",
       );
       return;
     }
@@ -230,7 +242,7 @@ export async function notifyTicketClosed(ticketId: string): Promise<void> {
     if (ticketError || !ticketRow) {
       console.error(
         "[notifyTicketClosed] Failed to fetch ticket data",
-        ticketError
+        ticketError,
       );
       return;
     }
@@ -243,9 +255,7 @@ export async function notifyTicketClosed(ticketId: string): Promise<void> {
     };
 
     if (!ticket.closure_reason) {
-      console.error(
-        "[notifyTicketClosed] closure_reason missing — skipping"
-      );
+      console.error("[notifyTicketClosed] closure_reason missing — skipping");
       return;
     }
 
@@ -257,13 +267,13 @@ export async function notifyTicketClosed(ticketId: string): Promise<void> {
         ticketSubject: ticket.subject,
         closureReason: ticket.closure_reason,
         trackingUrl,
-      })
+      }),
     );
 
     const { error: sendError } = await resend.emails.send({
       from,
       to: ticket.email,
-      subject: t("email.subjects.ticketClosed", { subject: ticket.subject }),
+      subject: `Ticket cerrado: "${ticket.subject}"`,
       html,
     });
     if (sendError) {
@@ -271,5 +281,63 @@ export async function notifyTicketClosed(ticketId: string): Promise<void> {
     }
   } catch (err) {
     console.error("[notifyTicketClosed]", err);
+  }
+}
+
+export async function notifyTicketResolved(ticketId: string): Promise<void> {
+  try {
+    if (!resend) {
+      console.error(
+        "[notifyTicketResolved] Resend client not initialized — RESEND_API_KEY missing",
+      );
+      return;
+    }
+    const from = process.env.RESEND_FROM_EMAIL;
+    if (!from) {
+      console.error("[notifyTicketResolved] RESEND_FROM_EMAIL is not set");
+      return;
+    }
+
+    const { data: ticketRow, error: ticketError } = await supabaseAdmin
+      .from("tickets")
+      .select("name, email, subject")
+      .eq("id", ticketId)
+      .single();
+
+    if (ticketError || !ticketRow) {
+      console.error(
+        "[notifyTicketResolved] Failed to fetch ticket data",
+        ticketError,
+      );
+      return;
+    }
+
+    const ticket = ticketRow as {
+      name: string;
+      email: string;
+      subject: string;
+    };
+
+    const trackingUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/track/${ticketId}`;
+
+    const html = await render(
+      createElement(TicketResolvedEmail, {
+        clientName: ticket.name,
+        ticketSubject: ticket.subject,
+        trackingUrl,
+      }),
+    );
+
+    const { error: sendError } = await resend.emails.send({
+      from,
+      to: ticket.email,
+      subject: `Ticket resuelto: "${ticket.subject}"`,
+      html,
+    });
+    if (sendError) {
+      console.error("[notifyTicketResolved] Resend send error", sendError);
+    }
+  } catch (err) {
+    console.error("[notifyTicketResolved]", err);
   }
 }

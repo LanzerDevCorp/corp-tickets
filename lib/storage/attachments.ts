@@ -16,6 +16,8 @@ export const ALLOWED_MIME = [
   "image/png",
   "image/webp",
   "application/zip",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ] as const;
 
 export type AllowedMime = (typeof ALLOWED_MIME)[number];
@@ -27,7 +29,7 @@ export type AllowedMime = (typeof ALLOWED_MIME)[number];
 export function buildStoragePath(
   ticketId: string,
   fileId: string,
-  filename: string
+  filename: string,
 ): string {
   return `tickets/${ticketId}/${fileId}-${filename}`;
 }

@@ -1,16 +1,26 @@
-import { Html, Body, Container, Heading, Text } from "@react-email/components";
-import { es } from "@/lib/i18n/es";
+import {
+  Html,
+  Body,
+  Container,
+  Heading,
+  Text,
+  Button,
+} from "@react-email/components";
 
 interface ClientCommentEmailProps {
   clientName: string;
   ticketSubject: string;
   commentBody: string;
+  ticketReference: string;
+  trackingUrl: string;
 }
 
 export default function ClientCommentEmail({
   clientName,
   ticketSubject,
   commentBody,
+  ticketReference,
+  trackingUrl,
 }: ClientCommentEmailProps) {
   return (
     <Html lang="es-MX">
@@ -51,7 +61,7 @@ export default function ClientCommentEmail({
               margin: "0 0 16px",
             }}
           >
-            {es.email.clientComment.intro.replace("{name}", clientName)}
+            {`Nuevo comentario de ${clientName}:`}
           </Text>
 
           <Text
@@ -69,6 +79,35 @@ export default function ClientCommentEmail({
             {commentBody}
           </Text>
 
+          <Text
+            style={{
+              fontSize: "13px",
+              lineHeight: "1.5",
+              color: "#666",
+              margin: "0 0 16px",
+              fontFamily: "monospace",
+            }}
+          >
+            {"Número de ticket:"} #{ticketReference}
+          </Text>
+
+          <Button
+            href={trackingUrl}
+            style={{
+              backgroundColor: "#1a1a1a",
+              color: "#ffffff",
+              padding: "12px 20px",
+              borderRadius: "4px",
+              fontSize: "14px",
+              fontWeight: "600",
+              textDecoration: "none",
+              display: "inline-block",
+              marginBottom: "24px",
+            }}
+          >
+            {"Ver ticket"}
+          </Button>
+
           <hr
             style={{
               border: "none",
@@ -85,7 +124,7 @@ export default function ClientCommentEmail({
               margin: "0",
             }}
           >
-            {es.email.clientComment.footer}
+            {"Esta es una notificación automática del sistema de tickets."}
           </Text>
         </Container>
       </Body>

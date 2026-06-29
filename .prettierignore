@@ -1,0 +1,22 @@
+# Dependencies & build output
+node_modules
+.next
+out
+build
+coverage
+
+# Vendored third-party skill docs (not our code)
+.agents
+.atl
+
+# Lockfiles (managed by their tools)
+pnpm-lock.yaml
+package-lock.json
+
+# Supabase generated/local artifacts
+supabase/.branches
+supabase/.temp
+
+# Misc
+*.min.js
+*.min.css

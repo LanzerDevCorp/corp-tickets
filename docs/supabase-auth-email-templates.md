@@ -12,7 +12,8 @@ Copy the HTML from:
 Each link uses:
 
 ```html
-{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/auth/accept-invite
+{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash
+}}&type=invite&next=/auth/accept-invite
 ```
 
 ## Dashboard checklist
