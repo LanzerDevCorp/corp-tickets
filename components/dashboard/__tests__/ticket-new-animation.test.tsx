@@ -44,23 +44,23 @@ describe("NewTicketHighlight", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("renders the animated halo when motion is allowed", () => {
+  it("renders the indicator and expanding waves when motion is allowed", () => {
     mockMatchMedia(false); // prefers-reduced-motion: no-preference
 
     render(<NewTicketHighlight isNew={true} />);
 
     expect(screen.getByTestId("new-ticket-indicator")).toBeInTheDocument();
-    expect(screen.getByTestId("new-ticket-halo")).toBeInTheDocument();
+    expect(screen.getAllByTestId("new-ticket-wave").length).toBeGreaterThan(0);
   });
 
-  it("omits the halo under prefers-reduced-motion: reduce", () => {
+  it("renders the static dot with no waves under prefers-reduced-motion: reduce", () => {
     mockMatchMedia(true); // prefers-reduced-motion: reduce
 
     render(<NewTicketHighlight isNew={true} />);
 
-    // The static dot is still shown so the "new" state remains visible,
-    // but the looping halo pulse is not rendered.
+    // The dot stays visible so the "new" state remains conveyed; the looping
+    // pulse + expanding waves are suppressed under reduced motion.
     expect(screen.getByTestId("new-ticket-indicator")).toBeInTheDocument();
-    expect(screen.queryByTestId("new-ticket-halo")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("new-ticket-wave")).not.toBeInTheDocument();
   });
 });
