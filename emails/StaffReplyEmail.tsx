@@ -1,15 +1,26 @@
-import { Html, Body, Container, Heading, Text } from "@react-email/components";
+import {
+  Html,
+  Body,
+  Container,
+  Heading,
+  Text,
+  Button,
+} from "@react-email/components";
 
 interface StaffReplyEmailProps {
   clientName: string;
   ticketSubject: string;
   commentBody: string;
+  ticketReference: string;
+  trackingUrl: string;
 }
 
 export default function StaffReplyEmail({
   clientName,
   ticketSubject,
   commentBody,
+  ticketReference,
+  trackingUrl,
 }: StaffReplyEmailProps) {
   return (
     <Html lang="es-MX">
@@ -78,6 +89,35 @@ export default function StaffReplyEmail({
           >
             {commentBody}
           </Text>
+
+          <Text
+            style={{
+              fontSize: "13px",
+              lineHeight: "1.5",
+              color: "#666",
+              margin: "0 0 16px",
+              fontFamily: "monospace",
+            }}
+          >
+            {"Número de ticket:"} #{ticketReference}
+          </Text>
+
+          <Button
+            href={trackingUrl}
+            style={{
+              backgroundColor: "#1a1a1a",
+              color: "#ffffff",
+              padding: "12px 20px",
+              borderRadius: "4px",
+              fontSize: "14px",
+              fontWeight: "600",
+              textDecoration: "none",
+              display: "inline-block",
+              marginBottom: "24px",
+            }}
+          >
+            {"Ver ticket"}
+          </Button>
 
           <hr
             style={{

@@ -133,7 +133,7 @@ describe("TicketSubjectPreview — resolve button", () => {
     await user.hover(link);
 
     // Wait for the card to actually open before checking the button is absent.
-    await screen.findByText(/submitted a new ticket/i);
+    await screen.findByText(/subió un nuevo ticket/i);
     expect(
       screen.queryByRole("button", { name: /mark as resolved/i }),
     ).not.toBeInTheDocument();
@@ -148,7 +148,7 @@ describe("TicketSubjectPreview — resolve button", () => {
     const link = screen.getByRole("link", { name: TEST_TICKET.subject });
     await user.hover(link);
 
-    await screen.findByText(/submitted a new ticket/i);
+    await screen.findByText(/subió un nuevo ticket/i);
     expect(
       screen.queryByRole("button", { name: /mark as resolved/i }),
     ).not.toBeInTheDocument();

@@ -24,12 +24,18 @@ export function useTicketQueueRealtime(): void {
   useEffect(() => {
     const supabase = createClient();
     let channel: ReturnType<typeof supabase.channel> | undefined;
+    let cancelled = false;
 
     void (async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
+
+      if (cancelled) return;
+
       await supabase.realtime.setAuth(session?.access_token);
+
+      if (cancelled) return;
 
       const invalidate = () =>
         queryClient.invalidateQueries({ queryKey: ["tickets"] });
@@ -57,6 +63,7 @@ export function useTicketQueueRealtime(): void {
     })();
 
     return () => {
+      cancelled = true;
       if (channel) void supabase.removeChannel(channel);
     };
   }, [queryClient]);

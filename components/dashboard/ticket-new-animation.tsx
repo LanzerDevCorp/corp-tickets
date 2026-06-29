@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "motion/react";
 
 // ---------------------------------------------------------------------------
 // useReducedMotion
 // ---------------------------------------------------------------------------
 // Reads window.matchMedia synchronously on the first render (lazy useState)
-// so the correct CSS class is applied without a flash. Falls back to false
-// (allow motion) when matchMedia is unavailable (SSR or older browsers).
+// so the correct motion variant is applied without a flash. Falls back to
+// false (allow motion) when matchMedia is unavailable (SSR or older browsers).
 function useReducedMotion(): boolean {
   const [reduced, setReduced] = useState<boolean>(() => {
     if (
@@ -36,22 +37,20 @@ function useReducedMotion(): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Particle delays (8 particles staggered evenly across the 2.4 s cycle)
-// ---------------------------------------------------------------------------
-const PARTICLE_DELAYS: number[] = Array.from({ length: 8 }, (_, i) =>
-  parseFloat(((i * 2.4) / 8).toFixed(3)),
-);
-
-// ---------------------------------------------------------------------------
 // NewTicketHighlight
 // ---------------------------------------------------------------------------
-// Renders an absolutely-positioned overlay that draws a traveling rainbow
-// border + synchronized glow + particle trail around the parent <tr> row.
-// The parent row must have `position: relative` (class "relative").
+// "New ticket" indicator: a small emerald dot that gently bounces, wrapped in
+// a soft "ping" halo, shown to the left of the ticket subject. Powered by
+// Motion (motion/react).
 //
-// When isNew=false the component renders null — no DOM nodes are emitted.
-// All animated layers are inside @media (prefers-reduced-motion: no-preference)
-// in app/globals.css; under reduced motion a static gradient ring is shown.
+// - isNew=true  → the dot mounts with a scale/fade-in, then loops a subtle
+//                 vertical bounce while a halo pulses outward behind it.
+// - isNew=false → AnimatePresence plays a scale/fade-out, then the node
+//                 unmounts (so the subject text reflows flush-left).
+//
+// Under prefers-reduced-motion the looping bounce + halo are disabled and a
+// static dot is shown instead; enter/exit collapse to a near-instant fade.
+// The element is aria-hidden — "new" state is conveyed elsewhere for AT.
 // ---------------------------------------------------------------------------
 
 type NewTicketHighlightProps = {
@@ -61,31 +60,53 @@ type NewTicketHighlightProps = {
 export function NewTicketHighlight({ isNew }: NewTicketHighlightProps) {
   const reducedMotion = useReducedMotion();
 
-  if (!isNew) return null;
-
-  const modeClass = reducedMotion ? "new-ticket-static" : "new-ticket-animated";
+  const enterExitTransition = reducedMotion
+    ? { duration: 0 }
+    : { duration: 0.22, ease: [0.16, 1, 0.3, 1] as const };
 
   return (
-    <div
-      className={`new-ticket-overlay ${modeClass}`}
-      data-testid="new-ticket-overlay"
-      aria-hidden="true"
-    >
-      {/* Layer 1: traveling rainbow border (CSS conic-gradient + mask) */}
-      <div className="new-ticket-border" />
+    <AnimatePresence initial={false}>
+      {isNew && (
+        <motion.span
+          data-testid="new-ticket-indicator"
+          aria-hidden="true"
+          className="relative inline-flex size-2.5 shrink-0 items-center justify-center"
+          initial={{ opacity: 0, scale: 0.4 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.4 }}
+          transition={enterExitTransition}
+        >
+          {/* Halo: expanding "ping" pulse behind the dot (motion-safe only) */}
+          {!reducedMotion && (
+            <motion.span
+              data-testid="new-ticket-halo"
+              className="absolute inset-0 rounded-full bg-emerald-500/60"
+              animate={{ scale: [1, 2.4], opacity: [0.55, 0] }}
+              transition={{
+                duration: 1.6,
+                repeat: Infinity,
+                ease: "easeOut",
+              }}
+            />
+          )}
 
-      {/* Layer 2: synchronized glow (CSS keyframe, same 2.4 s period) */}
-      <div className="new-ticket-glow" />
-
-      {/* Layer 3: particle trail — only rendered when motion is allowed */}
-      {!reducedMotion &&
-        PARTICLE_DELAYS.map((delay, i) => (
-          <span
-            key={i}
-            className="new-ticket-particle"
-            style={{ animationDelay: `${delay}s` }}
+          {/* The bouncing dot */}
+          <motion.span
+            className="relative size-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.7)]"
+            animate={reducedMotion ? undefined : { y: [0, -5, 0] }}
+            transition={
+              reducedMotion
+                ? undefined
+                : {
+                    duration: 1,
+                    repeat: Infinity,
+                    times: [0, 0.4, 1],
+                    ease: ["easeOut", "easeIn"],
+                  }
+            }
           />
-        ))}
-    </div>
+        </motion.span>
+      )}
+    </AnimatePresence>
   );
 }

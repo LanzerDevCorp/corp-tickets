@@ -31,10 +31,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw, Filter, ArrowUpDown } from "lucide-react";
+import {
+  RefreshCw,
+  Filter,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import { formatDate } from "@/lib/format-date";
 import { TicketSubjectPreview } from "@/components/dashboard/ticket-subject-preview";
 import { statusLabel, priorityLabel } from "@/lib/labels";
+import { UNCATEGORIZED } from "@/lib/tickets/category-filter";
 
 type QueueTicket = {
   id: string;
@@ -144,13 +151,19 @@ export default function TicketQueue({
   );
   const [priority, setPriority] = useState<string>("all");
   const [assignedTo, setAssignedTo] = useState<string>("all");
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortField, setSortField] = useState<"created_at" | "status">(
+    "created_at",
+  );
 
   const filters = {
     statuses: statusSelection.includes("all") ? undefined : statusSelection,
     priority: priority === "all" ? undefined : priority,
     assigned_to: assignedTo === "all" ? undefined : assignedTo,
+    category_ids: categoryIds.length === 0 ? undefined : categoryIds,
     sortOrder,
+    sortField,
   };
 
   const {
@@ -266,6 +279,25 @@ export default function TicketQueue({
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Category Filter */}
+            <MultiSelect values={categoryIds} onValuesChange={setCategoryIds}>
+              <MultiSelectTrigger className="min-w-[180px] bg-white dark:bg-zinc-900">
+                <MultiSelectValue placeholder={"Categoría"} />
+              </MultiSelectTrigger>
+              <MultiSelectContent search={false}>
+                <MultiSelectGroup>
+                  {categories.map((cat) => (
+                    <MultiSelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </MultiSelectItem>
+                  ))}
+                  <MultiSelectItem value={UNCATEGORIZED}>
+                    {"Sin categoría"}
+                  </MultiSelectItem>
+                </MultiSelectGroup>
+              </MultiSelectContent>
+            </MultiSelect>
           </div>
 
           {/* Sort Order Toggle */}
@@ -299,8 +331,29 @@ export default function TicketQueue({
                 <TableHead className="w-[120px] font-semibold">
                   {"Categoría"}
                 </TableHead>
-                <TableHead className="w-[120px] font-semibold">
-                  {"Estado"}
+                <TableHead
+                  className="w-[120px] cursor-pointer font-semibold select-none hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
+                  onClick={() => {
+                    if (sortField !== "status") {
+                      setSortField("status");
+                      setSortOrder("asc");
+                    } else {
+                      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                    }
+                  }}
+                >
+                  <span className="flex items-center gap-1.5">
+                    {"Estado"}
+                    {sortField === "status" ? (
+                      sortOrder === "asc" ? (
+                        <ArrowUp className="h-3.5 w-3.5 text-indigo-500" />
+                      ) : (
+                        <ArrowDown className="h-3.5 w-3.5 text-indigo-500" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3.5 w-3.5 text-zinc-400 opacity-40" />
+                    )}
+                  </span>
                 </TableHead>
                 <TableHead className="w-[120px] font-semibold">
                   {"Prioridad"}
@@ -333,14 +386,16 @@ export default function TicketQueue({
                       className="relative transition-colors hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30"
                     >
                       <TableCell className="py-3 align-top font-medium">
-                        <NewTicketHighlight isNew={isNew} />
-                        <TicketSubjectPreview
-                          ticket={ticket}
-                          onSeen={
-                            isNew ? () => void onSeen(ticket.id) : undefined
-                          }
-                          onResolved={() => void refetch()}
-                        />
+                        <div className="flex items-center gap-2">
+                          <NewTicketHighlight isNew={isNew} />
+                          <TicketSubjectPreview
+                            ticket={ticket}
+                            onSeen={
+                              isNew ? () => void onSeen(ticket.id) : undefined
+                            }
+                            onResolved={() => void refetch()}
+                          />
+                        </div>
                       </TableCell>
                       <TableCell className="py-3 align-top text-zinc-800 dark:text-zinc-200">
                         <span

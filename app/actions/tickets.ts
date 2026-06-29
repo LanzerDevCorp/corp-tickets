@@ -13,6 +13,7 @@ import {
   notifyTicketClosed,
   notifyTicketResolved,
 } from "@/lib/notifications/tickets";
+import { buildCategoryFilter } from "@/lib/tickets/category-filter";
 
 export type TicketSubmitResult =
   | { error: null; ticketId: string }
@@ -87,7 +88,9 @@ export async function getTickets(filters: {
   statuses?: string[];
   priority?: string;
   assigned_to?: string;
+  category_ids?: string[];
   sortOrder?: "asc" | "desc";
+  sortField?: "created_at" | "status";
 }) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -118,7 +121,34 @@ export async function getTickets(filters: {
     }
   }
 
-  query = query.order("created_at", { ascending: filters.sortOrder === "asc" });
+  const categoryFilter = buildCategoryFilter(filters.category_ids);
+  switch (categoryFilter.kind) {
+    case "in":
+      query = query.in("category_id", categoryFilter.ids);
+      break;
+    case "isNull":
+      query = query.is("category_id", null);
+      break;
+    case "or":
+      query = query.or(
+        `category_id.in.(${categoryFilter.ids.join(",")}),category_id.is.null`,
+      );
+      break;
+    case "none":
+    default:
+      // No category constraint — return all tickets regardless of category
+      break;
+  }
+
+  if (filters.sortField === "status") {
+    query = query
+      .order("status", { ascending: filters.sortOrder === "asc" })
+      .order("created_at", { ascending: false });
+  } else {
+    query = query.order("created_at", {
+      ascending: filters.sortOrder === "asc",
+    });
+  }
 
   const { data, error } = await query;
   if (error) {

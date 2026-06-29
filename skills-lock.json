@@ -25,6 +25,12 @@
       "skillPath": "skills/next-best-practices/SKILL.md",
       "computedHash": "f4678aef4ffc10a5ea64a91e57abe5a5081af813b06d58d565caf3e8ef56e26c"
     },
+    "open-pencil": {
+      "source": "open-pencil/skills",
+      "sourceType": "github",
+      "skillPath": "skills/open-pencil/SKILL.md",
+      "computedHash": "86b26dd3d31363985dd185019e4180d86b731e171992d1be3d382db20037c721"
+    },
     "react-hook-form-zod-shadcn": {
       "source": "sortweste/frontend-skills",
       "sourceType": "github",

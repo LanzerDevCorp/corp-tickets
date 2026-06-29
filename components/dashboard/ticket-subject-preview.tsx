@@ -74,7 +74,7 @@ function TicketPreviewCard({
               {ticket.name}
             </span>{" "}
             <span className="text-zinc-500 dark:text-zinc-400">
-              submitted a new ticket
+              subió un nuevo ticket
             </span>
           </p>
           <p className="text-xs text-zinc-400 dark:text-zinc-500">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useId } from "react";
+import { useState, useId, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -52,7 +52,7 @@ import {
   type AdminInviteData,
 } from "@/lib/schemas/admin-invite";
 import { formatDate } from "@/lib/format-date";
-import { roleLabel } from "@/lib/labels";
+import { roleLabel, ROLE_LABELS } from "@/lib/labels";
 
 // ---------------------------------------------------------------------------
 // UsersTable
@@ -65,6 +65,22 @@ export function UsersTable({
   users: UserRow[];
   currentUserId?: string;
 }) {
+  // Filter state — MUST be declared above any early-return (Rules of Hooks)
+  const [roleFilter, setRoleFilter] = useState<"all" | UserRow["role"]>("all");
+  const [search, setSearch] = useState("");
+
+  const filteredUsers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return users.filter((u) => {
+      if (roleFilter !== "all" && u.role !== roleFilter) return false;
+      if (q.length === 0) return true;
+      const name = (u.display_name ?? "").toLowerCase();
+      const email = u.email.toLowerCase();
+      return name.includes(q) || email.includes(q);
+    });
+  }, [users, roleFilter, search]);
+
+  // Empty state: no users exist at all
   if (users.length === 0) {
     return (
       <p className="py-8 text-center text-muted-foreground">
@@ -74,57 +90,96 @@ export function UsersTable({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{"Nombre"}</TableHead>
-          <TableHead>{"Correo electrónico"}</TableHead>
-          <TableHead>{"Rol"}</TableHead>
-          <TableHead>{"Estado"}</TableHead>
-          <TableHead>{"Registro"}</TableHead>
-          <TableHead>{"Acciones"}</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {users.map((user) => (
-          <TableRow key={user.id}>
-            <TableCell>{user.display_name ?? "—"}</TableCell>
-            <TableCell>{user.email}</TableCell>
-            <TableCell>
-              <span className={getRoleBadgeClass(user.role)}>
-                {roleLabel(user.role)}
-              </span>
-            </TableCell>
-            <TableCell>
-              <span
-                className={getStatusBadgeClass(
-                  user.is_pending_invite,
-                  user.is_active,
-                )}
-              >
-                {getStatusLabel(user.is_pending_invite, user.is_active)}
-              </span>
-            </TableCell>
-            <TableCell>{formatDate(user.created_at)}</TableCell>
-            <TableCell>
-              {user.is_pending_invite ? (
-                <div className="flex gap-2">
-                  <ReinviteButton userId={user.id} />
-                  <CancelInviteButton userId={user.id} />
-                </div>
-              ) : user.is_active ? (
-                <DeactivateButton
-                  userId={user.id}
-                  isSelf={user.id === currentUserId}
-                />
-              ) : (
-                <ReactivateButton userId={user.id} />
-              )}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <div className="space-y-4">
+      {/* Filter panel */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <Select
+          value={roleFilter}
+          onValueChange={(v) => setRoleFilter(v as "all" | UserRow["role"])}
+        >
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder={"Rol"} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{"Todos"}</SelectItem>
+            {(Object.entries(ROLE_LABELS) as [UserRow["role"], string][]).map(
+              ([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ),
+            )}
+          </SelectContent>
+        </Select>
+
+        <Input
+          type="search"
+          placeholder={"Buscar por nombre o correo..."}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full sm:max-w-xs"
+        />
+      </div>
+
+      {/* Empty state: users exist but none match filters */}
+      {users.length > 0 && filteredUsers.length === 0 ? (
+        <p className="py-8 text-center text-muted-foreground">
+          {"No hay usuarios que coincidan con los filtros."}
+        </p>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{"Nombre"}</TableHead>
+              <TableHead>{"Correo electrónico"}</TableHead>
+              <TableHead>{"Rol"}</TableHead>
+              <TableHead>{"Estado"}</TableHead>
+              <TableHead>{"Registro"}</TableHead>
+              <TableHead>{"Acciones"}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredUsers.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>{user.display_name ?? "—"}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>
+                  <span className={getRoleBadgeClass(user.role)}>
+                    {roleLabel(user.role)}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span
+                    className={getStatusBadgeClass(
+                      user.is_pending_invite,
+                      user.is_active,
+                    )}
+                  >
+                    {getStatusLabel(user.is_pending_invite, user.is_active)}
+                  </span>
+                </TableCell>
+                <TableCell>{formatDate(user.created_at)}</TableCell>
+                <TableCell>
+                  {user.is_pending_invite ? (
+                    <div className="flex gap-2">
+                      <ReinviteButton userId={user.id} />
+                      <CancelInviteButton userId={user.id} />
+                    </div>
+                  ) : user.is_active ? (
+                    <DeactivateButton
+                      userId={user.id}
+                      isSelf={user.id === currentUserId}
+                    />
+                  ) : (
+                    <ReactivateButton userId={user.id} />
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </div>
   );
 }
 

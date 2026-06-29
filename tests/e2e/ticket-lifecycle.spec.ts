@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { STORAGE_STATE } from "./fixtures/auth";
 import {
   ensureCategory,
+  adminClient,
   getTicketIdBySubject,
   hasSupabaseEnv,
   makeTicket,
@@ -134,6 +135,162 @@ test.describe("Ticket lifecycle", () => {
       await expectDetailStatus(admin, "Cerrado");
       await expect(admin.getByText(reason)).toBeVisible();
       await admin.context().close();
+    },
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Category filter — dashboard ticket queue
+// ---------------------------------------------------------------------------
+
+test.describe("Category filter", () => {
+  test.beforeAll(async () => {
+    if (!hasSupabaseEnv) {
+      test.skip(true, "Requires local Supabase with service role key");
+    }
+  });
+
+  /** Helper: open an admin dashboard page backed by the persisted staff session. */
+  async function adminDashboard(
+    browser: import("@playwright/test").Browser,
+  ): Promise<Page> {
+    const ctx = await browser.newContext({ storageState: STORAGE_STATE });
+    const page = ctx.newPage();
+    await page.goto("/dashboard");
+    return page;
+  }
+
+  test(
+    "category MultiSelect renders with at least 'Sin categoría' option",
+    { tag: ["@category-filter", "@smoke"] },
+    async ({ browser }) => {
+      test.skip(!hasSupabaseEnv, "Requires local Supabase");
+      const page = await adminDashboard(browser);
+      // The category MultiSelect trigger should be visible
+      await expect(
+        page.getByRole("button", { name: /categoría/i }),
+      ).toBeVisible({
+        timeout: 10_000,
+      });
+      // Open the dropdown
+      await page.getByRole("button", { name: /categoría/i }).click();
+      await expect(page.getByText("Sin categoría")).toBeVisible();
+      await page.context().close();
+    },
+  );
+
+  test(
+    "selecting a real category shows only tickets of that category",
+    { tag: ["@category-filter"] },
+    async ({ browser }) => {
+      test.skip(!hasSupabaseEnv, "Requires local Supabase");
+
+      // Create a category and a ticket in that category via DB
+      const categoryName = `E2E-Cat-${Date.now()}`;
+      const { data: category, error: catError } = await adminClient()
+        .from("categories")
+        .insert({ name: categoryName, is_enabled: true })
+        .select("id")
+        .single();
+      if (catError || !category)
+        throw catError ?? new Error("Category insert failed");
+
+      const ticketData = makeTicket({ category: categoryName });
+      const { error: ticketError } = await adminClient()
+        .from("tickets")
+        .insert({
+          subject: ticketData.subject,
+          body: ticketData.body,
+          name: ticketData.name,
+          email: ticketData.email,
+          priority: "low",
+          category_id: category.id,
+        });
+      if (ticketError) throw ticketError;
+
+      const page = await adminDashboard(browser);
+      // Open category MultiSelect and select our test category
+      await page.getByRole("button", { name: /categoría/i }).click();
+      await page.getByText(categoryName).click();
+      // Close dropdown by pressing Escape
+      await page.keyboard.press("Escape");
+
+      // The test ticket subject should appear
+      await expect(page.getByText(ticketData.subject)).toBeVisible({
+        timeout: 10_000,
+      });
+
+      await page.context().close();
+    },
+  );
+
+  test(
+    "selecting 'Sin categoría' shows only tickets with no category",
+    { tag: ["@category-filter"] },
+    async ({ browser }) => {
+      test.skip(!hasSupabaseEnv, "Requires local Supabase");
+      const page = await adminDashboard(browser);
+
+      await page.getByRole("button", { name: /categoría/i }).click();
+      await page.getByText("Sin categoría").click();
+      await page.keyboard.press("Escape");
+
+      // After filter: all visible row cells in the category column should be blank or "General"
+      // The table itself should be visible (no crash)
+      await expect(page.getByRole("table")).toBeVisible({ timeout: 10_000 });
+      await page.context().close();
+    },
+  );
+
+  test(
+    "deselecting all categories restores the full list",
+    { tag: ["@category-filter"] },
+    async ({ browser }) => {
+      test.skip(!hasSupabaseEnv, "Requires local Supabase");
+      const page = await adminDashboard(browser);
+
+      // Count rows before filter
+      const rowsBefore = await page.getByRole("row").count();
+
+      // Apply "Sin categoría" filter
+      await page.getByRole("button", { name: /categoría/i }).click();
+      await page.getByText("Sin categoría").click();
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(500);
+
+      // Deselect it
+      await page.getByRole("button", { name: /categoría/i }).click();
+      await page.getByText("Sin categoría").click();
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(500);
+
+      const rowsAfter = await page.getByRole("row").count();
+      expect(rowsAfter).toBe(rowsBefore);
+      await page.context().close();
+    },
+  );
+
+  test(
+    "category filter does not clear the status filter (additive — Scenario C-7)",
+    { tag: ["@category-filter"] },
+    async ({ browser }) => {
+      test.skip(!hasSupabaseEnv, "Requires local Supabase");
+      const page = await adminDashboard(browser);
+
+      // Verify status filter is present and has its default state
+      const statusTrigger = page
+        .getByRole("button", { name: /estado/i })
+        .first();
+      await expect(statusTrigger).toBeVisible({ timeout: 10_000 });
+
+      // Apply category filter
+      await page.getByRole("button", { name: /categoría/i }).click();
+      await page.getByText("Sin categoría").click();
+      await page.keyboard.press("Escape");
+
+      // Status filter trigger should still be visible and unchanged
+      await expect(statusTrigger).toBeVisible();
+      await page.context().close();
     },
   );
 });

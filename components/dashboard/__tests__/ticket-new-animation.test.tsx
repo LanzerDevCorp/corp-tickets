@@ -28,37 +28,39 @@ function mockMatchMedia(prefersReduced: boolean) {
 }
 
 describe("NewTicketHighlight", () => {
-  it("renders the overlay element when isNew=true", () => {
-    // No matchMedia in jsdom → useReducedMotion defaults to false → animated class.
+  it("renders the indicator when isNew=true", () => {
+    // No matchMedia in jsdom → useReducedMotion defaults to false → animated.
     render(<NewTicketHighlight isNew={true} />);
 
-    expect(screen.getByTestId("new-ticket-overlay")).toBeInTheDocument();
+    expect(screen.getByTestId("new-ticket-indicator")).toBeInTheDocument();
   });
 
-  it("renders nothing (null) when isNew=false", () => {
+  it("renders nothing when isNew=false", () => {
     const { container } = render(<NewTicketHighlight isNew={false} />);
 
     expect(container.firstChild).toBeNull();
-    expect(screen.queryByTestId("new-ticket-overlay")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("new-ticket-indicator"),
+    ).not.toBeInTheDocument();
   });
 
-  it("applies animated class when motion is allowed", () => {
+  it("renders the animated halo when motion is allowed", () => {
     mockMatchMedia(false); // prefers-reduced-motion: no-preference
 
     render(<NewTicketHighlight isNew={true} />);
 
-    const overlay = screen.getByTestId("new-ticket-overlay");
-    expect(overlay).toHaveClass("new-ticket-animated");
-    expect(overlay).not.toHaveClass("new-ticket-static");
+    expect(screen.getByTestId("new-ticket-indicator")).toBeInTheDocument();
+    expect(screen.getByTestId("new-ticket-halo")).toBeInTheDocument();
   });
 
-  it("applies static-ring class (no animated class) when prefers-reduced-motion: reduce", () => {
+  it("omits the halo under prefers-reduced-motion: reduce", () => {
     mockMatchMedia(true); // prefers-reduced-motion: reduce
 
     render(<NewTicketHighlight isNew={true} />);
 
-    const overlay = screen.getByTestId("new-ticket-overlay");
-    expect(overlay).toHaveClass("new-ticket-static");
-    expect(overlay).not.toHaveClass("new-ticket-animated");
+    // The static dot is still shown so the "new" state remains visible,
+    // but the looping halo pulse is not rendered.
+    expect(screen.getByTestId("new-ticket-indicator")).toBeInTheDocument();
+    expect(screen.queryByTestId("new-ticket-halo")).not.toBeInTheDocument();
   });
 });
