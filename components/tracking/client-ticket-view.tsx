@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, User } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Calendar, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -61,6 +63,16 @@ export default function ClientTicketView({
 
   return (
     <div className="space-y-6">
+      {/* Back button */}
+      <div className="flex items-center gap-4">
+        <Button variant="outline" size="sm" asChild className="gap-2">
+          <Link href="/track">
+            <ArrowLeft className="h-4 w-4" />
+            {"Volver a mis tickets"}
+          </Link>
+        </Button>
+      </div>
+
       <Card className="border-zinc-200 bg-white/50 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/50">
         <CardHeader className="border-b border-zinc-100 pb-6 dark:border-zinc-900">
           <div className="mb-3 flex flex-wrap gap-2">
