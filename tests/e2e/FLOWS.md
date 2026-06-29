@@ -15,7 +15,8 @@ flip its ✅/⬜ here. **Before authoring a new flow**: add a new section.
 ## Tag taxonomy
 
 `@lifecycle` (master flow) · `@create` · `@resolve` · `@status` · `@tooltip` ·
-`@detail` · `@closed` · `@negative` · `@rbac` · `@tracking` · `@critical`
+`@detail` · `@closed` · `@negative` · `@rbac` · `@tracking` · `@critical` ·
+`@queue` · `@category-filter` · `@filter-persistence`
 
 ## Selective runs
 
@@ -64,6 +65,27 @@ create → (auto in_progress on detail open) → resolve | close → tracking
 | Reopen a resolved/closed ticket                 | detail `<Select>` back to open | `@status`                   | ⬜ TODO |
 | Non-staff cannot change status                  | server action guard            | `@rbac @negative`           | ⬜ TODO |
 | Client sees resolved status in tracking         | `/track`                       | `@tracking`                 | ⬜ TODO |
+
+## Flow: Queue filter persistence
+
+File: `tests/e2e/ticket-lifecycle.spec.ts` (describe "Queue filter persistence")
+
+Filters (status, priority, assignee, category) are persisted to `localStorage`
+by `useQueueFilters`, so a selection survives a remount (navigating into a ticket
+and back) and a full reload across sessions.
+
+| Step / branch                                     | Affordance              | Tags                         | Status  |
+| ------------------------------------------------- | ----------------------- | ---------------------------- | ------- |
+| The four filters survive a reload                 | queue filter comboboxes | `@filter-persistence @queue` | ✅      |
+| Persistence across in-ticket navigation (remount) | back-button → queue     | `@filter-persistence @queue` | ⬜ TODO |
+
+Helpers: `selectQueueFilter` / `expectQueueFilter` / `QUEUE_FILTER` in
+`tests/e2e/actions/ticket.ts`. Each filter combobox carries a stable
+`aria-label` ("Filtrar por estado|prioridad|asignado|categoría").
+
+> Gotcha: the status/category MultiSelects mount a hidden duplicate of each
+> option (for the trigger badges), so option clicks are scoped with
+> `[role=option]:visible` to avoid a strict-mode match.
 
 ### Edge cases discovered (backlog)
 
