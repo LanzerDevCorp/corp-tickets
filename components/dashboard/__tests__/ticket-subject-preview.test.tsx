@@ -119,7 +119,7 @@ describe("TicketSubjectPreview — resolve button", () => {
     await user.hover(link);
 
     expect(
-      await screen.findByRole("button", { name: /mark as resolved/i }),
+      await screen.findByRole("button", { name: /resuelto/i }),
     ).toBeInTheDocument();
   });
 
@@ -169,7 +169,7 @@ describe("TicketSubjectPreview — resolve button", () => {
     await user.hover(link);
 
     const button = await screen.findByRole("button", {
-      name: /mark as resolved/i,
+      name: /resuelto/i,
     });
 
     await act(async () => {
