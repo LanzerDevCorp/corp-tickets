@@ -10,9 +10,17 @@ import type { TicketData } from "../fixtures/db";
 /** Public form: fill and submit a ticket as an anonymous visitor. */
 export async function submitPublicTicket(page: Page, data: TicketData) {
   await page.goto("/");
-  await page.getByLabel(/nombre/i).fill(data.name);
-  await page.getByLabel(/correo electrónico/i).fill(data.email);
-  await page.getByLabel(/asunto/i).fill(data.subject);
+  // Fill text fields then dispatch input event — WebKit needs this for
+  // react-hook-form onChange mode to fire.
+  const fillField = async (label: RegExp, value: string) => {
+    const el = page.getByLabel(label);
+    await el.fill(value);
+    await el.dispatchEvent("input");
+    await el.dispatchEvent("change");
+  };
+  await fillField(/nombre/i, data.name);
+  await fillField(/correo electrónico/i, data.email);
+  await fillField(/asunto/i, data.subject);
 
   await page.getByRole("combobox", { name: /categoría/i }).click();
   await page
@@ -23,7 +31,12 @@ export async function submitPublicTicket(page: Page, data: TicketData) {
     .click();
 
   await page.getByLabel(/describe tu problema/i).fill(data.body);
-  await page.getByRole("button", { name: /enviar ticket/i }).click();
+  // WebKit may not trigger react-hook-form onChange via fill(); blur to force validation.
+  await page.getByLabel(/describe tu problema/i).blur();
+  const submitBtn = page.getByRole("button", { name: /enviar ticket/i });
+  // WebKit may lag react-hook-form onChange validation; wait for enabled state.
+  await expect(submitBtn).toBeEnabled({ timeout: 15_000 });
+  await submitBtn.click();
 
   await expect(
     page.getByRole("heading", { name: /ticket recibido/i }),

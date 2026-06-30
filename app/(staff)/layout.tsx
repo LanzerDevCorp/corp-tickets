@@ -28,7 +28,7 @@ export default async function StaffLayout({
   const { data: userData } = await supabase.auth.getUser();
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <AppSidebar
         role={role}
         userEmail={userData?.user?.email ?? ""}

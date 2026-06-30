@@ -89,6 +89,9 @@ test.describe("Admin users filter", () => {
       const searchInput = page.getByPlaceholder(/buscar por nombre o correo/i);
       await searchInput.fill("admin");
 
+      // Wait for the filter to apply (debounce may vary by browser)
+      await page.waitForTimeout(500);
+
       // Row count should decrease (or empty-state should show)
       const rowsAfter = await page.getByRole("row").count();
       const hasEmptyState = await page
@@ -156,6 +159,10 @@ test.describe("Admin users filter", () => {
       await page.getByRole("option", { name: "Todos" }).click();
       await searchInput.fill("");
 
+      // Wait for the table to re-render with all rows
+      await expect(page.getByRole("row")).toHaveCount(rowsBefore, {
+        timeout: 10_000,
+      });
       const rowsAfter = await page.getByRole("row").count();
       expect(rowsAfter).toBe(rowsBefore);
       await ctx.close();

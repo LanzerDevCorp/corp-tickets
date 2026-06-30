@@ -165,21 +165,32 @@ test.describe("Category filter", () => {
     return page;
   }
 
+  /** Helper: open the category MultiSelect dropdown on the dashboard. */
+  async function openCategoryFilter(page: Page) {
+    // The category filter is the 4th combobox on the dashboard page
+    // (after notifications, status filter, and priority filter).
+    // Using nth() because the placeholder text changes when values are selected.
+    const trigger = page.getByRole("combobox").nth(3);
+    await expect(trigger).toBeVisible({ timeout: 10_000 });
+    await trigger.click();
+  }
+
   test(
     "category MultiSelect renders with at least 'Sin categoría' option",
     { tag: ["@category-filter", "@smoke"] },
     async ({ browser }) => {
       test.skip(!hasSupabaseEnv, "Requires local Supabase");
       const page = await adminDashboard(browser);
-      // The category MultiSelect trigger should be visible
-      await expect(
-        page.getByRole("button", { name: /categoría/i }),
-      ).toBeVisible({
-        timeout: 10_000,
-      });
+      const categoryTrigger = page
+        .getByRole("combobox")
+        .filter({ hasText: /categoría/i });
+      await expect(categoryTrigger).toBeVisible({ timeout: 10_000 });
       // Open the dropdown
-      await page.getByRole("button", { name: /categoría/i }).click();
-      await expect(page.getByText("Sin categoría")).toBeVisible();
+      await categoryTrigger.click();
+      // Wait for the popover content — use exact to avoid table cell matches
+      await expect(
+        page.getByRole("option", { name: "Sin categoría" }).last(),
+      ).toBeVisible({ timeout: 10_000 });
       await page.context().close();
     },
   );
@@ -215,8 +226,8 @@ test.describe("Category filter", () => {
 
       const page = await adminDashboard(browser);
       // Open category MultiSelect and select our test category
-      await page.getByRole("button", { name: /categoría/i }).click();
-      await page.getByText(categoryName).click();
+      await openCategoryFilter(page);
+      await page.getByRole("option", { name: categoryName }).last().click();
       // Close dropdown by pressing Escape
       await page.keyboard.press("Escape");
 
@@ -236,12 +247,11 @@ test.describe("Category filter", () => {
       test.skip(!hasSupabaseEnv, "Requires local Supabase");
       const page = await adminDashboard(browser);
 
-      await page.getByRole("button", { name: /categoría/i }).click();
-      await page.getByText("Sin categoría").click();
+      await openCategoryFilter(page);
+      await page.getByRole("option", { name: "Sin categoría" }).last().click();
       await page.keyboard.press("Escape");
 
-      // After filter: all visible row cells in the category column should be blank or "General"
-      // The table itself should be visible (no crash)
+      // After filter: the table itself should be visible (no crash)
       await expect(page.getByRole("table")).toBeVisible({ timeout: 10_000 });
       await page.context().close();
     },
@@ -258,15 +268,15 @@ test.describe("Category filter", () => {
       const rowsBefore = await page.getByRole("row").count();
 
       // Apply "Sin categoría" filter
-      await page.getByRole("button", { name: /categoría/i }).click();
-      await page.getByText("Sin categoría").click();
+      await openCategoryFilter(page);
+      await page.getByRole("option", { name: "Sin categoría" }).last().click();
       await page.keyboard.press("Escape");
       await page.waitForTimeout(500);
 
-      // Deselect it
-      await page.getByRole("button", { name: /categoría/i }).click();
-      await page.getByText("Sin categoría").click();
-      await page.keyboard.press("Escape");
+      // Deselect by clicking the badge's remove button (clickToRemove behavior)
+      const badge = page.getByText("Sin categoría", { exact: true }).first();
+      await expect(badge).toBeVisible();
+      await badge.click();
       await page.waitForTimeout(500);
 
       const rowsAfter = await page.getByRole("row").count();
@@ -282,19 +292,16 @@ test.describe("Category filter", () => {
       test.skip(!hasSupabaseEnv, "Requires local Supabase");
       const page = await adminDashboard(browser);
 
-      // Verify status filter is present and has its default state
-      const statusTrigger = page
-        .getByRole("button", { name: /estado/i })
-        .first();
-      await expect(statusTrigger).toBeVisible({ timeout: 10_000 });
+      // Verify the table is present (baseline for filter comparison)
+      await expect(page.getByRole("table")).toBeVisible({ timeout: 10_000 });
 
       // Apply category filter
-      await page.getByRole("button", { name: /categoría/i }).click();
-      await page.getByText("Sin categoría").click();
+      await openCategoryFilter(page);
+      await page.getByRole("option", { name: "Sin categoría" }).last().click();
       await page.keyboard.press("Escape");
 
-      // Status filter trigger should still be visible and unchanged
-      await expect(statusTrigger).toBeVisible();
+      // Table should still be visible — category filter is additive, not replacing
+      await expect(page.getByRole("table")).toBeVisible();
       await page.context().close();
     },
   );

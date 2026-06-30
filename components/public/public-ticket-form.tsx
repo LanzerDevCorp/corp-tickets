@@ -180,7 +180,7 @@ export function PublicTicketForm({ categories }: PublicTicketFormProps) {
       <div className="mx-auto w-full max-w-2xl">
         <div className="rounded-xl border border-border bg-white p-8 text-center shadow-sm">
           <p className="animate-pulse text-sm text-muted-foreground">
-            Uploading files...
+            Subiendo archivos...
           </p>
         </div>
       </div>

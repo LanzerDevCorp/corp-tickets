@@ -5,22 +5,39 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 test.describe("Client magic link flow", () => {
-  test("expired magic link shows resend form at /auth/error", async ({
+  test("expired magic link redirects to /track/access with resend option", async ({
     page,
   }) => {
-    await page.goto("/auth/error?error_code=otp_expired");
+    // /auth/error now redirects to /track/access for otp_expired
+    await page.goto("/track/access?error_code=otp_expired");
 
-    await expect(page.getByLabel(/correo/i)).toBeVisible();
+    // CardTitle renders as <div>, not a heading — use getByText
+    await expect(page.getByText("Enlace expirado")).toBeVisible();
+
+    // Expand the resend section
+    await page
+      .getByRole("button", { name: /prefieres un enlace por correo/i })
+      .click();
+
     await expect(
       page.getByRole("button", { name: /solicitar nuevo enlace/i }),
     ).toBeVisible();
   });
 
   test("submitting resend form shows success message", async ({ page }) => {
-    await page.goto("/auth/error?error_code=otp_expired");
+    await page.goto("/track/access?error_code=otp_expired");
 
-    await page.fill('[name="email"]', "test@client.com");
-    await page.click('button:has-text("Solicitar nuevo enlace")');
+    // Expand the resend section
+    await page
+      .getByRole("button", { name: /prefieres un enlace por correo/i })
+      .click();
+
+    // The resend form has its own email input (last one on the page)
+    await page
+      .getByLabel(/correo electrónico/i)
+      .last()
+      .fill("test@client.com");
+    await page.getByRole("button", { name: /solicitar nuevo enlace/i }).click();
 
     await expect(page.getByText(/revisa tu correo/i)).toBeVisible();
   });
@@ -40,11 +57,12 @@ test.describe("Client magic link flow", () => {
     const testEmail = `e2e-${Date.now()}@client.test`;
     const ticketId = "550e8400-e29b-41d4-a716-446655440099";
 
+    // Use 127.0.0.1 to match Supabase site_url (not localhost)
     const { data: linkData } = await admin.auth.admin.generateLink({
       type: "magiclink",
       email: testEmail,
       options: {
-        redirectTo: `http://localhost:3000/track/${ticketId}`,
+        redirectTo: `http://127.0.0.1:3000/track/${ticketId}`,
       },
     });
 
@@ -53,6 +71,10 @@ test.describe("Client magic link flow", () => {
     }
 
     await page.goto(linkData.properties.action_link);
-    await expect(page).toHaveURL(new RegExp(`/track/${ticketId}`));
+    // Supabase appends #access_token to the redirect URL; wait for client-side
+    // auth to process and navigate to /track/{ticketId}
+    await expect(page).toHaveURL(new RegExp(`/track/${ticketId}`), {
+      timeout: 15_000,
+    });
   });
 });
