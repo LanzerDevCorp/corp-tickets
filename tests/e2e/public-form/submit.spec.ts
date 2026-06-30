@@ -119,6 +119,9 @@ test.describe("Formulario público de tickets", () => {
     await expect(
       page.getByText("Tu número de ticket", { exact: true }),
     ).toBeVisible();
+    await expect(
+      page.getByText("Tu número de ticket", { exact: true }),
+    ).toBeVisible();
   });
 
   test("muestra error de validación cuando el email es inválido", async ({
@@ -128,6 +131,8 @@ test.describe("Formulario público de tickets", () => {
 
     const emailField = page.getByLabel(/correo electrónico/i);
     await emailField.fill("no-es-un-correo");
+    await emailField.dispatchEvent("input");
+    await emailField.dispatchEvent("change");
     await emailField.blur();
 
     // WebKit may need a moment for react-hook-form onChange validation

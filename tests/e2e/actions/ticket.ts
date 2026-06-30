@@ -10,9 +10,17 @@ import type { TicketData } from "../fixtures/db";
 /** Public form: fill and submit a ticket as an anonymous visitor. */
 export async function submitPublicTicket(page: Page, data: TicketData) {
   await page.goto("/");
-  await page.getByLabel(/nombre/i).fill(data.name);
-  await page.getByLabel(/correo electrónico/i).fill(data.email);
-  await page.getByLabel(/asunto/i).fill(data.subject);
+  // Fill text fields then dispatch input event — WebKit needs this for
+  // react-hook-form onChange mode to fire.
+  const fillField = async (label: RegExp, value: string) => {
+    const el = page.getByLabel(label);
+    await el.fill(value);
+    await el.dispatchEvent("input");
+    await el.dispatchEvent("change");
+  };
+  await fillField(/nombre/i, data.name);
+  await fillField(/correo electrónico/i, data.email);
+  await fillField(/asunto/i, data.subject);
 
   await page.getByRole("combobox", { name: /categoría/i }).click();
   await page
