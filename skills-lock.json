@@ -31,6 +31,12 @@
       "skillPath": "skills/open-pencil/SKILL.md",
       "computedHash": "86b26dd3d31363985dd185019e4180d86b731e171992d1be3d382db20037c721"
     },
+    "ponytail": {
+      "source": "dietrichgebert/ponytail",
+      "sourceType": "github",
+      "skillPath": "skills/ponytail/SKILL.md",
+      "computedHash": "491ccdc2c13a29cebabbac6bbe37f39e2e21ddff890c0b3fcf83b53b05dcc5c8"
+    },
     "react-hook-form-zod-shadcn": {
       "source": "sortweste/frontend-skills",
       "sourceType": "github",
