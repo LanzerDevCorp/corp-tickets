@@ -6,7 +6,7 @@ type Props = {
 
 export function PublicSiteHeader({ rightLink }: Props) {
   return (
-    <header className="border-b border-border bg-white">
+    <header className="sticky top-0 z-50 border-b border-border bg-white">
       <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-6">
         <span className="text-sm font-semibold tracking-tight text-[#1C2438]">
           Mesa de ayuda
